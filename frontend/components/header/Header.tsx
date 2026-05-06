@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { navItems } from "./dropdownData";
 import NavDropdown from "./NavDropdown";
@@ -34,15 +35,19 @@ export default function Header() {
 
   return (
     <>
-      <header className="relative w-full bg-white border-b border-gray-200 z-50">
+      <header className="sticky top-0 w-full bg-white border-b border-gray-200 z-50">
         {/* ── Main bar ── */}
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
           {/* Logo */}
-          <Link
-            href="/"
-            className="shrink-0 text-2xl font-extrabold tracking-tight text-gray-900"
-          >
-            J<span className="text-primary">esup</span>
+          <Link href="/" className="shrink-0">
+            <Image
+              src="/jesup-logo.png"
+              alt="Jesup"
+              width={200}
+              height={70}
+              className="h-18 w-auto object-contain mt-2"
+              priority
+            />
           </Link>
 
           {/* Desktop nav — centered */}
@@ -157,9 +162,13 @@ export default function Header() {
           <div className="absolute right-0 top-0 bottom-0 w-80 bg-white shadow-2xl overflow-y-auto animate-slide-in-right flex flex-col">
             {/* Drawer header */}
             <div className="flex items-center justify-between px-5 h-16 border-b border-gray-100 shrink-0">
-              <span className="text-xl font-extrabold text-gray-900">
-                J<span className="text-primary">esup</span>
-              </span>
+              <Image
+                src="/jesup-logo.png"
+                alt="Jesup"
+                width={200}
+                height={40}
+                className="h-15 w-auto object-contain"
+              />
               <button
                 onClick={() => setMobileOpen(false)}
                 className="p-2 rounded-md text-gray-600 hover:bg-gray-100"

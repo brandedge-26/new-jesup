@@ -78,25 +78,13 @@ export default function Hero() {
         {/* ── Right image ── */}
         <div className="flex-1 w-full max-w-xl lg:max-w-none">
           <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100">
-            {/* Placeholder gradient — replace src with a real store photo */}
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-100 to-purple-50 flex items-center justify-center">
-              <div className="text-center text-gray-400">
-                <svg
-                  className="w-16 h-16 mx-auto mb-3 opacity-40"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 21h18M6.75 9a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
-                  />
-                </svg>
-                <p className="text-sm font-medium">Store photo goes here</p>
-              </div>
-            </div>
+            <Image
+              src="/home/hero.jpeg"
+              alt="Repair store"
+              fill
+              className="object-cover"
+              priority
+            />
           </div>
         </div>
       </div>
