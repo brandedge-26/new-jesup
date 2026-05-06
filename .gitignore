@@ -1,0 +1,50 @@
+# ── Dependencies ──────────────────────────────────────────
+node_modules/
+**/node_modules/
+
+# ── Environment variables ─────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Next.js ───────────────────────────────────────────────
+frontend/.next/
+frontend/out/
+frontend/.vercel/
+
+# ── Build outputs ─────────────────────────────────────────
+dist/
+build/
+admin/dist/
+admin/build/
+backend/dist/
+backend/build/
+
+# ── Logs ──────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── OS files ──────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Editor / IDE ──────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.user
+
+# ── Claude / AI tooling ───────────────────────────────────
+.claude/
+CLAUDE.md
+AGENTS.md
+**/CLAUDE.md
+**/AGENTS.md
+
+# ── TypeScript ────────────────────────────────────────────
+*.tsbuildinfo
+next-env.d.ts
