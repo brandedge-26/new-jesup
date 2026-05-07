@@ -84,9 +84,9 @@ export default function Hero() {
 
         {/* ── Right image ── */}
         <div className="flex-1 w-full max-w-xl lg:max-w-none">
-          <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100">
+          <div className="relative w-full aspect-4/3 rounded-2xl overflow-hidden bg-gray-100">
             <Image
-              src="/home/hero2"
+              src="/home/hero2.JPG"
               alt="Repair store"
               fill
               className="object-cover"
