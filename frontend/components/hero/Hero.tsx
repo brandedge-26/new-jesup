@@ -62,6 +62,14 @@ export default function Hero() {
             ))}
           </div>
 
+          {/* CTA button — visible on mobile only */}
+          <Link
+            href="/appointments"
+            className="mt-7 lg:hidden w-full text-center py-3.5 rounded-full bg-primary text-white text-sm font-bold hover:bg-primary-hover shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-150"
+          >
+            Start a repair →
+          </Link>
+
           {/* Bottom note */}
           <p className="mt-6 text-sm text-gray-600 max-w-md leading-relaxed">
             Don&apos;t see your device? If it powers on, we can fix it.{" "}
