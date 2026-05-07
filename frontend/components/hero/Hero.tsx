@@ -70,16 +70,7 @@ export default function Hero() {
             Start a repair →
           </Link>
 
-          {/* Bottom note */}
-          <p className="mt-6 text-sm text-gray-600 max-w-md leading-relaxed">
-            Don&apos;t see your device? If it powers on, we can fix it.{" "}
-            <Link
-              href="/appointments"
-              className="text-primary font-semibold underline underline-offset-2 hover:text-primary-hover transition-colors"
-            >
-              Start a repair today
-            </Link>
-          </p>
+
         </div>
 
         {/* ── Right image ── */}
