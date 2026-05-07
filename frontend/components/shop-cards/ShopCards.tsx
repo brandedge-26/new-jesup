@@ -5,34 +5,34 @@ import { ArrowRight } from "lucide-react";
 const cards = [
   {
     image: "/home/shop-cards/mobile-repair.jpg",
-    tag: "Expert Service",
-    title: "Repair",
+    tag: "Mail-In Service",
+    title: "Send it in, get it back fixed",
     description:
-      "From cracked screens to battery issues, our certified technicians fix all major devices quickly and affordably. Same-day service available.",
-    cta: { label: "Start a repair", href: "/start-repair" },
+      "Pack it up, print your free shipping label, and drop it off. We repair it and ship it straight back — usually within 2–3 business days.",
+    cta: { label: "Start a repair", href: "/appointments" },
   },
   {
     image: "/home/shop-cards/accessories.jpg",
     tag: "Shop Online",
-    title: "Accessories",
+    title: "Accessories for every device",
     description:
-      "Protect and power your devices with our curated selection of cases, screen protectors, chargers, headphones, and more.",
+      "Keep your device protected and powered up with our handpicked collection of cases, screen protectors, chargers, and audio gear.",
     cta: { label: "Shop now", href: "/shop/accessories" },
   },
   {
     image: "/home/shop-cards/mobile-laptop-ipad.jpg",
     tag: "All Devices",
-    title: "Mobile Phone & Laptop",
+    title: "Phones, laptops, tablets & more",
     description:
-      "Whether it's a smartphone, laptop, or tablet — we service all major brands and models. Walk in or book an appointment.",
-    cta: { label: "Learn more", href: "/tech-repair" },
+      "From iPhones to gaming consoles — if it has a battery or a screen, chances are we can fix it. All major brands and models covered.",
+    cta: { label: "See all repairs", href: "/tech-repair" },
   },
 ];
 
 export default function ShopCards() {
   return (
     <section className="w-full bg-gray-50 py-16 lg:py-20">
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="px-6 lg:px-10 2xl:px-16">
 
         {/* Heading */}
         <div className="mb-10">
@@ -40,11 +40,11 @@ export default function ShopCards() {
             Explore
           </p>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
-            More ways we can help
+            Everything you need, in one place
           </h2>
           <p className="mt-3 text-gray-500 text-base max-w-xl">
-            From student discounts to premium accessories — there&apos;s
-            something for everyone.
+            Repairs, accessories, and expert support — Jesup Wireless has you
+            covered from the moment something breaks to the day you need to protect it.
           </p>
         </div>
 

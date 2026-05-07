@@ -27,16 +27,16 @@ const devices = [
 export default function Hero() {
   return (
     <section className="w-full bg-white">
-      <div className="max-w-7xl mx-auto px-6 py-16 lg:py-20 flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+      <div className="px-6 lg:px-10 2xl:px-16 py-16 lg:py-20 flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
         {/* ── Left content ── */}
         <div className="flex-1 flex flex-col items-start">
           <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 leading-tight tracking-tight max-w-lg">
-            When your tech stops working, we start
+            Cracked screen? Dead battery? We fix it fast.
           </h1>
 
           <p className="mt-5 text-base sm:text-lg text-gray-600 leading-relaxed max-w-md">
-            At Jesup, we offer quality repairs and services for the devices you
-            depend on most.
+            Ship your device to Jesup Wireless and get it back fixed, tested,
+            and ready to go — usually within 2–3 business days.
           </p>
 
           {/* Device cards */}
@@ -64,13 +64,12 @@ export default function Hero() {
 
           {/* Bottom note */}
           <p className="mt-6 text-sm text-gray-600 max-w-md leading-relaxed">
-            Don&apos;t see your device? We repair any device with a power
-            button.{" "}
+            Don&apos;t see your device? If it powers on, we can fix it.{" "}
             <Link
-              href="/start-repair"
+              href="/appointments"
               className="text-primary font-semibold underline underline-offset-2 hover:text-primary-hover transition-colors"
             >
-              Start a repair
+              Start a repair today
             </Link>
           </p>
         </div>
@@ -79,7 +78,7 @@ export default function Hero() {
         <div className="flex-1 w-full max-w-xl lg:max-w-none">
           <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100">
             <Image
-              src="/home/hero.jpeg"
+              src="/home/hero2"
               alt="Repair store"
               fill
               className="object-cover"

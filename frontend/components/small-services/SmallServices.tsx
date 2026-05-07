@@ -20,32 +20,32 @@ const services: Service[] = [
     icon: Stethoscope,
     title: "Free diagnostics",
     description:
-      "Yes, we'll check your tech at no cost. And if more is needed, we'll do ",
+      "Not sure what's wrong? Send it in — we'll inspect your device at no charge and tell you exactly what it needs. We also offer ",
     link: { label: "advanced troubleshooting", modal: "diagnostics" },
-    suffix: ".",
+    suffix: " for complex issues.",
   },
   {
     icon: PiggyBank,
-    title: "Low price guarantee",
+    title: "Price match guarantee",
     description:
-      "We'll match a local competitor's price for the same repair and beat it by $5. ",
-    link: { label: "Learn how", modal: "price" },
+      "Found a lower repair price somewhere else? Show us and we'll match it and beat it by $5. ",
+    link: { label: "See how it works", modal: "price" },
     suffix: ".",
   },
   {
     icon: Zap,
-    title: "Same-day service",
+    title: "Fast turnaround",
     description:
-      "Need your device back fast? Most of our repairs are done as soon as the same day.",
+      "Most mail-in repairs are completed within 1–2 business days of arrival. We move fast so you're not stuck without your device.",
     link: null,
     suffix: "",
   },
   {
     icon: BadgeCheck,
-    title: "1-year limited warranty",
-    description: "Most repairs also come with our ",
-    link: { label: "1-year limited warranty", modal: "warranty" },
-    suffix: " and are valid at all 700+ locations.",
+    title: "90-day repair warranty",
+    description: "Every repair ships back with our ",
+    link: { label: "90-day warranty", modal: "warranty" },
+    suffix: ". If the same issue comes back, we fix it free — no questions asked.",
   },
 ];
 
@@ -53,24 +53,19 @@ function DiagnosticsModal() {
   return (
     <>
       <p>
-        Not sure what&apos;s wrong with your device? Our experts provide a free
-        diagnostic for every repair. And if we can&apos;t figure out the issue
-        right away, we&apos;ll do advanced troubleshooting¹ on your device for
-        a small fee². Don&apos;t worry, the fee will be applied towards your
-        repair if you choose to move forward.
+        Not sure what&apos;s broken? No problem. Every device we receive gets a
+        free visual and functional diagnostic. We&apos;ll tell you what&apos;s
+        wrong and what it&apos;ll cost to fix — before we touch anything.
       </p>
       <p>
-        <strong className="text-gray-800">Why the fee?</strong> It&apos;s
-        simple. When our experts perform advanced troubleshooting, we&apos;ll
-        need to carefully take your device apart and test different ways to fix
-        the problem. It&apos;s a more in-depth and intensive analysis than our
-        free diagnostic. We don&apos;t have to provide this service and will
-        always let you know beforehand if your issue can&apos;t be diagnosed for
-        free. And there&apos;s no obligation to get a repair — ever.
+        For harder-to-diagnose issues, we offer advanced troubleshooting¹ — a
+        deeper teardown and component-level inspection. A small fee² applies, but
+        it&apos;s credited toward your repair if you choose to proceed. You&apos;re
+        never obligated to approve the repair.
       </p>
       <div className="border-t border-gray-100 pt-4 space-y-1 text-xs text-gray-400">
-        <p>¹ Advanced troubleshooting may not be available at all locations. See stores for details.</p>
-        <p>² Advanced troubleshooting fees are non-refundable.</p>
+        <p>¹ Advanced troubleshooting availability may vary. Contact us to confirm.</p>
+        <p>² Advanced troubleshooting fees are non-refundable if no repair is authorized.</p>
       </div>
     </>
   );
@@ -80,38 +75,35 @@ function PriceModal() {
   return (
     <>
       <p>
-        Our low price guarantee ensures that we always offer the best price to
-        our customers. Just bring in any local competitor&apos;s published price
-        for the same repair, and we will happily match and beat their price by
-        $5.
+        We want to offer the best repair value, period. If you find a lower
+        published price for the same repair at a local competitor, bring it to
+        us and we&apos;ll match it — then beat it by $5.
       </p>
       <p>
-        The repair price must be a regularly published price. This offer does
-        not apply to competitor&apos;s specials, coupons, or other discounts.
+        The competing price must be a standard, published rate — not a
+        temporary promotion, coupon, or bundle deal.
       </p>
       <p>
-        <strong className="text-gray-800">How to match a price:</strong> Just
-        request the price match right at the register while checking in a device
-        for repair. Once the work order is printed and signed, the price is not
-        subject to change.
+        <strong className="text-gray-800">How to redeem:</strong> Mention the
+        price match before your repair order is confirmed. Once the order is
+        finalized, the price is locked in.
       </p>
       <div>
-        <p className="font-semibold text-gray-800 mb-2">Guidelines &amp; limitations:</p>
+        <p className="font-semibold text-gray-800 mb-2">Eligibility requirements:</p>
         <ul className="list-disc list-inside space-y-1.5 text-gray-500">
-          <li>Price matching is only available for repair services listed on our website.</li>
-          <li>The price must be published by a local retailer with a brick-and-mortar store within 10 miles.</li>
-          <li>We reserve the right to verify the price of identical, in-stock repair components.</li>
-          <li>Limited to one-per-customer, per repair, per day.</li>
+          <li>Must be for an identical repair service listed on our website.</li>
+          <li>Competitor must be a local, brick-and-mortar repair shop.</li>
+          <li>We reserve the right to verify the quoted price before matching.</li>
+          <li>One price match per customer, per repair, per order.</li>
         </ul>
       </div>
       <div>
         <p className="font-semibold text-gray-800 mb-2">Does not apply to:</p>
         <ul className="list-disc list-inside space-y-1.5 text-gray-500">
-          <li>Prices from auctions or retailers requiring memberships.</li>
-          <li>Mobile repair providers without a brick-and-mortar store.</li>
-          <li>Bundle offers, instant rebates, mail-in offers, or financing.</li>
-          <li>Clearance, close-out, liquidation, or flash/limited-quantity offers.</li>
-          <li>Prices using damaged or used components, or misprinted prices.</li>
+          <li>Online-only shops or mobile repair vans without a physical location.</li>
+          <li>Flash sales, limited-time offers, or membership-based pricing.</li>
+          <li>Repairs using used, refurbished, or aftermarket components.</li>
+          <li>Bundle offers, trade-in credits, or financing promotions.</li>
         </ul>
       </div>
     </>
@@ -121,11 +113,11 @@ function PriceModal() {
 function WarrantyModal() {
   return (
     <p>
-      Our repairs come with a 1-year limited warranty, valid at all our
-      locations. The only exceptions are liquid damage repairs or if we&apos;re
-      working on your device through your Original Equipment Manufacturer
-      warranty or some other coverage plan. Then the terms of that coverage
-      would apply.
+      Every repair completed by Jesup Wireless comes with a 90-day limited
+      warranty. If the same issue reoccurs within 90 days of your repair, we
+      will fix it at no additional charge. Exceptions include liquid damage
+      repairs, physical damage caused after the repair, and devices covered
+      under a separate manufacturer or insurance plan.
     </p>
   );
 }
@@ -139,11 +131,11 @@ const modalContent: Record<
     content: <DiagnosticsModal />,
   },
   price: {
-    title: "Low Price Guarantee",
+    title: "Price Match Guarantee",
     content: <PriceModal />,
   },
   warranty: {
-    title: "1-Year Limited Warranty",
+    title: "90-Day Repair Warranty",
     content: <WarrantyModal />,
   },
 };
@@ -156,18 +148,18 @@ export default function SmallServices() {
   return (
     <>
       <section className="w-full bg-white py-14 lg:py-16 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="px-6 lg:px-10 2xl:px-16">
           {/* Heading */}
           <div className="mb-10">
             <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-2">
-              Why choose us
+              Our promise
             </p>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
-              Repair you can count on
+              Quality repairs, zero compromises
             </h2>
             <p className="mt-3 text-gray-500 text-base max-w-xl">
-              Every repair comes with our promise — honest pricing, expert
-              technicians, and service that puts you first.
+              Every device we touch is handled with care — honest pricing, skilled
+              technicians, and a warranty you can actually count on.
             </p>
           </div>
 

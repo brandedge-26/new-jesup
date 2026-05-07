@@ -28,7 +28,7 @@ const footerLinks = [
   {
     title: "Support",
     links: [
-      { label: "FAQ", href: "/support/faq" },
+      { label: "FAQ", href: "/faq" },
       { label: "Track repair", href: "/support/track" },
       { label: "Repair guides", href: "/repair-guides" },
     ],
@@ -73,18 +73,15 @@ const socials = [
 ];
 
 const bottomLinks = [
-  { label: "Repair Terms of Service", href: "/legal/repair-terms" },
-  { label: "Website Terms of Use", href: "/legal/terms" },
-  { label: "Privacy Notice", href: "/legal/privacy" },
-  { label: "Cookie Preferences", href: "/legal/cookies" },
-  { label: "Sitemap", href: "/sitemap" },
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms of Service", href: "/terms" },
 ];
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-gray-100 px-4 pb-6 pt-4">
+    <footer className="w-full  px-4 pb-6 pt-4">
       {/* ── Rounded dark container ── */}
-      <div className="max-w-7xl mx-auto bg-[#1a1a1a] rounded-3xl overflow-hidden">
+      <div className="bg-gray-950  rounded-3xl overflow-hidden">
 
         {/* Main content */}
         <div className="px-8 lg:px-12 pt-12 pb-10 grid grid-cols-1 lg:grid-cols-[220px_1fr_1fr_1fr_1fr_220px] gap-10">
@@ -93,15 +90,15 @@ export default function Footer() {
           <div className="flex flex-col gap-5">
             <Link href="/" className="inline-block">
               <Image
-                src="/jesup-logo.png"
+                src="/new-logo.png"
                 alt="Jesup"
                 width={110}
                 height={36}
-                className="h-15 w-auto object-contain brightness-0 invert"
+                className="h-12 w-auto object-contain brightness-0 invert"
               />
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed">
-              Expert repairs for all your devices. Fast, affordable, and backed by a 1-year warranty.
+              Mail-in device repairs done right. Fast turnaround, genuine parts, and a 90-day warranty on every fix.
             </p>
             {/* Socials */}
             <div className="flex items-center gap-2 mt-1">
@@ -145,7 +142,7 @@ export default function Footer() {
               className="inline-flex items-center gap-2 border border-white/20 rounded-full px-4 py-2 text-sm text-gray-300 hover:border-primary hover:text-white transition-colors duration-150 w-fit"
             >
               <Phone size={14} />
-              877.320.2237
+              1-800-JESUP-FIX
             </Link>
             <Link
               href="/contact"

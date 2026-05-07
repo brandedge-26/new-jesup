@@ -14,9 +14,9 @@ const track = [...logos, ...logos];
 export default function LogoMarquee() {
   return (
     <section className="w-full bg-gray-50 py-12 border-b border-gray-100 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 mb-6 text-center">
+      <div className="px-6 lg:px-10 2xl:px-16 mb-6 text-center">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
-          As seen in
+          Featured in
         </p>
       </div>
 

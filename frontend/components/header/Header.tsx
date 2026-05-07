@@ -37,15 +37,15 @@ export default function Header() {
     <>
       <header className="sticky top-0 w-full bg-white border-b border-gray-200 z-50">
         {/* ── Main bar ── */}
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
+        <div className="px-6 lg:px-10 2xl:px-16 h-16 flex items-center justify-between gap-6">
           {/* Logo */}
           <Link href="/" className="shrink-0">
             <Image
-              src="/jesup-logo.png"
+              src="/new-logo.png"
               alt="Jesup"
               width={200}
               height={70}
-              className="h-18 w-auto object-contain mt-2"
+              className="h-12 w-auto object-contain"
               priority
             />
           </Link>
@@ -106,7 +106,7 @@ export default function Header() {
               Login
             </Link>
             <Link
-              href="/start-repair"
+              href="/appointments"
               className="hidden lg:inline-flex items-center px-5 py-2 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary-hover transition-colors duration-150"
             >
               Start a repair
@@ -135,15 +135,17 @@ export default function Header() {
           </div>
         </div>
 
-        {/* ── Desktop dropdown — centered panel ── */}
+        {/* ── Desktop dropdown ── */}
         {activeItem?.dropdown && (
           <div
-            className="absolute left-0 right-0 top-full pt-2 pb-4 z-40 "
+            className="absolute left-0 right-0 top-full z-40"
             onMouseEnter={handleDropdownEnter}
             onMouseLeave={handleDropdownLeave}
           >
-            <div className="max-w-4xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden animate-dropdown-in">
-              <NavDropdown panel={activeItem.dropdown} />
+            <div className="px-6 lg:px-10 2xl:px-16 py-3 bg-transparent">
+              <div className="max-w-5xl bg-white border border-gray-100 rounded-2xl shadow-2xl overflow-hidden animate-dropdown-in">
+                <NavDropdown panel={activeItem.dropdown} />
+              </div>
             </div>
           </div>
         )}
@@ -163,11 +165,11 @@ export default function Header() {
             {/* Drawer header */}
             <div className="flex items-center justify-between px-5 h-16 border-b border-gray-100 shrink-0">
               <Image
-                src="/jesup-logo.png"
+                src="/new-logo.png"
                 alt="Jesup"
                 width={200}
                 height={40}
-                className="h-15 w-auto object-contain"
+                className="h-12 w-auto object-contain"
               />
               <button
                 onClick={() => setMobileOpen(false)}
@@ -257,7 +259,7 @@ export default function Header() {
                 Login
               </Link>
               <Link
-                href="/start-repair"
+                href="/appointments"
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center justify-center px-5 py-2.5 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary-hover transition-colors"
               >
@@ -270,3 +272,4 @@ export default function Header() {
     </>
   );
 }
+

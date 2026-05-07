@@ -98,9 +98,9 @@ export const navItems: NavItem[] = [
     label: "Shop accessories",
     dropdown: {
       icon: "/header-images/icons/shop-accessories.svg",
-      title: "Shop at uBreakiFix",
+      title: "Shop at Jesup",
       description:
-        "Browse our selection of handpicked accessories, tech gear, and more—now available at uBreakiFix.",
+        "Browse our selection of handpicked accessories, tech gear, and more—now available at Jesup.",
       shopLink: { label: "Shop now", href: "/shop" },
       items: [
         {

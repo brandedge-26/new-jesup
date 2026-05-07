@@ -2,34 +2,34 @@ import Image from "next/image";
 
 const reviews = [
   {
-    name: "Ahmed R.",
-    service: "iPhone 17 Repair",
+    name: "Marcus T.",
+    service: "iPhone 15 Pro Screen Repair",
     review:
-      "Absolutely amazing service! Fixed my iPhone screen in less than 30 minutes. Staff was super friendly and professional.",
+      "Sent my phone in on Monday and had it back by Wednesday — screen looks perfect. The pre-paid label made the whole process effortless.",
     image: "/home/people-like-repair/iPhone-17.jpg",
     rating: 5,
   },
   {
-    name: "Sarah K.",
-    service: "Dell Chromebook Repair",
+    name: "Leila R.",
+    service: "Dell Laptop Repair",
     review:
-      "Chromebook screen was cracked badly. They fixed it perfectly — looks brand new. Fast, affordable, and honest pricing.",
+      "My laptop wouldn't turn on at all. Jesup diagnosed it, replaced the charging port, and shipped it back within 3 days. Incredible service.",
     image: "/home/people-like-repair/chrome-book.jpg",
     rating: 5,
   },
   {
-    name: "Daniel M.",
-    service: "Google Pixel 7 Pro Repair",
+    name: "Jordan K.",
+    service: "Google Pixel 8 Battery Repair",
     review:
-      "Went above and beyond to source the part from another store. Phone was ready exactly when promised. Highly recommend!",
+      "Battery was dying by noon every day. They replaced it fast and even cleaned the phone while they had it. Good as new — 100% recommend.",
     image: "/home/people-like-repair/google-pixel-7.jpg",
     rating: 5,
   },
   {
-    name: "Zara T.",
-    service: "Samsung Galaxy Repair",
+    name: "Aisha M.",
+    service: "Samsung Galaxy S24 Repair",
     review:
-      "Dropped my Galaxy and shattered the screen. Fixed in under an hour at a great price. Will definitely come back!",
+      "Dropped my Galaxy getting out of the car. Back glass was shattered. Jesup fixed it at a fair price and it was back in my hands in two days.",
     image: "/home/people-like-repair/Samsung-galaxy.jpg",
     rating: 5,
   },
@@ -50,7 +50,7 @@ function Stars() {
 export default function PeopleReviews() {
   return (
     <section className="w-full bg-white py-16 lg:py-20">
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="px-6 lg:px-10 2xl:px-16">
 
         {/* Heading */}
         <div className="mb-10">
@@ -58,12 +58,12 @@ export default function PeopleReviews() {
             Customer reviews
           </p>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
-            People like our repairs.{" "}
-            <span className="text-primary">A lot.</span>
+            Real repairs. Real customers.{" "}
+            <span className="text-primary">Real results.</span>
           </h2>
           <p className="mt-3 text-gray-500 text-base max-w-xl">
-            Don&apos;t just take our word for it — here&apos;s what our
-            customers have to say.
+            Thousands of devices repaired and shipped back every month — here&apos;s
+            what our customers have to say.
           </p>
         </div>
 

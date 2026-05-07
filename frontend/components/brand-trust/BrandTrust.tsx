@@ -3,32 +3,32 @@ import Link from "next/link";
 
 const brands = [
   {
-    label: "Start a Samsung repair",
+    label: "Samsung repair service",
     image: "/home/brand-trust/samsung-service-center.png",
     href: "/tech-repair/samsung",
   },
   {
-    label: "Start an Apple repair",
+    label: "Apple repair service",
     image: "/home/brand-trust/apple-repair-provider.png",
     href: "/phone-repair/iphone",
   },
   {
-    label: "Start a Google repair",
+    label: "Google repair service",
     image: "/home/brand-trust/google-service-provider.png",
     href: "/phone-repair/google",
   },
   {
-    label: "Start an Xbox repair",
+    label: "Xbox repair service",
     image: "/home/brand-trust/xbox-service-provider.png",
     href: "/tech-repair/gaming-console",
   },
   {
-    label: "Start a Surface repair",
+    label: "Microsoft Surface repair",
     image: "/home/brand-trust/Surface_repair_half.png",
     href: "/tech-repair/computer",
   },
   {
-    label: "Start a Dell repair",
+    label: "Dell repair service",
     image: "/home/brand-trust/dell_card.png",
     href: "/tech-repair/computer",
   },
@@ -37,19 +37,19 @@ const brands = [
 export default function BrandTrust() {
   return (
     <section className="w-full bg-white py-16 lg:py-20">
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="px-6 lg:px-10 2xl:px-16">
 
         {/* Heading */}
         <div className="mb-10">
           <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-2">
-            Authorized service provider
+            Certified repair partner
           </p>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
-            The brand other brands trust
+            Trusted by the world&apos;s top tech brands
           </h2>
           <p className="mt-3 text-gray-500 text-base max-w-xl">
-            Jesup is an authorized repair provider for the world&apos;s top
-            tech brands. Cue the mic drop.
+            Jesup Wireless is a certified repair partner for the brands you rely
+            on every day — genuine parts, factory standards, full warranty.
           </p>
         </div>
 
