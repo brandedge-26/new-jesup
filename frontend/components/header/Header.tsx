@@ -112,6 +112,17 @@ export default function Header() {
               Start a repair
             </Link>
 
+            {/* Mobile user icon */}
+            <Link
+              href="/login"
+              className="lg:hidden p-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
+              aria-label="Login"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </Link>
+
             {/* Mobile hamburger */}
             <button
               className="lg:hidden p-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
@@ -221,17 +232,36 @@ export default function Header() {
                           </svg>
                         </button>
                         {isExpanded && (
-                          <div className="ml-3 mt-1 flex flex-col gap-1">
-                            {item.dropdown.items.map((sub) => (
-                              <Link
-                                key={sub.label}
-                                href={sub.href}
-                                onClick={() => setMobileOpen(false)}
-                                className="px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
-                              >
-                                {sub.label}
-                              </Link>
-                            ))}
+                          <div className="mt-2 mb-1 grid grid-cols-3 gap-2 px-1">
+                            {item.dropdown.items.map((sub) =>
+                              sub.image ? (
+                                <Link
+                                  key={sub.label}
+                                  href={sub.href}
+                                  onClick={() => setMobileOpen(false)}
+                                  className="flex flex-col items-center gap-1.5 p-2 rounded-xl border border-gray-100 hover:border-primary hover:bg-gray-50 transition-all group"
+                                >
+                                  <div className="relative w-12 h-10">
+                                    <Image src={sub.image} alt={sub.label} fill className="object-contain" />
+                                  </div>
+                                  <span className="text-[11px] font-medium text-gray-600 group-hover:text-primary text-center leading-tight">
+                                    {sub.label}
+                                  </span>
+                                </Link>
+                              ) : (
+                                <Link
+                                  key={sub.label}
+                                  href={sub.href}
+                                  onClick={() => setMobileOpen(false)}
+                                  className="col-span-3 flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium text-primary hover:bg-primary/5 transition-colors"
+                                >
+                                  {sub.label}
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                  </svg>
+                                </Link>
+                              )
+                            )}
                           </div>
                         )}
                       </>
