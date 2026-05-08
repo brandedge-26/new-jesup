@@ -44,8 +44,8 @@ export default function Header() {
               src="/new-logo.png"
               alt="Jesup"
               width={200}
-              height={70}
-              className="h-12 w-auto object-contain"
+              height={60}
+              className="h-10 w-auto object-contain"
               priority
             />
           </Link>
