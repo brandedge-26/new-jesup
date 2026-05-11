@@ -303,3 +303,6 @@ export default function Header() {
   );
 }
 
+
+// teri sehat hame manzoor he lekin usko nahi manzoor.
+// to pir hamko b manzoor nahi.

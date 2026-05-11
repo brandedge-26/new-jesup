@@ -12,6 +12,11 @@ frontend/.next/
 frontend/out/
 frontend/.vercel/
 
+
+shop/.next/
+shop/out/
+shop/.vercel/
+
 # ── Build outputs ─────────────────────────────────────────
 dist/
 build/
