@@ -1,15 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, CalendarDays, Clock, Shield, LockKeyhole, Package, Cpu } from "lucide-react";
+import { CheckCircle2, CalendarDays, Clock } from "lucide-react";
 import { useAppointment } from "../_context/AppointmentContext";
 
-const beforeYouCome = [
-  { Icon: LockKeyhole, text: "Turn off your screen lock / passcode so we can run diagnostics." },
-  { Icon: Shield,      text: "iPhone: disable Find My. Android: disable Factory Reset Protection." },
-  { Icon: Package,     text: "Back up your data before bringing in your device." },
-  { Icon: Cpu,         text: "Remove any accessories, cases, or screen protectors." },
-];
 
 export default function ConfirmationPage() {
   const { state, reset } = useAppointment();
@@ -81,23 +75,6 @@ export default function ConfirmationPage() {
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Before you come */}
-      <div className="rounded-2xl bg-amber-50 border-2 border-amber-100 overflow-hidden mb-8">
-        <div className="px-5 py-3 border-b border-amber-100">
-          <p className="text-xs font-bold text-amber-600 uppercase tracking-widest">Before You Come In</p>
-        </div>
-        <ul className="p-5 flex flex-col gap-3.5">
-          {beforeYouCome.map(({ Icon, text }) => (
-            <li key={text} className="flex items-start gap-3">
-              <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
-                <Icon className="w-3.5 h-3.5 text-amber-600" />
-              </div>
-              <span className="text-xs text-amber-800 leading-relaxed pt-1">{text}</span>
-            </li>
-          ))}
-        </ul>
       </div>
 
       {/* Book another */}
