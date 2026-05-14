@@ -53,7 +53,7 @@ export default function CustomerDetailsPage() {
 
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Your contact details</h1>
-        <p className="mt-1 text-sm text-gray-500">We&apos;ll send your shipping label and updates here.</p>
+        <p className="mt-1 text-sm text-gray-500">We&apos;ll send your appointment confirmation here.</p>
       </div>
 
       <div className="flex flex-col gap-5 mb-6">

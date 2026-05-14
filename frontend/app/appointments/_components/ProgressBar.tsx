@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 const steps = [
   { label: "Device", path: "/appointments/device-type" },
   { label: "Issues", path: "/appointments/damage-type" },
-  { label: "Shipping", path: "/appointments/delivery-selection" },
+  { label: "Schedule", path: "/appointments/delivery-selection" },
   { label: "Details", path: "/appointments/customer-details" },
   { label: "Done", path: "/appointments/confirmation" },
 ];

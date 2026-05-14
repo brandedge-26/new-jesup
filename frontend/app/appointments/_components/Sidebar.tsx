@@ -4,6 +4,14 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAppointment, deviceLabels } from "../_context/AppointmentContext";
 import { Check, Package } from "lucide-react";
+import {
+  getPricing,
+  damageToServices,
+  serviceLabelsIphone,
+  serviceLabelsSamsung,
+  samsungComboServices,
+  type ServiceKey,
+} from "@/lib/repairPricing";
 
 const deviceImages: Record<string, string> = {
   phone: "/header-images/phone-repair/iphone.png",
@@ -40,6 +48,37 @@ export default function Sidebar() {
     : null;
   const contact = state.firstName ? `${state.firstName} ${state.lastName}` : null;
 
+  // ── Pricing logic ──────────────────────────────────────────────────────────
+  const isSamsung = state.brand === "Samsung";
+  const isIphone = state.brand === "Apple (iPhone)";
+  const showPricing = (isIphone || isSamsung) && !!state.model;
+  const pricing = showPricing ? getPricing(state.brand, state.model) : null;
+  const serviceLabels = isSamsung ? serviceLabelsSamsung : serviceLabelsIphone;
+
+  // Collect all unique service keys from selected damage types
+  const relevantServices: ServiceKey[] = [];
+  if (state.damageTypes.length > 0) {
+    for (const dmg of state.damageTypes) {
+      const keys = damageToServices[dmg] ?? [];
+      for (const key of keys) {
+        if (!relevantServices.includes(key)) relevantServices.push(key);
+      }
+    }
+  }
+
+  // Filter to services that have a price for this model
+  const pricedServices = pricing
+    ? relevantServices.filter((key) => pricing[key] !== null)
+    : [];
+
+  // Total (sum of selected priced services)
+  const total = pricedServices.length > 1 && pricing
+    ? pricedServices.reduce((sum, key) => {
+        const p = pricing[key];
+        return sum + (p ? parseFloat(p.replace("$", "")) : 0);
+      }, 0)
+    : null;
+
   return (
     <aside className="hidden lg:flex flex-col w-72 xl:w-80 shrink-0 border-l border-gray-100 bg-white">
       <div className="sticky top-16 p-6 flex flex-col gap-6 overflow-y-auto max-h-[calc(100vh-4rem)]">
@@ -72,11 +111,94 @@ export default function Sidebar() {
           <div className="flex flex-col gap-1">
             <DetailRow label="Device" value={device} done={currentStep > 0} />
             <DetailRow label="Issues" value={issues} done={currentStep > 1} />
-            <DetailRow label="Shipping" value={currentStep >= 2 ? "Mail-In" : null} done={currentStep > 2} />
+            <DetailRow
+              label="Schedule"
+              value={state.appointmentDate ? `${state.appointmentDate} · ${state.appointmentTime}` : currentStep >= 2 ? "Scheduled" : null}
+              done={currentStep > 2}
+            />
             <DetailRow label="Contact" value={contact} done={currentStep > 3} />
             <DetailRow label="Email" value={state.email || null} />
           </div>
         </div>
+
+        {/* ── Repair Estimate ── */}
+        {showPricing && (
+          <>
+            <div className="h-px bg-gray-100" />
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">
+                Repair Estimate
+              </p>
+
+              {!pricing ? (
+                /* Model exists but no pricing data (e.g. A-series) */
+                <div className="rounded-xl bg-gray-50 border border-gray-100 px-4 py-3">
+                  <p className="text-xs text-gray-400 text-center">Pricing not available for this model. We&apos;ll provide a quote after diagnosis.</p>
+                </div>
+              ) : relevantServices.length === 0 ? (
+                /* Model has pricing but no damage type selected yet */
+                <div className="rounded-xl bg-primary/5 border border-primary/10 px-4 py-3">
+                  <p className="text-xs text-primary/70 text-center">Select an issue on the next step to see pricing.</p>
+                </div>
+              ) : (
+                /* Show prices */
+                <div className="rounded-xl border border-gray-100 overflow-hidden">
+                  {relevantServices.map((key, i) => {
+                    const price = pricing[key];
+                    const isCombo = isSamsung && samsungComboServices.includes(key);
+                    return (
+                      <div
+                        key={key}
+                        className={`flex items-center justify-between px-4 py-2.5 gap-2 ${
+                          i < relevantServices.length - 1 ? "border-b border-gray-100" : ""
+                        }`}
+                      >
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold text-gray-700 leading-snug">
+                            {serviceLabels[key]}
+                          </p>
+                          {isCombo && (
+                            <p className="text-[10px] text-gray-400 leading-none mt-0.5">incl. back glass</p>
+                          )}
+                        </div>
+                        {price ? (
+                          <span className="text-sm font-bold text-gray-900 shrink-0">{price}</span>
+                        ) : (
+                          <span className="text-xs text-gray-300 shrink-0">N/A</span>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                </div>
+              )}
+
+              {/* Single service — price highlight */}
+              {pricedServices.length === 1 && pricing && (
+                <div className="mt-3 rounded-xl bg-primary/5 border border-primary/10 px-4 py-3 flex items-center justify-between">
+                  <p className="text-xs text-gray-500">Estimated price</p>
+                  <p className="text-xl font-bold text-primary">{pricing[pricedServices[0]]}</p>
+                </div>
+              )}
+
+              {/* Multiple services — total highlight */}
+              {total !== null && pricedServices.length > 1 && (
+                <div className="mt-3 rounded-xl bg-primary/5 border border-primary/10 px-4 py-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-gray-500">Est. Total ({pricedServices.length} services)</p>
+                    <p className="text-xl font-bold text-primary">${total.toFixed(2)}</p>
+                  </div>
+                </div>
+              )}
+
+              {isSamsung && relevantServices.some((k) => samsungComboServices.includes(k)) && (
+                <p className="mt-2 text-[10px] text-gray-400 leading-relaxed">
+                  * Samsung prices include back glass replacement at no extra cost.
+                </p>
+              )}
+            </div>
+          </>
+        )}
 
         <div className="h-px bg-gray-100" />
 

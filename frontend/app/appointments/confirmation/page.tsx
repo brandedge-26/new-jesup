@@ -1,28 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import {
-  CheckCircle2, Package, Shield, LockKeyhole, Cpu, ArrowRight,
-} from "lucide-react";
+import { CheckCircle2, CalendarDays, Clock, Shield, LockKeyhole, Package, Cpu } from "lucide-react";
 import { useAppointment } from "../_context/AppointmentContext";
 
-const shippingSteps = [
-  "Print your shipping label — valid for 7 days.",
-  "Wrap your device in bubble wrap and place in a small box.",
-  "Attach the label on the outside of the box.",
-  "Drop it off at your nearest courier location.",
-];
-
-const beforeYouShip = [
+const beforeYouCome = [
   { Icon: LockKeyhole, text: "Turn off your screen lock / passcode so we can run diagnostics." },
-  { Icon: Shield, text: "iPhone: disable Find My. Android: disable Factory Reset Protection." },
-  { Icon: Package, text: "Back up your data — we're not responsible for data loss." },
-  { Icon: Cpu, text: "Remove SIM card and all accessories before shipping." },
+  { Icon: Shield,      text: "iPhone: disable Find My. Android: disable Factory Reset Protection." },
+  { Icon: Package,     text: "Back up your data before bringing in your device." },
+  { Icon: Cpu,         text: "Remove any accessories, cases, or screen protectors." },
 ];
 
 export default function ConfirmationPage() {
   const { state, reset } = useAppointment();
   const deviceSummary = [state.brand, state.model].filter(Boolean).join(" ") || "Your device";
+  const services = state.damageTypes.length > 0 ? state.damageTypes.join(", ") : "—";
 
   return (
     <div className="px-8 lg:px-14 py-10 max-w-2xl">
@@ -32,27 +24,56 @@ export default function ConfirmationPage() {
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-50 border-4 border-green-100 mb-5">
           <CheckCircle2 className="w-8 h-8 text-green-500" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">You&apos;re all set!</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Appointment Confirmed!</h1>
         <p className="text-sm text-gray-500 max-w-sm mx-auto">
-          Repair request submitted for{" "}
+          We&apos;ll see you with your{" "}
           <span className="font-semibold text-gray-700">{deviceSummary}</span>.
-          Check your inbox for the shipping label.
+          A confirmation has been sent to your email.
         </p>
       </div>
 
-      {/* Summary card */}
+      {/* Appointment slot card */}
+      {(state.appointmentDate || state.appointmentTime) && (
+        <div className="rounded-2xl border-2 border-primary/20 bg-primary/5 overflow-hidden mb-6">
+          <div className="px-5 py-3 bg-primary/10 border-b border-primary/10">
+            <p className="text-xs font-bold text-primary uppercase tracking-widest">Your Appointment</p>
+          </div>
+          <div className="p-5 flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-white border border-primary/20 flex items-center justify-center">
+                <CalendarDays className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">Date</p>
+                <p className="text-sm font-bold text-gray-900">{state.appointmentDate || "—"}</p>
+              </div>
+            </div>
+            <div className="w-px h-8 bg-primary/10" />
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-white border border-primary/20 flex items-center justify-center">
+                <Clock className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">Time</p>
+                <p className="text-sm font-bold text-gray-900">{state.appointmentTime || "—"}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Repair summary card */}
       <div className="rounded-2xl border-2 border-gray-100 bg-white overflow-hidden mb-6">
         <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Repair Summary</p>
         </div>
         <div className="p-5 grid grid-cols-2 gap-4">
           {[
-            { label: "Device", value: deviceSummary },
-            { label: "Method", value: "Mail-In" },
-            { label: "Issues", value: state.damageTypes.slice(0, 2).join(", ") || "—" },
-            { label: "Contact", value: state.firstName ? `${state.firstName} ${state.lastName}` : "—" },
-            { label: "Email", value: state.email || "—" },
-            { label: "Phone", value: state.phone || "—" },
+            { label: "Device",   value: deviceSummary },
+            { label: "Services", value: services },
+            { label: "Contact",  value: state.firstName ? `${state.firstName} ${state.lastName}` : "—" },
+            { label: "Email",    value: state.email || "—" },
+            { label: "Phone",    value: state.phone || "—" },
           ].map(({ label, value }) => (
             <div key={label}>
               <p className="text-xs text-gray-400 mb-0.5">{label}</p>
@@ -62,30 +83,13 @@ export default function ConfirmationPage() {
         </div>
       </div>
 
-      {/* Shipping instructions */}
-      <div className="rounded-2xl border-2 border-gray-100 bg-white overflow-hidden mb-6">
-        <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Shipping Instructions</p>
-        </div>
-        <ol className="p-5 flex flex-col gap-3">
-          {shippingSteps.map((step, i) => (
-            <li key={i} className="flex items-start gap-3">
-              <span className="w-6 h-6 rounded-full bg-gray-100 text-gray-700 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
-                {i + 1}
-              </span>
-              <span className="text-sm text-gray-600 leading-relaxed">{step}</span>
-            </li>
-          ))}
-        </ol>
-      </div>
-
-      {/* Before you ship */}
+      {/* Before you come */}
       <div className="rounded-2xl bg-amber-50 border-2 border-amber-100 overflow-hidden mb-8">
         <div className="px-5 py-3 border-b border-amber-100">
-          <p className="text-xs font-bold text-amber-600 uppercase tracking-widest">Before You Ship</p>
+          <p className="text-xs font-bold text-amber-600 uppercase tracking-widest">Before You Come In</p>
         </div>
         <ul className="p-5 flex flex-col gap-3.5">
-          {beforeYouShip.map(({ Icon, text }) => (
+          {beforeYouCome.map(({ Icon, text }) => (
             <li key={text} className="flex items-start gap-3">
               <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
                 <Icon className="w-3.5 h-3.5 text-amber-600" />
@@ -96,20 +100,7 @@ export default function ConfirmationPage() {
         </ul>
       </div>
 
-      {/* After we receive */}
-      <div className="rounded-xl bg-gray-50 border border-gray-100 px-5 py-4 mb-8 flex items-start gap-3">
-        <div className="w-7 h-7 rounded-lg bg-gray-200 flex items-center justify-center shrink-0">
-          <ArrowRight className="w-3.5 h-3.5 text-gray-700" />
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-gray-900 mb-0.5">After we receive it</p>
-          <p className="text-xs text-gray-600 leading-relaxed">
-            We diagnose, call you with a quote, and only proceed with your approval. Device shipped back within 3–5 business days.
-          </p>
-        </div>
-      </div>
-
-      {/* Action */}
+      {/* Book another */}
       <Link
         href="/appointments/device-type"
         onClick={reset}

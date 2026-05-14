@@ -195,7 +195,7 @@ export default function Header() {
       {/* ── Desktop nav ── */}
       <div className="hidden lg:flex items-center justify-between px-6 xl:px-10 h-16 max-w-screen-2xl mx-auto">
         {/* Logo */}
-        <Link href="/" className="flex-shrink-0">
+        <Link href="/" className="shrink-0">
           <Image src="/new-logo.png" alt="Logo" width={90} height={40} className="object-contain" priority />
         </Link>
 
@@ -203,7 +203,7 @@ export default function Header() {
         <nav className="flex items-stretch h-full">
           {navItems.map((item, idx) => (
             <div
-              key={item.label}  
+              key={item.label}
               className="relative flex items-stretch"
               onMouseEnter={() => { cancelClose(); setOpenIndex(idx); }}
               onMouseLeave={scheduleClose}
