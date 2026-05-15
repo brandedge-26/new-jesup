@@ -5,22 +5,22 @@ const devices = [
   {
     label: "Phone",
     image: "/header-images/phone-repair/iphone.png",
-    href: "/phone-repair",
+    href: "/repairs/smartphone",
   },
   {
     label: "Computer",
     image: "/header-images/tech-repair/computer.png",
-    href: "/tech-repair/computer",
+    href: "/repairs/laptop-computers",
   },
   {
     label: "Tablet",
     image: "/header-images/tech-repair/ipad.png",
-    href: "/tech-repair/tablet",
+    href: "/repairs/tablets",
   },
   {
     label: "Game console",
     image: "/header-images/tech-repair/game-console.png",
-    href: "/tech-repair/gaming-console",
+    href: "/repairs/gaming-console",
   },
 ];
 

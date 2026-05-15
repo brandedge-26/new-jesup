@@ -18,6 +18,7 @@ const devices: { type: DeviceType; label: string; image: string }[] = [
 ];
 
 export default function DeviceTypePage() {
+
   const router = useRouter();
   const { update, reset } = useAppointment();
 
@@ -56,11 +57,10 @@ export default function DeviceTypePage() {
             <button
               key={type}
               onClick={() => setSelectedDevice(type)}
-              className={`group flex flex-col items-center gap-3 py-6 px-3 rounded-2xl border-2 transition-all duration-200 cursor-pointer focus:outline-none ${
-                isSelected
-                  ? "border-gray-900 bg-gray-900/4 shadow-sm"
-                  : "border-gray-200 bg-white hover:border-gray-400 hover:shadow-sm"
-              }`}
+              className={`group flex flex-col items-center gap-3 py-6 px-3 rounded-2xl border-2 transition-all duration-200 cursor-pointer focus:outline-none ${isSelected
+                ? "border-gray-900 bg-gray-900/4 shadow-sm"
+                : "border-gray-200 bg-white hover:border-gray-400 hover:shadow-sm"
+                }`}
             >
               <div className={`relative w-16 h-14 transition-transform duration-200 ${isSelected ? "scale-110" : "group-hover:scale-105"}`}>
                 <Image src={image} alt={label} fill className="object-contain" />
@@ -84,11 +84,10 @@ export default function DeviceTypePage() {
                 <button
                   key={b}
                   onClick={() => setSelectedBrand(b)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium border-2 transition-all duration-150 ${
-                    isSelected
-                      ? "border-gray-900 bg-gray-900 text-white"
-                      : "border-gray-200 bg-white text-gray-600 hover:border-gray-400"
-                  }`}
+                  className={`px-4 py-2 rounded-full text-sm font-medium border-2 transition-all duration-150 ${isSelected
+                    ? "border-gray-900 bg-gray-900 text-white"
+                    : "border-gray-200 bg-white text-gray-600 hover:border-gray-400"
+                    }`}
                 >
                   {b}
                 </button>
@@ -106,9 +105,8 @@ export default function DeviceTypePage() {
             <select
               value={selectedModel}
               onChange={(e) => setSelectedModel(e.target.value)}
-              className={`w-full appearance-none rounded-xl border-2 px-4 py-3.5 pr-10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white transition-all ${
-                selectedModel ? "border-gray-900 text-gray-900" : "border-gray-200 text-gray-400"
-              }`}
+              className={`w-full appearance-none rounded-xl border-2 px-4 py-3.5 pr-10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white transition-all ${selectedModel ? "border-gray-900 text-gray-900" : "border-gray-200 text-gray-400"
+                }`}
             >
               <option value="">Choose your model</option>
               {models.map((m) => <option key={m} value={m}>{m}</option>)}
@@ -126,11 +124,10 @@ export default function DeviceTypePage() {
         <button
           onClick={handleContinue}
           disabled={!canContinue}
-          className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all duration-150 ${
-            canContinue
-              ? "bg-primary text-white hover:bg-primary-hover shadow-sm hover:shadow-md hover:-translate-y-px"
-              : "bg-gray-100 text-gray-300 cursor-not-allowed"
-          }`}
+          className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all duration-150 ${canContinue
+            ? "bg-primary text-white hover:bg-primary-hover shadow-sm hover:shadow-md hover:-translate-y-px"
+            : "bg-gray-100 text-gray-300 cursor-not-allowed"
+            }`}
         >
           Continue →
         </button>

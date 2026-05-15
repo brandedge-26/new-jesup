@@ -9,8 +9,16 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "uBreakiFix Shop",
-  description: "Shop phone cases, audio, screen protection, and more.",
+  title: {
+    default: "Jesup Shop — Premium Phone Accessories",
+    template: "%s | Jesup Shop",
+  },
+  description: "Shop premium phone cases, audio, screen protection, power accessories and more — curated by repair experts at Jesup.",
+  keywords: ["phone cases", "screen protectors", "earbuds", "power banks", "phone accessories"],
+  openGraph: {
+    siteName: "Jesup Shop",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

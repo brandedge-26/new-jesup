@@ -5,32 +5,32 @@ const brands = [
   {
     label: "Samsung repair service",
     image: "/home/brand-trust/samsung-service-center.png",
-    href: "/tech-repair/samsung",
+    href: "/repairs/smartphone/samsung",
   },
   {
     label: "Apple repair service",
     image: "/home/brand-trust/apple-repair-provider.png",
-    href: "/phone-repair/iphone",
+    href: "/repairs/smartphone/iphone",
   },
   {
     label: "Google repair service",
     image: "/home/brand-trust/google-service-provider.png",
-    href: "/phone-repair/google",
+    href: "/repairs/smartphone/google",
   },
   {
     label: "Xbox repair service",
     image: "/home/brand-trust/xbox-service-provider.png",
-    href: "/tech-repair/gaming-console",
+    href: "/repairs/gaming-console",
   },
   {
     label: "Microsoft Surface repair",
     image: "/home/brand-trust/Surface_repair_half.png",
-    href: "/tech-repair/computer",
+    href: "/repairs/laptop-computers",
   },
   {
     label: "Dell repair service",
     image: "/home/brand-trust/dell_card.png",
-    href: "/tech-repair/computer",
+    href: "/repairs/laptop-computers",
   },
 ];
 

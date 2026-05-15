@@ -17,7 +17,7 @@ const cards = [
     title: "Accessories for every device",
     description:
       "Keep your device protected and powered up with our handpicked collection of cases, screen protectors, chargers, and audio gear.",
-    cta: { label: "Shop now", href: "/shop/accessories" },
+    cta: { label: "Shop now", href: "/shop" },
   },
   {
     image: "/home/shop-cards/mobile-laptop-ipad.jpg",
@@ -25,7 +25,7 @@ const cards = [
     title: "Phones, laptops, tablets & more",
     description:
       "From iPhones to gaming consoles — if it has a battery or a screen, chances are we can fix it. All major brands and models covered.",
-    cta: { label: "See all repairs", href: "/tech-repair" },
+    cta: { label: "See all repairs", href: "/repairs/smartphone" },
   },
 ];
 
