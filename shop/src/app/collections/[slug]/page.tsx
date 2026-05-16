@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CollectionView from "./CollectionView";
@@ -40,7 +41,9 @@ export default async function CollectionPage({
     <>
       <Header />
       <main className="flex-1 bg-gray-50">
-        <CollectionView slug={slug} />
+        <Suspense fallback={null}>
+          <CollectionView slug={slug} />
+        </Suspense>
       </main>
       <Footer />
     </>

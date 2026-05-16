@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { COLLECTIONS, COLOR_HEX, type Product } from "@/lib/collectionData";
@@ -28,14 +29,20 @@ const BADGE_STYLES: Record<string, string> = {
   "Limited":     "bg-orange-500 text-white",
 };
 
+const BADGE_FILTER_STYLES: Record<string, string> = {
+  "Best Seller": "bg-amber-50 text-amber-700 border-amber-200",
+  "Top Rated":   "bg-emerald-50 text-emerald-700 border-emerald-200",
+  "Sale":        "bg-red-50 text-red-700 border-red-200",
+  "New":         "bg-violet-50 text-violet-700 border-violet-200",
+  "Limited":     "bg-orange-50 text-orange-700 border-orange-200",
+};
+
 // ─── Skeleton Card ────────────────────────────────────────────────────────────
 
 function ProductCardSkeleton() {
   return (
     <div className="flex flex-col rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden animate-pulse">
-      {/* Image placeholder */}
       <div className="aspect-square bg-gray-200" />
-      {/* Body */}
       <div className="p-4 space-y-3">
         <div className="h-3 w-16 bg-gray-200 rounded-full" />
         <div className="space-y-1.5">
@@ -91,21 +98,18 @@ function ProductCard({ product }: { product: Product }) {
           />
         </Link>
 
-        {/* Badge */}
         {product.badge && (
           <span className={`absolute top-3 left-3 text-[10px] font-bold uppercase tracking-widest rounded-full px-2.5 py-1 shadow ${BADGE_STYLES[product.badge]}`}>
             {product.badge}
           </span>
         )}
 
-        {/* Discount % */}
         {discountPct && (
           <span className="absolute top-3 right-3 bg-red-500 text-white text-[10px] font-bold rounded-full px-2 py-1 shadow">
             -{discountPct}%
           </span>
         )}
 
-        {/* Wishlist btn — appears on hover */}
         <button
           onClick={(e) => { e.preventDefault(); setWished((w) => !w); }}
           className={`absolute ${discountPct ? "top-10 right-3 mt-1" : "top-3 right-3"} p-2 rounded-full shadow-md backdrop-blur-sm transition-all duration-200
@@ -118,7 +122,6 @@ function ProductCard({ product }: { product: Product }) {
           </svg>
         </button>
 
-        {/* Out of stock */}
         {!product.inStock && (
           <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] flex items-center justify-center">
             <span className="bg-gray-800 text-white text-xs font-semibold rounded-full px-3 py-1.5">Out of Stock</span>
@@ -128,11 +131,8 @@ function ProductCard({ product }: { product: Product }) {
 
       {/* ── Body ── */}
       <div className="p-4 flex flex-col flex-1 gap-2">
-
-        {/* Brand */}
         <p className="text-[11px] font-bold uppercase tracking-widest text-primary">{product.brand}</p>
 
-        {/* Name */}
         <Link
           href={`/products/${product.slug}`}
           className="text-sm font-semibold text-gray-900 hover:text-primary transition-colors leading-snug line-clamp-2 flex-1"
@@ -140,7 +140,6 @@ function ProductCard({ product }: { product: Product }) {
           {product.name}
         </Link>
 
-        {/* Rating */}
         <div className="flex items-center gap-1.5">
           <Stars rating={product.rating} />
           <span className="text-[11px] text-gray-400">{product.rating}</span>
@@ -148,7 +147,6 @@ function ProductCard({ product }: { product: Product }) {
           <span className="text-[11px] text-gray-400">{product.reviews.toLocaleString()} reviews</span>
         </div>
 
-        {/* Colors */}
         {product.colors.length > 0 && (
           <div className="flex items-center gap-1.5 flex-wrap">
             {product.colors.slice(0, 7).map((c) => (
@@ -169,10 +167,8 @@ function ProductCard({ product }: { product: Product }) {
           </div>
         )}
 
-        {/* Divider */}
         <div className="border-t border-gray-100 mt-1" />
 
-        {/* Price + CTA */}
         <div className="flex items-center justify-between gap-2 pt-0.5">
           <div className="flex flex-col">
             <span className="text-base font-extrabold text-gray-900 leading-tight">${product.price.toFixed(2)}</span>
@@ -216,13 +212,24 @@ function ProductCard({ product }: { product: Product }) {
 
 // ─── Filter Section ───────────────────────────────────────────────────────────
 
-function FilterSection({ title, children, defaultOpen = true }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
+function FilterSection({ title, icon, children, defaultOpen = true, count }: {
+  title: string; icon?: React.ReactNode; children: React.ReactNode;
+  defaultOpen?: boolean; count?: number;
+}) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-gray-100 pb-5 last:border-0 last:pb-0">
-      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between py-1 mb-3">
-        <span className="text-sm font-bold text-gray-900">{title}</span>
-        <svg className={`w-4 h-4 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+    <div className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between py-1 mb-3 group">
+        <div className="flex items-center gap-2">
+          {icon && <span className="text-gray-400 group-hover:text-primary transition-colors">{icon}</span>}
+          <span className="text-sm font-bold text-gray-800">{title}</span>
+          {count != null && count > 0 && (
+            <span className="text-[10px] font-bold bg-primary text-white rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+              {count}
+            </span>
+          )}
+        </div>
+        <svg className={`w-4 h-4 text-gray-400 transition-transform shrink-0 ${open ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
@@ -234,57 +241,122 @@ function FilterSection({ title, children, defaultOpen = true }: { title: string;
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
 interface SidebarProps {
-  brands: string[]; allColors: string[]; maxProductPrice: number;
-  selectedBrands: string[]; selectedColors: string[];
+  brands: string[]; allColors: string[]; allBadges: string[]; maxProductPrice: number;
+  selectedBrands: string[]; selectedColors: string[]; selectedBadges: string[];
   minPrice: number; maxPrice: number; minRating: number; inStockOnly: boolean;
+  searchQuery: string;
   onBrandToggle: (b: string) => void; onColorToggle: (c: string) => void;
+  onBadgeToggle: (b: string) => void;
   onMinPrice: (v: number) => void; onMaxPrice: (v: number) => void;
   onMinRating: (v: number) => void; onInStockOnly: (v: boolean) => void;
+  onSearchQuery: (q: string) => void;
   onReset: () => void; activeCount: number;
+  productCounts: Record<string, number>;
 }
 
 function Sidebar(props: SidebarProps) {
-  const { brands, allColors, maxProductPrice, selectedBrands, selectedColors, minPrice, maxPrice, minRating, inStockOnly,
-    onBrandToggle, onColorToggle, onMinPrice, onMaxPrice, onMinRating, onInStockOnly, onReset, activeCount } = props;
+  const {
+    brands, allColors, allBadges, maxProductPrice,
+    selectedBrands, selectedColors, selectedBadges,
+    minPrice, maxPrice, minRating, inStockOnly, searchQuery,
+    onBrandToggle, onColorToggle, onBadgeToggle,
+    onMinPrice, onMaxPrice, onMinRating, onInStockOnly, onSearchQuery,
+    onReset, activeCount, productCounts,
+  } = props;
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-bold text-gray-900">Filters</h2>
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-1">
+        <div className="flex items-center gap-2">
+          <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 010 2H4a1 1 0 01-1-1zm3 4a1 1 0 011-1h10a1 1 0 010 2H7a1 1 0 01-1-1zm3 4a1 1 0 011-1h4a1 1 0 010 2h-4a1 1 0 01-1-1z" />
+          </svg>
+          <h2 className="text-sm font-bold text-gray-900">Filters</h2>
+        </div>
         {activeCount > 0 && (
-          <button onClick={onReset} className="text-xs font-semibold text-primary hover:text-primary-hover transition-colors">
-            Reset ({activeCount})
+          <button onClick={onReset} className="flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary-hover transition-colors">
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Clear ({activeCount})
           </button>
         )}
       </div>
 
-      <FilterSection title="Availability">
-        <label className="flex items-center gap-2 cursor-pointer group">
-          <input type="checkbox" checked={inStockOnly} onChange={(e) => onInStockOnly(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-300 text-primary accent-primary cursor-pointer" />
+      {/* Search */}
+      <FilterSection
+        title="Search"
+        icon={<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" /></svg>}
+        count={searchQuery ? 1 : 0}
+      >
+        <div className="relative">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+          </svg>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => onSearchQuery(e.target.value)}
+            placeholder="Search products…"
+            className="w-full pl-9 pr-8 py-2 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+          />
+          {searchQuery && (
+            <button onClick={() => onSearchQuery("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
+      </FilterSection>
+
+      {/* Availability */}
+      <FilterSection
+        title="Availability"
+        icon={<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+      >
+        <label className="flex items-center gap-2.5 cursor-pointer group select-none">
+          <div className="relative">
+            <input type="checkbox" checked={inStockOnly} onChange={(e) => onInStockOnly(e.target.checked)}
+              className="sr-only peer" />
+            <div className="w-9 h-5 bg-gray-200 peer-checked:bg-primary rounded-full transition-colors" />
+            <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4" />
+          </div>
           <span className="text-sm text-gray-700 group-hover:text-gray-900">In Stock Only</span>
         </label>
       </FilterSection>
 
-      <FilterSection title="Price Range">
+      {/* Price Range */}
+      <FilterSection
+        title="Price Range"
+        icon={<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+        count={(minPrice > 0 ? 1 : 0) + (maxPrice < maxProductPrice ? 1 : 0)}
+      >
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            {[["Min", minPrice, onMinPrice], ["Max", maxPrice >= maxProductPrice ? "" : maxPrice, onMaxPrice]].map(([ph, val, fn]) => (
-              <div key={ph as string} className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">$</span>
-                <input type="number" min={0} max={maxProductPrice} placeholder={ph as string}
-                  value={val as number | ""}
-                  onChange={(e) => (fn as (v: number) => void)(Number(e.target.value) || (ph === "Max" ? maxProductPrice : 0))}
-                  className="w-full pl-6 pr-2 py-2 rounded-xl border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
-              </div>
-            ))}
+            {(["Min", "Max"] as const).map((ph) => {
+              const val = ph === "Min" ? minPrice : (maxPrice >= maxProductPrice ? "" : maxPrice);
+              const fn  = ph === "Min" ? onMinPrice : onMaxPrice;
+              return (
+                <div key={ph} className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">$</span>
+                  <input
+                    type="number" min={0} max={maxProductPrice} placeholder={ph}
+                    value={val}
+                    onChange={(e) => fn(Number(e.target.value) || (ph === "Max" ? maxProductPrice : 0))}
+                    className="w-full pl-6 pr-2 py-2 rounded-xl border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                  />
+                </div>
+              );
+            })}
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {[["Under $25", 0, 25], ["$25–$50", 25, 50], ["$50–$100", 50, 100], ["$100+", 100, 99999]].map(([label, lo, hi]) => {
+            {([["Under $25", 0, 25], ["$25–$50", 25, 50], ["$50–$100", 50, 100], ["$100+", 100, 99999]] as const).map(([label, lo, hi]) => {
               const active = minPrice === lo && (hi === 99999 ? maxPrice >= maxProductPrice : maxPrice === hi);
               return (
-                <button key={label as string} onClick={() => { onMinPrice(lo as number); onMaxPrice(hi as number); }}
-                  className={`text-xs rounded-full px-3 py-1 border font-medium transition-all ${active ? "bg-primary text-white border-primary" : "border-gray-200 text-gray-600 hover:border-primary/50 hover:text-primary"}`}>
+                <button key={label} onClick={() => { onMinPrice(lo); onMaxPrice(hi); }}
+                  className={`text-xs rounded-full px-3 py-1 border font-medium transition-all ${active ? "bg-primary text-white border-primary shadow-sm" : "border-gray-200 text-gray-600 hover:border-primary/50 hover:text-primary"}`}>
                   {label}
                 </button>
               );
@@ -293,28 +365,73 @@ function Sidebar(props: SidebarProps) {
         </div>
       </FilterSection>
 
-      <FilterSection title="Brand">
-        <div className="space-y-2">
-          {brands.map((brand) => (
-            <label key={brand} className="flex items-center gap-2.5 cursor-pointer group">
-              <input type="checkbox" checked={selectedBrands.includes(brand)} onChange={() => onBrandToggle(brand)}
-                className="w-4 h-4 rounded border-gray-300 accent-primary cursor-pointer" />
-              <span className="text-sm text-gray-700 group-hover:text-gray-900 flex-1">{brand}</span>
-            </label>
-          ))}
+      {/* Deals / Badges */}
+      {allBadges.length > 0 && (
+        <FilterSection
+          title="Deals & Badges"
+          icon={<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>}
+          count={selectedBadges.length}
+          defaultOpen={selectedBadges.length > 0}
+        >
+          <div className="flex flex-wrap gap-2">
+            {allBadges.map((badge) => {
+              const active = selectedBadges.includes(badge);
+              return (
+                <button key={badge} onClick={() => onBadgeToggle(badge)}
+                  className={`text-xs rounded-full px-3 py-1.5 border font-semibold transition-all ${active ? `${BADGE_FILTER_STYLES[badge] ?? "bg-primary/10 text-primary border-primary/30"} ring-1 ring-current` : "border-gray-200 text-gray-600 hover:border-gray-300 bg-gray-50"}`}>
+                  {badge}
+                </button>
+              );
+            })}
+          </div>
+        </FilterSection>
+      )}
+
+      {/* Brand */}
+      <FilterSection
+        title="Brand"
+        icon={<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
+        count={selectedBrands.length}
+      >
+        <div className="space-y-1.5">
+          {brands.map((brand) => {
+            const checked = selectedBrands.includes(brand);
+            const count = productCounts[brand] ?? 0;
+            return (
+              <label key={brand} className="flex items-center gap-2.5 cursor-pointer group select-none py-0.5">
+                <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-all ${checked ? "bg-primary border-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
+                  {checked && (
+                    <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+                <span className={`text-sm flex-1 transition-colors ${checked ? "text-gray-900 font-medium" : "text-gray-600 group-hover:text-gray-900"}`}>{brand}</span>
+                <span className="text-[11px] text-gray-400 font-medium">{count}</span>
+              </label>
+            );
+          })}
         </div>
       </FilterSection>
 
-      <FilterSection title="Color">
+      {/* Color */}
+      <FilterSection
+        title="Color"
+        icon={<svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>}
+        count={selectedColors.length}
+      >
         <div className="flex flex-wrap gap-2">
           {allColors.map((color) => {
             const active = selectedColors.includes(color);
             return (
               <button key={color} title={color} onClick={() => onColorToggle(color)}
-                className={`relative w-7 h-7 rounded-full border-2 transition-all ${active ? "border-primary scale-110 shadow-md" : "border-gray-200 hover:border-gray-400"}`}
-                style={{ backgroundColor: COLOR_HEX[color] ?? "#e5e7eb", ...(color === "Clear" ? { background: "linear-gradient(135deg,#e5e7eb 40%,#fff 40%)" } : {}) }}>
+                className={`relative w-7 h-7 rounded-full border-2 transition-all shadow-sm ${active ? "border-primary scale-110 shadow-md" : "border-gray-200 hover:border-gray-400 hover:scale-105"}`}
+                style={{
+                  backgroundColor: COLOR_HEX[color] ?? "#e5e7eb",
+                  ...(color === "Clear" ? { background: "linear-gradient(135deg,#e5e7eb 40%,#fff 40%)" } : {}),
+                }}>
                 {active && (
-                  <svg className={`absolute inset-0 m-auto w-3.5 h-3.5 ${["White","Clear","Silver","Starlight","Cream"].includes(color) ? "text-gray-700" : "text-white"}`}
+                  <svg className={`absolute inset-0 m-auto w-3.5 h-3.5 ${["White","Clear","Silver","Starlight","Cream","Sand"].includes(color) ? "text-gray-700" : "text-white"}`}
                     fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
@@ -323,15 +440,25 @@ function Sidebar(props: SidebarProps) {
             );
           })}
         </div>
+        {selectedColors.length > 0 && (
+          <p className="mt-2 text-[11px] text-gray-400">{selectedColors.join(", ")}</p>
+        )}
       </FilterSection>
 
-      <FilterSection title="Min Rating" defaultOpen={false}>
+      {/* Min Rating */}
+      <FilterSection
+        title="Min Rating"
+        icon={<svg className="w-3.5 h-3.5 fill-amber-400" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>}
+        defaultOpen={false}
+        count={minRating > 0 ? 1 : 0}
+      >
         <div className="space-y-2">
           {[4, 3, 2, 1].map((r) => (
-            <label key={r} className="flex items-center gap-2.5 cursor-pointer group">
-              <input type="radio" name="minRating" checked={minRating === r} onChange={() => onMinRating(minRating === r ? 0 : r)}
-                className="w-4 h-4 accent-primary cursor-pointer" />
-              <div className="flex items-center gap-1">
+            <label key={r} className="flex items-center gap-2.5 cursor-pointer group select-none">
+              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${minRating === r ? "border-primary bg-primary" : "border-gray-300 group-hover:border-primary/50"}`}>
+                {minRating === r && <div className="w-2 h-2 rounded-full bg-white" />}
+              </div>
+              <div className="flex items-center gap-1.5" onClick={() => onMinRating(minRating === r ? 0 : r)}>
                 <Stars rating={r} size="xs" />
                 <span className="text-xs text-gray-500">& up</span>
               </div>
@@ -355,9 +482,11 @@ const SORT_OPTIONS = [
 
 export default function CollectionView({ slug }: { slug: string }) {
   const collection = COLLECTIONS[slug];
+  const searchParams = useSearchParams();
 
   const allBrands = useMemo(() => [...new Set(collection.products.map((p) => p.brand))].sort(), [collection]);
   const allColors = useMemo(() => [...new Set(collection.products.flatMap((p) => p.colors))].sort(), [collection]);
+  const allBadges = useMemo(() => [...new Set(collection.products.map((p) => p.badge).filter(Boolean))] as string[], [collection]);
   const maxProductPrice = useMemo(() => Math.ceil(Math.max(...collection.products.map((p) => p.price)) / 10) * 10, [collection]);
 
   // Skeleton state
@@ -367,35 +496,47 @@ export default function CollectionView({ slug }: { slug: string }) {
     return () => clearTimeout(t);
   }, []);
 
+  // Read URL params once for initial state
+  const urlQ      = searchParams.get("q") ?? "";
+  const urlBrand  = searchParams.get("brand") ?? "";
+  const urlMaxP   = searchParams.get("maxPrice");
+  const urlMinP   = searchParams.get("minPrice");
+  const urlBadge  = searchParams.get("badge") ?? "";
+
   // Filter state
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [searchQuery,    setSearchQuery]    = useState(urlQ);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>(() => urlBrand ? [urlBrand] : []);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [minPrice, setMinPrice]   = useState(0);
-  const [maxPrice, setMaxPrice]   = useState(maxProductPrice);
-  const [minRating, setMinRating] = useState(0);
-  const [inStockOnly, setInStockOnly] = useState(false);
-  const [sortBy, setSortBy]       = useState("featured");
-  const [gridCols, setGridCols]   = useState<2 | 3 | 4>(3);
+  const [selectedBadges, setSelectedBadges] = useState<string[]>(() => urlBadge ? [urlBadge] : []);
+  const [minPrice,       setMinPrice]       = useState(urlMinP ? Number(urlMinP) : 0);
+  const [maxPrice,       setMaxPrice]       = useState(urlMaxP ? Number(urlMaxP) : maxProductPrice);
+  const [minRating,      setMinRating]      = useState(0);
+  const [inStockOnly,    setInStockOnly]    = useState(false);
+  const [sortBy,         setSortBy]         = useState("featured");
+  const [gridCols,       setGridCols]       = useState<2 | 3 | 4>(3);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
-  const activeFilterCount = selectedBrands.length + selectedColors.length +
+  const activeFilterCount =
+    selectedBrands.length + selectedColors.length + selectedBadges.length +
     (minPrice > 0 ? 1 : 0) + (maxPrice < maxProductPrice ? 1 : 0) +
-    (minRating > 0 ? 1 : 0) + (inStockOnly ? 1 : 0);
+    (minRating > 0 ? 1 : 0) + (inStockOnly ? 1 : 0) + (searchQuery ? 1 : 0);
 
   function resetFilters() {
-    setSelectedBrands([]); setSelectedColors([]);
+    setSearchQuery(""); setSelectedBrands([]); setSelectedColors([]); setSelectedBadges([]);
     setMinPrice(0); setMaxPrice(maxProductPrice);
     setMinRating(0); setInStockOnly(false);
   }
 
   const filtered = useMemo(() => collection.products.filter((p) => {
+    if (searchQuery && !p.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     if (selectedBrands.length && !selectedBrands.includes(p.brand)) return false;
     if (selectedColors.length && !p.colors.some((c) => selectedColors.includes(c))) return false;
+    if (selectedBadges.length && (!p.badge || !selectedBadges.includes(p.badge))) return false;
     if (p.price < minPrice || p.price > maxPrice) return false;
     if (p.rating < minRating) return false;
     if (inStockOnly && !p.inStock) return false;
     return true;
-  }), [collection, selectedBrands, selectedColors, minPrice, maxPrice, minRating, inStockOnly]);
+  }), [collection, searchQuery, selectedBrands, selectedColors, selectedBadges, minPrice, maxPrice, minRating, inStockOnly]);
 
   const sorted = useMemo(() => [...filtered].sort((a, b) => {
     switch (sortBy) {
@@ -407,14 +548,23 @@ export default function CollectionView({ slug }: { slug: string }) {
     }
   }), [filtered, sortBy]);
 
+  // Product count per brand (from unfiltered collection)
+  const productCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    collection.products.forEach((p) => { counts[p.brand] = (counts[p.brand] ?? 0) + 1; });
+    return counts;
+  }, [collection]);
+
   const sidebarProps: SidebarProps = {
-    brands: allBrands, allColors, maxProductPrice,
-    selectedBrands, selectedColors, minPrice, maxPrice, minRating, inStockOnly,
-    onBrandToggle: (b) => setSelectedBrands((prev) => prev.includes(b) ? prev.filter((x) => x !== b) : [...prev, b]),
-    onColorToggle: (c) => setSelectedColors((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]),
+    brands: allBrands, allColors, allBadges, maxProductPrice, productCounts,
+    selectedBrands, selectedColors, selectedBadges, minPrice, maxPrice, minRating, inStockOnly, searchQuery,
+    onBrandToggle:  (b) => setSelectedBrands((prev) => prev.includes(b) ? prev.filter((x) => x !== b) : [...prev, b]),
+    onColorToggle:  (c) => setSelectedColors((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]),
+    onBadgeToggle:  (b) => setSelectedBadges((prev) => prev.includes(b) ? prev.filter((x) => x !== b) : [...prev, b]),
     onMinPrice: setMinPrice, onMaxPrice: setMaxPrice,
     onMinRating: (v) => setMinRating((prev) => prev === v ? 0 : v),
-    onInStockOnly: setInStockOnly, onReset: resetFilters, activeCount: activeFilterCount,
+    onInStockOnly: setInStockOnly, onSearchQuery: setSearchQuery,
+    onReset: resetFilters, activeCount: activeFilterCount,
   };
 
   const gridClass = { 2: "grid-cols-1 sm:grid-cols-2", 3: "grid-cols-2 lg:grid-cols-3", 4: "grid-cols-2 lg:grid-cols-4" }[gridCols];
@@ -438,6 +588,17 @@ export default function CollectionView({ slug }: { slug: string }) {
         <div className="mx-auto max-w-screen-xl px-4 lg:px-6">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight">{collection.title}</h1>
           <p className="mt-2 text-gray-500 text-sm lg:text-base max-w-xl">{collection.description}</p>
+          {searchQuery && (
+            <div className="mt-3 flex items-center gap-2">
+              <span className="text-sm text-gray-500">Showing results for</span>
+              <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-sm font-semibold rounded-full px-3 py-1">
+                &ldquo;{searchQuery}&rdquo;
+                <button onClick={() => setSearchQuery("")} className="hover:text-primary-hover">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </span>
+            </div>
+          )}
           <p className="mt-1 text-gray-400 text-xs">{collection.products.length} products</p>
         </div>
       </div>
@@ -501,9 +662,23 @@ export default function CollectionView({ slug }: { slug: string }) {
             {/* Active filter chips */}
             {activeFilterCount > 0 && (
               <div className="flex flex-wrap gap-2 mb-5">
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery("")}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold px-3 py-1.5 hover:bg-primary/20 transition-colors">
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" /></svg>
+                    &ldquo;{searchQuery}&rdquo;
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                )}
                 {selectedBrands.map((b) => (
                   <button key={b} onClick={() => sidebarProps.onBrandToggle(b)}
                     className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold px-3 py-1.5 hover:bg-primary/20 transition-colors">
+                    {b} <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                ))}
+                {selectedBadges.map((b) => (
+                  <button key={b} onClick={() => sidebarProps.onBadgeToggle(b)}
+                    className={`inline-flex items-center gap-1.5 rounded-full text-xs font-semibold px-3 py-1.5 transition-colors ${BADGE_FILTER_STYLES[b] ?? "bg-primary/10 text-primary"} hover:opacity-80`}>
                     {b} <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                   </button>
                 ))}
@@ -518,6 +693,20 @@ export default function CollectionView({ slug }: { slug: string }) {
                   <button onClick={() => { setMinPrice(0); setMaxPrice(maxProductPrice); }}
                     className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold px-3 py-1.5 hover:bg-primary/20 transition-colors">
                     ${minPrice}–{maxPrice >= maxProductPrice ? "∞" : `$${maxPrice}`}
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                )}
+                {minRating > 0 && (
+                  <button onClick={() => setMinRating(0)}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold px-3 py-1.5 hover:bg-primary/20 transition-colors">
+                    {minRating}★ & up
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                )}
+                {inStockOnly && (
+                  <button onClick={() => setInStockOnly(false)}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1.5 hover:bg-emerald-100 transition-colors">
+                    In Stock
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                   </button>
                 )}
