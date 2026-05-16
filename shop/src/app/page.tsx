@@ -18,10 +18,10 @@ export const metadata: Metadata = {
 // ── Data ───────────────────────────────────────────────────────────────────────
 
 const categories = [
-  { title: "Cases",             subtitle: "Slim, rugged & MagSafe-ready",    href: "/collections/cases",             image: COLLECTIONS.cases.products[7].image },
-  { title: "Audio",             subtitle: "Earbuds & over-ear picks",         href: "/collections/audio",             image: COLLECTIONS.audio.products[6].image },
-  { title: "Power & Cables",    subtitle: "Fast charge, travel-ready",        href: "/collections/power",             image: COLLECTIONS.power.products[0].image },
-  { title: "Screen Protection", subtitle: "Tempered glass for every screen",  href: "/collections/screen-protection", image: COLLECTIONS["screen-protection"].products[0].image },
+  { title: "Cases", subtitle: "Slim, rugged & MagSafe-ready", href: "/collections/cases", image: COLLECTIONS.cases.products[7].image },
+  { title: "Audio", subtitle: "Earbuds & over-ear picks", href: "/collections/audio", image: COLLECTIONS.audio.products[6].image },
+  { title: "Power & Cables", subtitle: "Fast charge, travel-ready", href: "/collections/power", image: COLLECTIONS.power.products[0].image },
+  { title: "Screen Protection", subtitle: "Tempered glass for every screen", href: "/collections/screen-protection", image: COLLECTIONS["screen-protection"].products[0].image },
 ] as const;
 
 const trending: Product[] = [
@@ -41,10 +41,10 @@ const brands = ["JBL", "OtterBox", "Anker", "ZAGG", "mophie", "Belkin", "UAG", "
 
 const BADGE_STYLES: Record<string, string> = {
   "Best Seller": "bg-amber-500 text-white",
-  "Top Rated":   "bg-emerald-500 text-white",
-  "Sale":        "bg-red-500 text-white",
-  "New":         "bg-primary text-white",
-  "Limited":     "bg-orange-500 text-white",
+  "Top Rated": "bg-emerald-500 text-white",
+  "Sale": "bg-red-500 text-white",
+  "New": "bg-primary text-white",
+  "Limited": "bg-orange-500 text-white",
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -77,7 +77,7 @@ function ProductCard({ item, showBadge = true }: { item: Product; showBadge?: bo
   return (
     <article className="group flex flex-col rounded-2xl border border-gray-100 bg-white overflow-hidden shadow-sm hover:shadow-xl hover:border-gray-200 transition-all duration-300">
       <div className="relative aspect-square bg-gray-50 overflow-hidden">
-        <Link href={`/products/${item.slug}`}  className="block w-full h-full">
+        <Link href={`/products/${item.slug}`} className="block w-full h-full">
           <Image
             src={item.image} alt={item.name} fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -103,7 +103,7 @@ function ProductCard({ item, showBadge = true }: { item: Product; showBadge?: bo
         <p className="text-[11px] font-bold uppercase tracking-widest text-primary">{item.brand}</p>
         <Link
           href={`/products/${item.slug}`}
-          
+
           className="text-sm font-semibold text-gray-900 hover:text-primary transition-colors leading-snug line-clamp-2 flex-1"
         >
           {item.name}
@@ -121,7 +121,7 @@ function ProductCard({ item, showBadge = true }: { item: Product; showBadge?: bo
           </div>
           <Link
             href={`/products/${item.slug}`}
-            
+
             className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold bg-primary text-white hover:bg-primary-hover active:scale-95 transition-all shadow-sm shrink-0"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -163,26 +163,40 @@ export default function Home() {
       <main className="flex-1 bg-white">
 
         {/* ── Hero Banner ── */}
-        <section className="relative overflow-hidden mx-3 sm:mx-4 lg:mx-6 mt-4 rounded-2xl">
-          <Image src="/home/banner/banner.webp" alt="Galaxy S26 gear is here" width={1400} height={520}
-            className="w-full object-cover hidden md:block rounded-2xl" priority />
-          <Image src="/home/banner/mobile-banner.webp" alt="Galaxy S26 gear is here" width={600} height={600}
-            className="w-full object-cover block md:hidden rounded-2xl" priority />
-          <div className="absolute bottom-5 left-5 sm:bottom-7 sm:left-7 lg:bottom-9 lg:left-9 flex gap-3">
-            <Link href="/collections"
-              className="inline-flex items-center gap-2 rounded-full bg-white/95 backdrop-blur-sm px-5 py-2.5 text-sm font-bold text-gray-900 shadow-lg hover:bg-white transition-all group border border-white/60">
-              <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-              Shop Collections
-              <svg className="w-4 h-4 text-primary transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-            <Link href="/collections/deals"
-              className="hidden sm:inline-flex items-center gap-2 rounded-full bg-primary/90 backdrop-blur-sm px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-primary transition-all border border-primary/60">
-              View Deals
-            </Link>
+        <section className="relative overflow-hidden mx-3 sm:mx-4 lg:mx-6 mt-4 rounded-2xl" style={{ height: "calc(100vh - 150px)" }}>
+          {/* Images */}
+          <Image src="/home/desktpo-banner.png" alt="Jesup Shop — Premium Accessories" fill
+            className="object-cover hidden md:block" priority />
+          <Image src="/home/mobile-banner.png" alt="Jesup Shop — Premium Accessories" fill
+            className="object-cover block md:hidden" priority />
+
+          {/* Dark gradient overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent rounded-2xl" />
+
+          {/* Text + CTA */}
+          <div className="absolute inset-0 flex flex-col justify-center px-6 sm:px-10 lg:px-14">
+            <span className="inline-block text-[11px] font-bold uppercase tracking-widest text-white/70 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 w-fit mb-3">
+              New Collection
+            </span>
+            <h1 className="text-2xl sm:text-3xl lg:text-5xl font-extrabold text-white leading-tight max-w-lg drop-shadow-md">
+              Gear Up.<br className="hidden sm:block" /> Stay Protected.
+            </h1>
+            <p className="mt-2 sm:mt-3 text-sm sm:text-base text-white/80 max-w-sm leading-relaxed drop-shadow">
+              Premium cases, audio &amp; power accessories — expert-picked for every device.
+            </p>
+            <div className="mt-5 sm:mt-7 flex flex-col sm:flex-row gap-3 items-start">
+              <Link href="/collections"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-5 sm:px-7 py-2.5 sm:py-3 text-sm font-bold text-gray-900 shadow-lg hover:bg-gray-100 transition-all group">
+                Shop Collections
+                <svg className="w-4 h-4 text-primary transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+              <Link href="/collections/deals"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 sm:px-7 py-2.5 sm:py-3 text-sm font-bold text-white shadow-lg hover:bg-primary-hover transition-all border border-primary/60">
+                View Deals
+              </Link>
+            </div>
           </div>
         </section>
 
