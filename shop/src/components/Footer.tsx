@@ -36,15 +36,12 @@ const footerLinks = [
   {
     title: "Shop",
     links: [
-      { label: "Cases", href: "/shop/cases" },
-      { label: "Screen protectors", href: "/shop/screen-protectors" },
-      { label: "Power", href: "/shop/power" },
-      { label: "Audio", href: "/shop/audio" },
-      { label: "iPhone accessories", href: "/shop/iphone" },
-      { label: "Samsung accessories", href: "/shop/samsung" },
-      { label: "Google accessories", href: "/shop/google" },
-      { label: "Tablet & Laptop accessories", href: "/shop/tablet-laptop" },
-      { label: "All accessories", href: "/shop" },
+      { label: "All Collections",    href: "/collections" },
+      { label: "Cases",              href: "/collections/cases" },
+      { label: "Screen Protection",  href: "/collections/screen-protection" },
+      { label: "Power & Cables",     href: "/collections/power" },
+      { label: "Audio",              href: "/collections/audio" },
+      { label: "Deals & Bundles",    href: "/collections/deals" },
     ],
   },
 ];
