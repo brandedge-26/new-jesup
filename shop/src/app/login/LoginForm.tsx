@@ -4,22 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
-
-function BtnSpinner() {
-  return (
-    <span className="relative inline-flex w-6 h-6">
-      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="8" />
-      </svg>
-      <svg className="absolute inset-0 w-full h-full animate-spin" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="42" fill="none" stroke="white" strokeWidth="8"
-          strokeLinecap="round" strokeDasharray="60 200" />
-      </svg>
-    </span>
-  );
-}
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -31,23 +17,24 @@ export default function LoginForm() {
   const login  = useAuthStore((s) => s.login);
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    if (!email || !password) { setError("Please fill in all fields."); return; }
     setLoading(true);
-    // Simulate auth — replace with real API call
-    setTimeout(() => {
-      const [firstName, ...rest] = email.split("@")[0].split(".");
-      login({ firstName: firstName ?? "User", lastName: rest[0] ?? "", email });
+    try {
+      await login(email, password);
       router.push("/");
-    }, 1500);
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setError(msg || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4 py-12">
 
-      {/* Logo */}
       <Link href="/" className="mb-10">
         <Image src="/new-logo.png" alt="Jesup" width={140} height={50}
           className="h-12 w-auto object-contain" priority />
@@ -64,23 +51,14 @@ export default function LoginForm() {
         )}
 
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email address"
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent focus:bg-white transition"
-          />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email address" required
+            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent focus:bg-white transition" />
 
           <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 pr-12 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent focus:bg-white transition"
-            />
+            <input type={showPassword ? "text" : "password"} value={password}
+              onChange={(e) => setPassword(e.target.value)} placeholder="Password" required
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 pr-12 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent focus:bg-white transition" />
             <button type="button" onClick={() => setShowPassword((p) => !p)} tabIndex={-1}
               className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -88,19 +66,17 @@ export default function LoginForm() {
           </div>
 
           <div className="flex items-center justify-between text-sm">
-            <Link href="/forgot-password"
-              className="text-primary hover:text-primary-hover font-medium transition-colors">
+            <Link href="/forgot-password" className="text-primary hover:text-primary-hover font-medium transition-colors">
               Forgot password?
             </Link>
             <Link href="/signup" className="text-gray-400 hover:text-gray-700 transition-colors">
-              No account?{" "}
-              <span className="text-primary font-semibold">Sign up</span>
+              No account? <span className="text-primary font-semibold">Sign up</span>
             </Link>
           </div>
 
           <button type="submit" disabled={loading}
-            className="mt-1 w-full py-3.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-hover active:scale-[0.98] transition-all flex items-center justify-center min-h-[52px] disabled:opacity-70">
-            {loading ? <BtnSpinner /> : "Sign in"}
+            className="mt-1 w-full py-3.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-hover active:scale-[0.98] transition-all flex items-center justify-center min-h-[52px] disabled:opacity-70 disabled:cursor-not-allowed">
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign in"}
           </button>
 
           <div className="flex items-center gap-3">
@@ -119,7 +95,6 @@ export default function LoginForm() {
             </svg>
             Continue with Google
           </button>
-
         </form>
       </div>
     </div>

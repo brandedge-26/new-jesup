@@ -4,22 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
-
-function BtnSpinner() {
-  return (
-    <span className="relative inline-flex w-6 h-6">
-      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="8" />
-      </svg>
-      <svg className="absolute inset-0 w-full h-full animate-spin" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="42" fill="none" stroke="white" strokeWidth="8"
-          strokeLinecap="round" strokeDasharray="60 200" />
-      </svg>
-    </span>
-  );
-}
 
 function PasswordStrength({ password }: { password: string }) {
   const score = [
@@ -31,17 +17,15 @@ function PasswordStrength({ password }: { password: string }) {
 
   if (!password) return null;
 
-  const colors     = ["bg-red-400",  "bg-amber-400",  "bg-blue-400",  "bg-green-500"];
-  const labels     = ["Weak",        "Fair",          "Good",         "Strong"];
-  const textColors = ["text-red-500","text-amber-500","text-blue-500","text-green-600"];
+  const colors     = ["bg-red-400",   "bg-amber-400",   "bg-blue-400",   "bg-green-500"];
+  const labels     = ["Weak",         "Fair",           "Good",          "Strong"];
+  const textColors = ["text-red-500", "text-amber-500", "text-blue-500", "text-green-600"];
 
   return (
     <div className="mt-2 flex items-center gap-2">
       <div className="flex gap-1 flex-1">
         {[0,1,2,3].map((i) => (
-          <div key={i}
-            className={`h-1 flex-1 rounded-full transition-all duration-300 ${i < score ? colors[score-1] : "bg-gray-100"}`}
-          />
+          <div key={i} className={`h-1 flex-1 rounded-full transition-all duration-300 ${i < score ? colors[score-1] : "bg-gray-100"}`} />
         ))}
       </div>
       <span className={`text-xs font-medium ${textColors[score-1] ?? "text-gray-400"}`}>
@@ -60,22 +44,24 @@ export default function SignupForm() {
   const [loading,   setLoading]   = useState(false);
   const [error,     setError]     = useState("");
 
-  const login  = useAuthStore((s) => s.login);
-  const router = useRouter();
+  const register = useAuthStore((s) => s.register);
+  const router   = useRouter();
 
   const inputCls = "w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent focus:bg-white transition";
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    if (!firstName || !email || !password) { setError("Please fill in all required fields."); return; }
-    if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
     setLoading(true);
-    // Simulate signup — replace with real API call
-    setTimeout(() => {
-      login({ firstName, lastName, email });
+    try {
+      await register(firstName, lastName, email, password);
       router.push("/");
-    }, 1500);
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setError(msg || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -97,26 +83,21 @@ export default function SignupForm() {
         )}
 
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-
           <div className="grid grid-cols-2 gap-3">
             <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)}
-              placeholder="First name *" className={inputCls} />
+              placeholder="First name" required className={inputCls} />
             <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)}
               placeholder="Last name" className={inputCls} />
           </div>
 
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email address *" className={inputCls} />
+            placeholder="Email address" required className={inputCls} />
 
           <div>
             <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password *"
-                className={inputCls + " pr-12"}
-              />
+              <input type={showPassword ? "text" : "password"} value={password}
+                onChange={(e) => setPassword(e.target.value)} placeholder="Password" required
+                className={inputCls + " pr-12"} />
               <button type="button" onClick={() => setShowPassword((p) => !p)} tabIndex={-1}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -133,8 +114,8 @@ export default function SignupForm() {
           </p>
 
           <button type="submit" disabled={loading}
-            className="mt-1 w-full py-3.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-hover active:scale-[0.98] transition-all flex items-center justify-center min-h-[52px] disabled:opacity-70">
-            {loading ? <BtnSpinner /> : "Create account"}
+            className="mt-1 w-full py-3.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-hover active:scale-[0.98] transition-all flex items-center justify-center min-h-[52px] disabled:opacity-70 disabled:cursor-not-allowed">
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Create account"}
           </button>
 
           <div className="flex items-center gap-3">
@@ -153,16 +134,12 @@ export default function SignupForm() {
             </svg>
             Continue with Google
           </button>
-
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-500">
           Already have an account?{" "}
-          <Link href="/login" className="text-primary font-semibold hover:text-primary-hover transition-colors">
-            Sign in
-          </Link>
+          <Link href="/login" className="text-primary font-semibold hover:text-primary-hover transition-colors">Sign in</Link>
         </p>
-
       </div>
     </div>
   );

@@ -1,7 +1,8 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAdminStore } from "@/store/adminStore";
+import { useAdminAuthStore } from "@/store/adminAuthStore";
 import { useState, useRef, useEffect } from "react";
 
 const PAGE_TITLES: Record<string, string> = {
@@ -109,6 +110,13 @@ function NotificationMenu() {
 function ProfileMenu() {
   const [open, setOpen] = useState(false);
   const ref = useOutsideClick(() => setOpen(false));
+  const user = useAdminAuthStore((s) => s.user);
+  const logout = useAdminAuthStore((s) => s.logout);
+  const router = useRouter();
+
+  const initials = user
+    ? `${user.fname[0] ?? ""}${user.lname[0] ?? ""}`.toUpperCase()
+    : "JA";
 
   return (
     <div ref={ref} className="relative">
@@ -117,33 +125,33 @@ function ProfileMenu() {
         className="w-8 h-8 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center hover:ring-2 hover:ring-primary/30 transition-all"
         aria-label="Profile menu"
       >
-        JA
+        {initials}
       </button>
 
       {open && (
         <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
           {/* User info */}
           <div className="px-4 py-3 border-b border-gray-100">
-            <p className="text-sm font-semibold text-gray-900">Jesup Admin</p>
-            <p className="text-xs text-gray-400 mt-0.5">admin@jesup.com</p>
+            <p className="text-sm font-semibold text-gray-900">{user ? `${user.fname} ${user.lname}` : "Admin"}</p>
+            <p className="text-xs text-gray-400 mt-0.5">{user?.email}</p>
           </div>
 
           {/* Menu items */}
           <div className="py-1">
             <button
-              onClick={() => setOpen(false)}
+              onClick={() => { setOpen(false); router.push("/dashboard"); }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
             >
               <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
-              Change Password
+              Dashboard
             </button>
 
             <div className="border-t border-gray-100 mx-3 my-1" />
 
             <button
-              onClick={() => setOpen(false)}
+              onClick={async () => { setOpen(false); await logout(); router.replace("/login"); }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

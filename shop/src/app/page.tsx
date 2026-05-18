@@ -163,7 +163,7 @@ export default function Home() {
       <main className="flex-1 bg-white">
 
         {/* ── Hero Banner ── */}
-        <section className="relative overflow-hidden mx-3 sm:mx-4 lg:mx-6 mt-4 rounded-2xl" style={{ height: "calc(100vh - 150px)" }}>
+        <section className="relative overflow-hidden mx-3 sm:mx-4 lg:mx-6 mt-4 rounded-2xl" style={{ height: "calc(100vh - 100px)" }}>
           {/* Images */}
           <Image src="/home/desktpo-banner.png" alt="Jesup Shop — Premium Accessories" fill
             className="object-cover hidden md:block" priority />

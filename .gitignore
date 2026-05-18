@@ -5,32 +5,45 @@ node_modules/
 # ── Environment variables ─────────────────────────────────
 .env
 .env.*
+.env.local
+.env.development
+.env.development.local
+.env.production
+.env.production.local
+.env.test
+.env.test.local
 !.env.example
+!.env.*.example
+frontend/.env*
+shop/.env*
+admin/.env*
+backend/.env*
 
 # ── Next.js ───────────────────────────────────────────────
 frontend/.next/
 frontend/out/
 frontend/.vercel/
-
-
-
-# PDF
-IPHONE & SAMSUNGS REPAIR SHEET (1).pdf
-IPHONE & SAMSUNGS REPAIR SHEET.xlsx.pdf
-
-
-
 shop/.next/
 shop/out/
 shop/.vercel/
+admin/.next/
+admin/out/
+admin/.vercel/
 
 # ── Build outputs ─────────────────────────────────────────
 dist/
 build/
-admin/dist/
-admin/build/
-backend/dist/
-backend/build/
+**/dist/
+**/build/
+
+# ── Scripts (seed / migration) ────────────────────────────
+backend/src/scripts/
+
+# ── PDF / Spreadsheet assets ──────────────────────────────
+*.pdf
+*.xlsx
+*.xls
+*.csv
 
 # ── Logs ──────────────────────────────────────────────────
 *.log

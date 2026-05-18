@@ -3,31 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Eye, EyeOff } from "lucide-react";
-
-function BtnSpinner() {
-  return (
-    <span className="relative inline-flex w-7 h-7">
-      {/* Static outer track */}
-      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="7" />
-      </svg>
-      {/* Wavy rotating ring */}
-      <svg className="absolute inset-0 w-full h-full wave-rotate" viewBox="0 0 100 100">
-        <circle
-          className="wave-move"
-          cx="50" cy="50" r="42"
-          fill="none"
-          stroke="white"
-          strokeWidth="7"
-          strokeLinecap="round"
-          strokeDasharray="12 8"
-          style={{ filter: "drop-shadow(0 0 6px rgba(255,255,255,0.75))" }}
-        />
-      </svg>
-    </span>
-  );
-}
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/lib/store/authStore";
 
 function PasswordStrength({ password }: { password: string }) {
   const score = [
@@ -64,11 +42,24 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const register = useAuthStore((s) => s.register);
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     setLoading(true);
-    setTimeout(() => setLoading(false), 2500);
+    try {
+      await register(firstName, lastName, email, password);
+      router.push("/");
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setError(msg || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputCls =
@@ -86,12 +77,18 @@ export default function SignupPage() {
 
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
 
+          {error && (
+            <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-600">
+              {error}
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
-            <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name" className={inputCls} />
-            <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name" className={inputCls} />
+            <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name" required className={inputCls} />
+            <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name" required className={inputCls} />
           </div>
 
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" className={inputCls} />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" required className={inputCls} />
 
           <div>
             <div className="relative">
@@ -100,6 +97,7 @@ export default function SignupPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
+                required
                 className={inputCls + " pr-12"}
               />
               <button type="button" onClick={() => setShowPassword((p) => !p)} tabIndex={-1}
@@ -118,8 +116,8 @@ export default function SignupPage() {
           </p>
 
           <button type="submit" disabled={loading}
-            className="mt-1 w-full py-3.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-hover transition-colors flex items-center justify-center min-h-[52px]">
-            {loading ? <BtnSpinner /> : "Create account"}
+            className="mt-1 w-full py-3.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-hover transition-colors flex items-center justify-center min-h-[52px] disabled:opacity-70 disabled:cursor-not-allowed">
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Create account"}
           </button>
 
           <div className="flex items-center gap-3 my-1">

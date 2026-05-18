@@ -3,42 +3,33 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Eye, EyeOff } from "lucide-react";
-
-function BtnSpinner() {
-  return (
-    <span className="relative inline-flex w-7 h-7">
-      {/* Static outer track */}
-      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="7" />
-      </svg>
-      {/* Wavy rotating ring */}
-      <svg className="absolute inset-0 w-full h-full wave-rotate" viewBox="0 0 100 100">
-        <circle
-          className="wave-move"
-          cx="50" cy="50" r="42"
-          fill="none"
-          stroke="white"
-          strokeWidth="7"
-          strokeLinecap="round"
-          strokeDasharray="12 8"
-          style={{ filter: "drop-shadow(0 0 6px rgba(255,255,255,0.75))" }}
-        />
-      </svg>
-    </span>
-  );
-}
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/lib/store/authStore";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const login = useAuthStore((s) => s.login);
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     setLoading(true);
-    setTimeout(() => setLoading(false), 2500);
+    try {
+      await login(email, password);
+      router.push("/");
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setError(msg || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -54,11 +45,18 @@ export default function LoginPage() {
 
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
 
+          {error && (
+            <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-600">
+              {error}
+            </div>
+          )}
+
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email address"
+            required
             className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent focus:bg-white transition"
           />
 
@@ -68,6 +66,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
+              required
               className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 pr-12 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent focus:bg-white transition"
             />
             <button type="button" onClick={() => setShowPassword((p) => !p)} tabIndex={-1}
@@ -87,8 +86,8 @@ export default function LoginPage() {
           </div>
 
           <button type="submit" disabled={loading}
-            className="mt-2 w-full py-3.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-hover transition-colors flex items-center justify-center min-h-[52px]">
-            {loading ? <BtnSpinner /> : "Sign in"}
+            className="mt-2 w-full py-3.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-hover transition-colors flex items-center justify-center min-h-[52px] disabled:opacity-70 disabled:cursor-not-allowed">
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign in"}
           </button>
 
           <div className="flex items-center gap-3 my-1">

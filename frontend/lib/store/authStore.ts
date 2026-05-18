@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { publicAxios } from "@/lib/axios";
 
-export interface AuthUser {
+interface User {
     id: string;
     fname: string;
     lname: string;
@@ -10,16 +10,16 @@ export interface AuthUser {
 }
 
 interface AuthState {
-    user: AuthUser | null;
+    user: User | null;
     accessToken: string | null;
     isAuthenticated: boolean;
     isInitialized: boolean;
 
     setAccessToken: (token: string) => void;
-    initAuth: () => Promise<void>;
     login: (email: string, password: string) => Promise<void>;
     register: (fname: string, lname: string, email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
+    initAuth: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -30,6 +30,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     setAccessToken: (token) => set({ accessToken: token }),
 
+    // CALLED ON APP LOAD — refresh cookie se naya access token + user lo
     initAuth: async () => {
         try {
             const res = await publicAxios.get("/auth/refresh");

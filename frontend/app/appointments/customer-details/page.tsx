@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Loader2 } from "lucide-react";
 import { useAppointment } from "../_context/AppointmentContext";
 import ProgressBar from "../_components/ProgressBar";
+import { publicAxios } from "@/lib/axios";
 
 interface Errors { firstName?: string; lastName?: string; email?: string; phone?: string; }
 
@@ -20,6 +21,8 @@ export default function CustomerDetailsPage() {
   const [marketingOptIn, setMarketingOptIn] = useState(state.marketingOptIn ?? false);
   const [errors, setErrors] = useState<Errors>({});
   const [touched, setTouched] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
 
   const validate = (): Errors => {
     const e: Errors = {};
@@ -31,13 +34,43 @@ export default function CustomerDetailsPage() {
     return e;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setTouched(true);
+    setApiError("");
     const errs = validate();
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
+
+    // UPDATE CONTEXT
     update({ firstName, lastName, email, phone, marketingOptIn });
-    router.push("/appointments/confirmation");
+
+    setLoading(true);
+    try {
+      await publicAxios.post("/appointments", {
+        deviceType: state.deviceType,
+        brand: state.brand,
+        model: state.model,
+        damageTypes: state.damageTypes,
+        damageDescription: state.damageDescription,
+        appointmentDate: state.appointmentDate,
+        appointmentTime: state.appointmentTime,
+        zipCode: state.zipCode,
+        streetAddress: state.streetAddress,
+        location: state.location,
+        firstName,
+        lastName,
+        email,
+        phone,
+        marketingOptIn,
+      });
+
+      router.push("/appointments/confirmation");
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setApiError(msg || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputCls = (err?: string) =>
@@ -55,6 +88,12 @@ export default function CustomerDetailsPage() {
         <h1 className="text-2xl font-bold text-gray-900">Your contact details</h1>
         <p className="mt-1 text-sm text-gray-500">We&apos;ll send your appointment confirmation here.</p>
       </div>
+
+      {apiError && (
+        <div className="mb-6 px-4 py-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600">
+          {apiError}
+        </div>
+      )}
 
       <div className="flex flex-col gap-5 mb-6">
 
@@ -118,9 +157,19 @@ export default function CustomerDetailsPage() {
         <Link href="/appointments/delivery-selection" className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-700 transition-colors">
           <ChevronLeft className="w-4 h-4" /> Back
         </Link>
-        <button onClick={handleSubmit}
-          className="px-8 py-2.5 rounded-full text-sm font-bold bg-primary text-white hover:bg-primary-hover shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-150">
-          Submit Request →
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="flex items-center gap-2 px-8 py-2.5 rounded-full text-sm font-bold bg-primary text-white hover:bg-primary-hover shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-150 disabled:opacity-70 disabled:cursor-not-allowed disabled:translate-y-0 disabled:shadow-sm"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Submitting...
+            </>
+          ) : (
+            "Submit Request →"
+          )}
         </button>
       </div>
     </div>
