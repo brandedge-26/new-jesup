@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAdminStore } from "@/store/adminStore";
+import { useNotifStore } from "@/store/notifStore";
 
 type SubItem = { label: string; href: string };
 
@@ -86,8 +87,8 @@ const NAV: NavGroup[] = [
           </svg>
         ),
         children: [
-          { label: "Repair Appointment", href: "/repair/booking" },
-          { label: "Applications",    href: "/repair/applications" },
+          { label: "Repair Appointment",  href: "/repair/booking" },
+          { label: "Contact Messages",    href: "/repair/applications" },
         ],
       },
     ],
@@ -95,6 +96,15 @@ const NAV: NavGroup[] = [
   {
     group: "Store",
     items: [
+      {
+        label: "Notifications",
+        href: "/notifications",
+        icon: (
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+        ),
+      },
       {
         label: "Settings",
         href: "/settings",
@@ -112,6 +122,8 @@ const NAV: NavGroup[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   const { sidebarCollapsed, toggleSidebar } = useAdminStore();
+  const { unreadCount } = useNotifStore();
+  const notifCount = unreadCount();
 
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";
@@ -186,8 +198,20 @@ export default function Sidebar() {
                           }
                         `}
                       >
-                        <span className="shrink-0">{item.icon}</span>
+                        <span className="shrink-0 relative">
+                          {item.icon}
+                          {item.href === "/notifications" && notifCount > 0 && sidebarCollapsed && (
+                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[9px] font-bold text-white flex items-center justify-center">
+                              {notifCount > 9 ? "9+" : notifCount}
+                            </span>
+                          )}
+                        </span>
                         {!sidebarCollapsed && <span className="flex-1">{item.label}</span>}
+                        {!sidebarCollapsed && item.href === "/notifications" && notifCount > 0 && (
+                          <span className="ml-auto px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">
+                            {notifCount > 9 ? "9+" : notifCount}
+                          </span>
+                        )}
                         {!sidebarCollapsed && hasChildren && (
                           <svg
                             className={`w-3.5 h-3.5 transition-transform ${grpActive ? "rotate-90" : ""}`}

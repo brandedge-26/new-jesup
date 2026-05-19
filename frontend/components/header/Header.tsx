@@ -7,7 +7,7 @@ import { navItems } from "./dropdownData";
 import NavDropdown from "./NavDropdown";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useRouter } from "next/navigation";
-import { LogOut, LayoutDashboard } from "lucide-react";
+import { LogOut, LayoutDashboard, ShoppingBag } from "lucide-react";
 
 function getInitials(fname: string, lname: string) {
   return `${fname.charAt(0)}${lname.charAt(0)}`.toUpperCase();

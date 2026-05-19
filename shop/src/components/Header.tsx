@@ -411,6 +411,30 @@ export default function Header() {
                         </svg>
                         My Orders
                       </Link>
+                      {user.role === "user" && (
+                        <>
+                          <Link
+                            href="/track-order"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors"
+                          >
+                            <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 16l4.553-2.276A1 1 0 0021 19.382V8.618a1 1 0 00-1.447-.894L15 10m0 9V10m0 0L9 7" />
+                            </svg>
+                            Track Order
+                          </Link>
+                          <Link
+                            href="/wishlist"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors"
+                          >
+                            <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                            Wishlist
+                          </Link>
+                        </>
+                      )}
                       {user.role === "admin" && (
                         <a
                           href={process.env.NEXT_PUBLIC_ADMIN_URL || "http://localhost:3002"}
@@ -526,9 +550,16 @@ export default function Header() {
                 <Link href="/my-orders" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-gray-100 text-xs font-semibold text-gray-700 hover:bg-gray-200 transition-colors">
                   My Orders
                 </Link>
-                <Link href="/wishlist" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-gray-100 text-xs font-semibold text-gray-700 hover:bg-gray-200 transition-colors">
-                  Wishlist
-                </Link>
+                {user?.role === "user" && (
+                  <>
+                    <Link href="/track-order" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-gray-100 text-xs font-semibold text-gray-700 hover:bg-gray-200 transition-colors">
+                      Track Order
+                    </Link>
+                    <Link href="/wishlist" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-gray-100 text-xs font-semibold text-gray-700 hover:bg-gray-200 transition-colors col-span-2">
+                      Wishlist
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           ) : (

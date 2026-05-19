@@ -94,9 +94,21 @@ const updateAppointmentStatusController = async (req, res, next) => {
 };
 
 
+// DELETE
+const deleteAppointmentController = async (req, res, next) => {
+    try {
+        const appointment = await Appointment.findByIdAndDelete(req.params.id);
+        if (!appointment) throw new Error("Appointment not found", { cause: { statusCode: 404 } });
+        res.status(200).json({ success: true, message: "Deleted successfully" });
+    } catch (err) {
+        next(err);
+    }
+};
+
 export {
     createAppointmentController,
     getAppointmentsController,
     getAppointmentController,
     updateAppointmentStatusController,
+    deleteAppointmentController,
 };

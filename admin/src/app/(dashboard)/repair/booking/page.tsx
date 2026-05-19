@@ -3,6 +3,14 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { Loader2, RefreshCw } from "lucide-react";
 import { adminAxios } from "@/lib/axios";
+import {
+    getPricing,
+    damageToServices,
+    serviceLabelsIphone,
+    serviceLabelsSamsung,
+    samsungComboServices,
+    type ServiceKey,
+} from "@/lib/repairPricing";
 
 type AppointmentStatus = "pending" | "confirmed" | "in-progress" | "completed" | "cancelled";
 
@@ -68,13 +76,15 @@ export default function RepairAppointmentPage() {
     const [page, setPage] = useState(1);
     const [selected, setSelected] = useState<Appointment | null>(null);
     const [updatingStatus, setUpdatingStatus] = useState(false);
+    const [toDelete, setToDelete] = useState<Appointment | null>(null);
+    const [deleting, setDeleting] = useState(false);
 
     const fetchAppointments = useCallback(async () => {
         setLoading(true);
         setError("");
         try {
             const res = await adminAxios.get("/appointments");
-            setAppointments(res.data.data || res.data);
+            setAppointments(res.data.appointments ?? []);
         } catch {
             setError("Failed to load appointments. Make sure you are logged in.");
         } finally {
@@ -106,6 +116,21 @@ export default function RepairAppointmentPage() {
 
     const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
     const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+    async function handleDelete() {
+        if (!toDelete) return;
+        setDeleting(true);
+        try {
+            await adminAxios.delete(`/appointments/${toDelete._id}`);
+            setAppointments((prev) => prev.filter((a) => a._id !== toDelete._id));
+            setToDelete(null);
+            setSelected(null);
+        } catch {
+            alert("Failed to delete. Please try again.");
+        } finally {
+            setDeleting(false);
+        }
+    }
 
     async function handleStatusUpdate(id: string, status: AppointmentStatus) {
         setUpdatingStatus(true);
@@ -220,15 +245,27 @@ export default function RepairAppointmentPage() {
                                             <StatusBadge status={b.status} />
                                         </td>
                                         <td className="px-4 py-3.5">
-                                            <button
-                                                onClick={() => setSelected(b)}
-                                                className="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-primary/5 transition-colors"
-                                            >
-                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                </svg>
-                                            </button>
+                                            <div className="flex items-center gap-1">
+                                                <button
+                                                    onClick={() => setSelected(b)}
+                                                    className="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-primary/5 transition-colors"
+                                                    title="View"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    onClick={() => setToDelete(b)}
+                                                    className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                                    title="Delete"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -295,7 +332,7 @@ export default function RepairAppointmentPage() {
                             </div>
                         </div>
 
-                        <div className="px-6 py-5 space-y-4">
+                        <div className="px-6 py-5 space-y-4 overflow-y-auto max-h-[65vh]">
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div><p className="text-gray-400 text-xs font-medium mb-0.5">Email</p><p className="text-gray-800">{selected.email}</p></div>
                                 <div><p className="text-gray-400 text-xs font-medium mb-0.5">Phone</p><p className="text-gray-800">{selected.phone}</p></div>
@@ -322,6 +359,66 @@ export default function RepairAppointmentPage() {
                                 )}
                             </div>
 
+                            {/* Repair Estimate */}
+                            {(selected.brand === "Apple (iPhone)" || selected.brand === "Samsung") && (() => {
+                                const isSamsung = selected.brand === "Samsung";
+                                const pricing = getPricing(selected.brand, selected.model);
+                                const serviceLabels = isSamsung ? serviceLabelsSamsung : serviceLabelsIphone;
+                                const relevantServices: ServiceKey[] = [];
+                                for (const dmg of selected.damageTypes) {
+                                    const keys = damageToServices[dmg] ?? [];
+                                    for (const key of keys) {
+                                        if (!relevantServices.includes(key)) relevantServices.push(key);
+                                    }
+                                }
+                                const pricedServices = pricing ? relevantServices.filter((k) => pricing[k] !== null) : [];
+                                const total = pricedServices.length > 1 && pricing
+                                    ? pricedServices.reduce((sum, k) => {
+                                        const p = pricing[k]; return sum + (p ? parseFloat(p.replace("$", "")) : 0);
+                                    }, 0) : null;
+
+                                return (
+                                    <div className="pt-2 border-t border-gray-100">
+                                        <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Repair Estimate</p>
+                                        {!pricing ? (
+                                            <p className="text-xs text-gray-400">No pricing data for this model — quote after diagnosis.</p>
+                                        ) : pricedServices.length === 0 ? (
+                                            <p className="text-xs text-gray-400">Quote provided after diagnosis.</p>
+                                        ) : (
+                                            <>
+                                                <div className="rounded-xl border border-gray-100 overflow-hidden mb-2">
+                                                    {pricedServices.map((key, i) => {
+                                                        const price = pricing[key];
+                                                        const isCombo = isSamsung && samsungComboServices.includes(key);
+                                                        return (
+                                                            <div key={key} className={`flex items-center justify-between px-3 py-2 gap-2 ${i < pricedServices.length - 1 ? "border-b border-gray-100" : ""}`}>
+                                                                <div>
+                                                                    <p className="text-xs font-medium text-gray-700">{serviceLabels[key]}</p>
+                                                                    {isCombo && <p className="text-[10px] text-gray-400">incl. back glass</p>}
+                                                                </div>
+                                                                <span className="text-sm font-bold text-gray-900 shrink-0">{price ?? "N/A"}</span>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                                {pricedServices.length === 1 && pricing && (
+                                                    <div className="rounded-xl bg-primary/5 border border-primary/10 px-4 py-2.5 flex items-center justify-between">
+                                                        <p className="text-xs text-gray-500">Estimated price</p>
+                                                        <p className="text-lg font-bold text-primary">{pricing[pricedServices[0]]}</p>
+                                                    </div>
+                                                )}
+                                                {total !== null && (
+                                                    <div className="rounded-xl bg-primary/5 border border-primary/10 px-4 py-2.5 flex items-center justify-between">
+                                                        <p className="text-xs text-gray-500">Est. Total ({pricedServices.length} services)</p>
+                                                        <p className="text-lg font-bold text-primary">${total.toFixed(2)}</p>
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
+                                );
+                            })()}
+
                             {/* Status update */}
                             <div className="pt-2 border-t border-gray-100">
                                 <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Update Status</p>
@@ -342,8 +439,47 @@ export default function RepairAppointmentPage() {
                             </div>
                         </div>
 
-                        <div className="px-6 py-4 border-t border-gray-100 flex justify-end">
+                        <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+                            <button
+                                onClick={() => { setToDelete(selected); setSelected(null); }}
+                                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors"
+                            >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                Delete
+                            </button>
                             <button onClick={() => setSelected(null)} className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirm Modal */}
+            {toDelete && (
+                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => !deleting && setToDelete(null)}>
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                        <div className="px-6 pt-6 pb-4 text-center">
+                            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </div>
+                            <h3 className="text-base font-bold text-gray-900 mb-1">Delete Appointment</h3>
+                            <p className="text-sm text-gray-500">
+                                Are you sure you want to delete the appointment for{" "}
+                                <span className="font-semibold text-gray-700">{toDelete.firstName} {toDelete.lastName}</span>? This cannot be undone.
+                            </p>
+                        </div>
+                        <div className="px-6 pb-6 flex gap-2">
+                            <button onClick={() => setToDelete(null)} disabled={deleting}
+                                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50">
+                                Cancel
+                            </button>
+                            <button onClick={handleDelete} disabled={deleting}
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition-colors disabled:opacity-70 flex items-center justify-center gap-2">
+                                {deleting ? <><Loader2 className="w-4 h-4 animate-spin" /> Deleting...</> : "Delete"}
+                            </button>
                         </div>
                     </div>
                 </div>

@@ -10,8 +10,16 @@ import {
 } from "lucide-react";
 import { useAppointment } from "../_context/AppointmentContext";
 import ProgressBar from "../_components/ProgressBar";
+import {
+  getPricing,
+  damageToServices,
+  serviceLabelsIphone,
+  serviceLabelsSamsung,
+  samsungComboServices,
+  type ServiceKey,
+} from "@/lib/repairPricing";
 
-// ── Brand-specific service options (from PDF price sheet) ─────────────────
+// ── Brand-specific service options ────────────────────────────────────────────
 
 const iphoneServices = [
   { label: "Screen (LCD)",   icon: MonitorOff },
@@ -30,8 +38,6 @@ const samsungServices = [
   { label: "Back Camera",     icon: Camera     },
   { label: "Back Glass Only", icon: Box        },
 ];
-
-// ── Generic options for all other devices ─────────────────────────────────
 
 const genericOptions = [
   { label: "Cracked / Broken Screen",        icon: MonitorOff  },
@@ -64,11 +70,35 @@ export default function DamageTypePage() {
     router.push("/appointments/delivery-selection");
   };
 
-  // Choose which option set to display
   const isIphone  = state.brand === "Apple (iPhone)";
   const isSamsung = state.brand === "Samsung";
   const options   = isIphone ? iphoneServices : isSamsung ? samsungServices : genericOptions;
   const isPricedBrand = isIphone || isSamsung;
+
+  // ── Mobile pricing logic ───────────────────────────────────────────────────
+  const showPricing = isPricedBrand && !!state.model;
+  const pricing = showPricing ? getPricing(state.brand, state.model) : null;
+  const serviceLabels = isSamsung ? serviceLabelsSamsung : serviceLabelsIphone;
+
+  const relevantServices: ServiceKey[] = [];
+  for (const dmg of selected) {
+    const keys = damageToServices[dmg] ?? [];
+    for (const key of keys) {
+      if (!relevantServices.includes(key)) relevantServices.push(key);
+    }
+  }
+
+  const pricedServices = pricing
+    ? relevantServices.filter((key) => pricing[key] !== null)
+    : [];
+
+  const total =
+    pricedServices.length > 1 && pricing
+      ? pricedServices.reduce((sum, key) => {
+          const p = pricing[key];
+          return sum + (p ? parseFloat(p.replace("$", "")) : 0);
+        }, 0)
+      : null;
 
   return (
     <div className="px-8 lg:px-14 py-10 max-w-2xl">
@@ -78,7 +108,7 @@ export default function DamageTypePage() {
         <h1 className="text-2xl font-bold text-gray-900">What needs fixing?</h1>
         <p className="mt-1 text-sm text-gray-500">
           {isPricedBrand
-            ? "Select the service(s) you need — pricing shows instantly on the right."
+            ? "Select the service(s) you need — pricing shows instantly."
             : "Select all issues that apply — we'll handle the rest."}
         </p>
       </div>
@@ -131,21 +161,103 @@ export default function DamageTypePage() {
         })}
       </div>
 
-      {/* Description (generic only) */}
-      {!isPricedBrand && (
-        <div className="mb-8">
-          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
-            Additional details <span className="normal-case font-normal">(optional)</span>
-          </label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe the issue in more detail..."
-            rows={3}
-            className="w-full rounded-xl border-2 border-gray-100 bg-white px-4 py-3 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none transition"
-          />
+      {/* ── Mobile pricing card (hidden on lg+, shown on mobile) ── */}
+      {showPricing && (
+        <div className="lg:hidden mb-6 rounded-2xl border border-gray-100 bg-white overflow-hidden shadow-sm">
+          <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/60">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Repair Estimate</p>
+          </div>
+          <div className="p-4">
+            {!pricing ? (
+              <p className="text-xs text-gray-400 text-center py-2">
+                Pricing not available for this model. We&apos;ll provide a quote after diagnosis.
+              </p>
+            ) : relevantServices.length === 0 ? (
+              <p className="text-xs text-primary/70 text-center py-2">
+                Select a service above to see pricing.
+              </p>
+            ) : (
+              <>
+                <div className="rounded-xl border border-gray-100 overflow-hidden mb-3">
+                  {relevantServices.map((key, i) => {
+                    const price = pricing[key];
+                    const isCombo = isSamsung && samsungComboServices.includes(key);
+                    return (
+                      <div
+                        key={key}
+                        className={`flex items-center justify-between px-4 py-2.5 gap-2 ${
+                          i < relevantServices.length - 1 ? "border-b border-gray-100" : ""
+                        }`}
+                      >
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold text-gray-700 leading-snug">
+                            {serviceLabels[key]}
+                          </p>
+                          {isCombo && (
+                            <p className="text-[10px] text-gray-400 leading-none mt-0.5">incl. back glass</p>
+                          )}
+                        </div>
+                        {price ? (
+                          <span className="text-sm font-bold text-gray-900 shrink-0">{price}</span>
+                        ) : (
+                          <span className="text-xs text-gray-300 shrink-0">N/A</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {pricedServices.length === 1 && pricing && (
+                  <div className="rounded-xl bg-primary/5 border border-primary/10 px-4 py-3 flex items-center justify-between">
+                    <p className="text-xs text-gray-500">Estimated price</p>
+                    <p className="text-xl font-bold text-primary">{pricing[pricedServices[0]]}</p>
+                  </div>
+                )}
+
+                {total !== null && pricedServices.length > 1 && (
+                  <div className="rounded-xl bg-primary/5 border border-primary/10 px-4 py-3 flex items-center justify-between">
+                    <p className="text-xs text-gray-500">Est. Total ({pricedServices.length} services)</p>
+                    <p className="text-xl font-bold text-primary">${total.toFixed(2)}</p>
+                  </div>
+                )}
+
+                {isSamsung && relevantServices.some((k) => samsungComboServices.includes(k)) && (
+                  <p className="mt-2 text-[10px] text-gray-400 leading-relaxed">
+                    * Samsung prices include back glass replacement at no extra cost.
+                  </p>
+                )}
+              </>
+            )}
+          </div>
         </div>
       )}
+
+      {/* Description textarea — for all brands */}
+      <div className="mb-8">
+        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+          {isPricedBrand ? (
+            <>Any other issue not listed above? <span className="normal-case font-normal">(optional)</span></>
+          ) : (
+            <>Additional details <span className="normal-case font-normal">(optional)</span></>
+          )}
+        </label>
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder={
+            isPricedBrand
+              ? "Describe any other problem with your device — we'll review it and contact you."
+              : "Describe the issue in more detail..."
+          }
+          rows={3}
+          className="w-full rounded-xl border-2 border-gray-100 bg-white px-4 py-3 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none transition"
+        />
+        {isPricedBrand && (
+          <p className="mt-1.5 text-xs text-gray-400">
+            If you have any issue not listed above, describe it here and we&apos;ll contact you with a quote.
+          </p>
+        )}
+      </div>
 
       {/* Nav */}
       <div className="flex items-center justify-between pt-5 border-t border-gray-100 mt-6">

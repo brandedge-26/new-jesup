@@ -4,6 +4,7 @@ import {
     getAppointmentsController,
     getAppointmentController,
     updateAppointmentStatusController,
+    deleteAppointmentController,
 } from "../controllers/appointment.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 
@@ -16,3 +17,4 @@ appointmentRoutes.post("/", createAppointmentController);
 appointmentRoutes.get("/", authMiddleware, getAppointmentsController);
 appointmentRoutes.get("/:id", authMiddleware, getAppointmentController);
 appointmentRoutes.patch("/:id/status", authMiddleware, updateAppointmentStatusController);
+appointmentRoutes.delete("/:id",        authMiddleware, deleteAppointmentController);

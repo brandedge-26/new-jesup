@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Phone, Clock, CheckCircle2 } from "lucide-react";
+import { Mail, Phone, Clock, CheckCircle2, Loader2 } from "lucide-react";
+import { publicAxios } from "@/lib/axios";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
   const [form, setForm] = useState({
     firstName: "", lastName: "", email: "", phone: "", message: "",
   });
@@ -12,9 +15,18 @@ export default function ContactPage() {
   const set = (field: string, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setApiError("");
+    setLoading(true);
+    try {
+      await publicAxios.post("/contacts", form);
+      setSubmitted(true);
+    } catch {
+      setApiError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputCls =
@@ -50,14 +62,21 @@ export default function ContactPage() {
                   Thanks for reaching out. We&apos;ll get back to you within 24 hours.
                 </p>
                 <button
-                  onClick={() => { setSubmitted(false); setForm({ firstName: "", lastName: "", email: "", phone: "", message: "" }); }}
+                  onClick={() => { setSubmitted(false); setApiError(""); setForm({ firstName: "", lastName: "", email: "", phone: "", message: "" }); }}
                   className="mt-2 text-sm text-primary underline underline-offset-2 hover:text-primary-hover transition-colors"
                 >
                   Send another message
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <>
+                {apiError && (
+                  <div className="mb-2 px-4 py-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600">
+                    {apiError}
+                  </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
                 {/* Name row */}
                 <div className="grid grid-cols-2 gap-3">
@@ -136,11 +155,13 @@ export default function ContactPage() {
                 {/* Submit */}
                 <button
                   type="submit"
-                  className="mt-2 w-full py-3.5 rounded-full bg-primary text-white text-sm font-bold hover:bg-primary-hover shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-150"
+                  disabled={loading}
+                  className="mt-2 w-full py-3.5 rounded-full bg-primary text-white text-sm font-bold hover:bg-primary-hover shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-150 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  Send Message →
+                  {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending...</> : "Send Message →"}
                 </button>
-              </form>
+                </form>
+              </>
             )}
           </div>
         </div>

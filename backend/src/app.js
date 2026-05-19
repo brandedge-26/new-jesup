@@ -5,6 +5,10 @@ import { connectDB } from "./config/db.js";
 import { globalErrorHandler } from "./middlewares/globalErrorHandler.js";
 import { authRoutes } from "./routes/auth.routes.js";
 import { appointmentRoutes } from "./routes/appointment.routes.js";
+import { contactRoutes } from "./routes/contact.routes.js";
+import { orderRoutes }   from "./routes/order.routes.js";
+import { cartRoutes }    from "./routes/cart.routes.js";
+import { userRoutes }    from "./routes/user.routes.js";
 import { authMiddleware } from "./middlewares/auth.middleware.js";
 
 
@@ -55,6 +59,10 @@ app.get("/", authMiddleware, (req, res) => {
 // ROUTES
 app.use("/api/auth", authRoutes);
 app.use("/api/appointments", appointmentRoutes);
+app.use("/api/contacts",     contactRoutes);
+app.use("/api/orders",       orderRoutes);
+app.use("/api/cart",         cartRoutes);
+app.use("/api/users",        userRoutes);
 
 
 
