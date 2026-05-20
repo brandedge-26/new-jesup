@@ -3,10 +3,18 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useProductsStore } from "@/store/adminStore";
+import { adminAxios } from "@/lib/axios";
 import type { ProductStatus, Variant, Specification } from "@/lib/mockData";
 
 const CATEGORIES = ["Audio", "Cases", "Power", "Accessories", "Screen Protection"];
+
+type FeaturedType = "none" | "trending" | "new-arrival";
+
+const FEATURED_OPTIONS: { value: FeaturedType; label: string; desc: string; color: string }[] = [
+  { value: "none",        label: "None",         desc: "Regular product",                   color: "border-gray-200 text-gray-500" },
+  { value: "trending",    label: "🔥 Trending",  desc: "Shows in Trending Now section",     color: "border-amber-300 text-amber-700 bg-amber-50" },
+  { value: "new-arrival", label: "✨ New Arrival",desc: "Shows in New Arrivals section",    color: "border-primary text-primary bg-primary/5" },
+];
 
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
@@ -21,7 +29,32 @@ function Field({ label, required, children }: { label: string; required?: boolea
 
 const INPUT = "w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors";
 
-// ── Shared file-to-dataURL helper ─────────────────────────────────────────────
+// ── Toggle Switch ─────────────────────────────────────────────────────────────
+
+function Toggle({ checked, onChange, label, sublabel }: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+  sublabel?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className="flex items-center justify-between w-full group"
+    >
+      <div>
+        <p className="text-sm font-semibold text-gray-800">{label}</p>
+        {sublabel && <p className="text-xs text-gray-400 mt-0.5">{sublabel}</p>}
+      </div>
+      <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 ${checked ? "bg-primary" : "bg-gray-200"}`}>
+        <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-200 ${checked ? "translate-x-5" : "translate-x-0"}`} />
+      </div>
+    </button>
+  );
+}
+
+// ── Image Uploads ─────────────────────────────────────────────────────────────
 
 function readFileAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve) => {
@@ -31,27 +64,20 @@ function readFileAsDataUrl(file: File): Promise<string> {
   });
 }
 
-// ── Main (large) image upload ─────────────────────────────────────────────────
-
 function MainImageUpload({ value, onChange, onClear }: {
-  value: string;
-  onChange: (url: string) => void;
-  onClear: () => void;
+  value: string; onChange: (url: string) => void; onClear: () => void;
 }) {
   const ref = useRef<HTMLInputElement>(null);
-
   async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) onChange(await readFileAsDataUrl(file));
     e.target.value = "";
   }
-
   async function handleDrop(e: React.DragEvent) {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
     if (file?.type.startsWith("image/")) onChange(await readFileAsDataUrl(file));
   }
-
   return (
     <div onDrop={handleDrop} onDragOver={(e) => e.preventDefault()}>
       {value ? (
@@ -64,11 +90,8 @@ function MainImageUpload({ value, onChange, onClear }: {
           </div>
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={() => ref.current?.click()}
-          className="w-full h-56 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-3 text-gray-400 hover:border-primary/40 hover:bg-primary/[0.02] transition-colors"
-        >
+        <button type="button" onClick={() => ref.current?.click()}
+          className="w-full h-56 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-3 text-gray-400 hover:border-primary/40 hover:bg-primary/[0.02] transition-colors">
           <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -85,35 +108,28 @@ function MainImageUpload({ value, onChange, onClear }: {
   );
 }
 
-// ── Small variant image slot ───────────────────────────────────────────────────
-
 function VariantImageSlot({ value, onChange, onClear }: {
-  value: string;
-  onChange: (url: string) => void;
-  onClear: () => void;
+  value: string; onChange: (url: string) => void; onClear: () => void;
 }) {
   const ref = useRef<HTMLInputElement>(null);
-
   async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) onChange(await readFileAsDataUrl(file));
     e.target.value = "";
   }
-
   return (
     <div className="relative group">
       {value ? (
         <div className="relative w-full aspect-square rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={value} alt="" className="w-full h-full object-contain" />
-          {/* Hover overlay */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100">
-            <button type="button" onClick={() => ref.current?.click()} className="p-1.5 rounded-lg bg-white/90 text-gray-700 hover:bg-white transition-colors">
+            <button type="button" onClick={() => ref.current?.click()} className="p-1.5 rounded-lg bg-white/90 text-gray-700">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
               </svg>
             </button>
-            <button type="button" onClick={onClear} className="p-1.5 rounded-lg bg-red-500/90 text-white hover:bg-red-500 transition-colors">
+            <button type="button" onClick={onClear} className="p-1.5 rounded-lg bg-red-500/90 text-white">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -121,11 +137,8 @@ function VariantImageSlot({ value, onChange, onClear }: {
           </div>
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={() => ref.current?.click()}
-          className="w-full aspect-square rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-1.5 text-gray-300 hover:border-primary/40 hover:text-primary/50 hover:bg-primary/[0.02] transition-colors"
-        >
+        <button type="button" onClick={() => ref.current?.click()}
+          className="w-full aspect-square rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-1.5 text-gray-300 hover:border-primary/40 hover:text-primary/50 hover:bg-primary/[0.02] transition-colors">
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
@@ -145,27 +158,32 @@ interface SpecRow    { key: string;  value: string }
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AddProductPage() {
-  const router     = useRouter();
-  const addProduct = useProductsStore((s) => s.addProduct);
+  const router = useRouter();
 
   const [name,     setName]     = useState("");
   const [desc,     setDesc]     = useState("");
   const [category, setCategory] = useState("Audio");
   const [price,    setPrice]    = useState("");
+  const [origPrice,setOrigPrice]= useState("");
   const [stock,    setStock]    = useState("");
   const [status,   setStatus]   = useState<ProductStatus>("Active");
   const [brand,    setBrand]    = useState("");
   const [company,  setCompany]  = useState("");
+  const [rating,   setRating]   = useState("4.5");
+  const [reviews,  setReviews]  = useState("0");
+
+  // New fields
+  const [inStock,   setInStock]   = useState(true);
+  const [featured,  setFeatured]  = useState<FeaturedType>("none");
 
   // Images
   const [mainImage,     setMainImage]     = useState("");
   const [variantImages, setVariantImages] = useState<string[]>(["", "", "", ""]);
-
   function setVariantImage(i: number, url: string) {
     setVariantImages((imgs) => imgs.map((v, idx) => idx === i ? url : v));
   }
 
-  // Variants (text-only labels)
+  // Variants
   const [variants, setVariants] = useState<VariantRow[]>([{ name: "Color", optionsStr: "" }]);
   function addVariant()              { setVariants((v) => [...v, { name: "", optionsStr: "" }]); }
   function removeVariant(i: number)  { setVariants((v) => v.filter((_, idx) => idx !== i)); }
@@ -181,22 +199,25 @@ export default function AddProductPage() {
     setSpecs((s) => s.map((r, idx) => idx === i ? { ...r, [field]: val } : r));
   }
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [saving, setSaving] = useState(false);
+  const [errors,  setErrors]  = useState<Record<string, string>>({});
+  const [saving,  setSaving]  = useState(false);
+  const [saveMsg, setSaveMsg] = useState("");
 
   function validate() {
     const e: Record<string, string> = {};
-    if (!name.trim())                      e.name  = "Product name is required";
-    if (!price || Number(price) <= 0)      e.price = "Enter a valid price";
-    if (stock === "" || Number(stock) < 0) e.stock = "Enter a valid stock quantity";
+    if (!name.trim())                      e.name  = "Product name required hai";
+    if (!price || Number(price) <= 0)      e.price = "Valid price daalo";
+    if (stock === "" || Number(stock) < 0) e.stock = "Valid stock quantity daalo";
+    if (!mainImage)                        e.image = "Main image required hai";
     setErrors(e);
     return Object.keys(e).length === 0;
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate()) return;
     setSaving(true);
+    setSaveMsg("");
 
     const parsedVariants: Variant[] = variants
       .filter((v) => v.name.trim())
@@ -209,24 +230,56 @@ export default function AddProductPage() {
       .filter((s) => s.key.trim())
       .map((s) => ({ key: s.key.trim(), value: s.value.trim() }));
 
-    setTimeout(() => {
-      addProduct({
+    const finalStatus: ProductStatus = !inStock ? "Out of Stock" : status;
+
+    try {
+      // Save to backend Products collection
+      await adminAxios.post("/products", {
         name:           name.trim(),
+        description:    desc.trim(),
         sku:            "",
         category,
-        price:          parseFloat(price),
-        stock:          parseInt(stock),
-        status,
-        revenue:        0,
         brand:          brand.trim(),
         company:        company.trim(),
+        price:          parseFloat(price),
+        originalPrice:  origPrice ? parseFloat(origPrice) : undefined,
+        stock:          parseInt(stock),
+        status:         finalStatus,
+        inStock,
+        featured,
+        rating:         parseFloat(rating) || 4.5,
+        reviews:        parseInt(reviews)  || 0,
+        badge:          featured === "new-arrival" ? "New" : featured === "trending" ? "Best Seller" : "",
         image:          mainImage,
         variantImages:  variantImages.filter(Boolean),
         variants:       parsedVariants,
         specifications: parsedSpecs,
       });
-      router.push("/products");
-    }, 600);
+
+      // If featured, also save to FeaturedProduct for home page sections
+      if (featured !== "none") {
+        await adminAxios.post("/featured", {
+          name:          name.trim(),
+          brand:         brand.trim(),
+          price:         parseFloat(price),
+          originalPrice: origPrice ? parseFloat(origPrice) : undefined,
+          rating:        parseFloat(rating) || 4.5,
+          reviews:       parseInt(reviews)  || 0,
+          image:         mainImage,
+          badge:         featured === "new-arrival" ? "New" : "Best Seller",
+          inStock,
+          type:          featured,
+        });
+        setSaveMsg(`✅ Product saved and added to ${featured === "trending" ? "Trending Now 🔥" : "New Arrivals ✨"}!`);
+      } else {
+        setSaveMsg("✅ Product saved successfully!");
+      }
+
+      setTimeout(() => router.push("/products"), 1200);
+    } catch {
+      setSaveMsg("❌ Error: Product save nahi hua. Backend check karo.");
+      setSaving(false);
+    }
   }
 
   return (
@@ -239,6 +292,12 @@ export default function AddProductPage() {
         </svg>
         <span className="text-gray-600 font-medium">Add Product</span>
       </div>
+
+      {saveMsg && (
+        <div className={`mb-4 px-4 py-3 rounded-xl text-sm font-medium ${saveMsg.startsWith("✅") ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>
+          {saveMsg}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
 
@@ -259,25 +318,17 @@ export default function AddProductPage() {
           </Field>
         </div>
 
-        {/* Media — main image + 4 variant slots */}
+        {/* Media */}
         <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
           <h2 className="text-sm font-bold text-gray-800 pb-3 border-b border-gray-100">Media</h2>
-
-          {/* Main image */}
-          <MainImageUpload value={mainImage} onChange={setMainImage} onClear={() => setMainImage("")} />
-
-          {/* 4 variant image slots */}
+          <MainImageUpload value={mainImage} onChange={(url) => { setMainImage(url); setErrors((e) => ({ ...e, image: "" })); }} onClear={() => setMainImage("")} />
+          {errors.image && <p className="text-xs text-red-500">{errors.image}</p>}
           <div className="grid grid-cols-4 gap-3">
             {[0, 1, 2, 3].map((i) => (
-              <VariantImageSlot
-                key={i}
-                value={variantImages[i]}
-                onChange={(url) => setVariantImage(i, url)}
-                onClear={() => setVariantImage(i, "")}
-              />
+              <VariantImageSlot key={i} value={variantImages[i]} onChange={(url) => setVariantImage(i, url)} onClear={() => setVariantImage(i, "")} />
             ))}
           </div>
-          <p className="text-[11px] text-gray-400">Add up to 4 variant images (e.g. different colors or angles).</p>
+          <p className="text-[11px] text-gray-400">Up to 4 variant images (different colors or angles).</p>
         </div>
 
         {/* Brand & Company */}
@@ -300,22 +351,48 @@ export default function AddProductPage() {
             <Field label="Price (USD)" required>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-                <input
-                  type="number" min={0} step={0.01} value={price}
+                <input type="number" min={0} step={0.01} value={price}
                   onChange={(e) => { setPrice(e.target.value); setErrors((err) => ({ ...err, price: "" })); }}
-                  placeholder="0.00" className={`${INPUT} pl-7`}
-                />
+                  placeholder="0.00" className={`${INPUT} pl-7`} />
               </div>
               {errors.price && <p className="text-xs text-red-500 mt-1">{errors.price}</p>}
             </Field>
+            <Field label="Original Price (USD)">
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                <input type="number" min={0} step={0.01} value={origPrice}
+                  onChange={(e) => setOrigPrice(e.target.value)}
+                  placeholder="0.00 (optional)" className={`${INPUT} pl-7`} />
+              </div>
+              <p className="text-[11px] text-gray-400 mt-1">Strike-through price for discount display</p>
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <Field label="Stock Quantity" required>
-              <input
-                type="number" min={0} value={stock}
+              <input type="number" min={0} value={stock}
                 onChange={(e) => { setStock(e.target.value); setErrors((err) => ({ ...err, stock: "" })); }}
-                placeholder="0" className={INPUT}
-              />
+                placeholder="0" className={INPUT} />
               {errors.stock && <p className="text-xs text-red-500 mt-1">{errors.stock}</p>}
             </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Rating">
+                <input type="number" min={0} max={5} step={0.1} value={rating} onChange={(e) => setRating(e.target.value)} className={INPUT} />
+              </Field>
+              <Field label="Reviews">
+                <input type="number" min={0} value={reviews} onChange={(e) => setReviews(e.target.value)} className={INPUT} />
+              </Field>
+            </div>
+          </div>
+
+          {/* In Stock Toggle */}
+          <div className="pt-1">
+            <Toggle
+              checked={inStock}
+              onChange={setInStock}
+              label="In Stock"
+              sublabel={inStock ? "Product available for purchase" : "Product marked as Out of Stock"}
+            />
           </div>
         </div>
 
@@ -330,9 +407,8 @@ export default function AddProductPage() {
             </Field>
             <Field label="Status">
               <div className="flex gap-2 mt-0.5">
-                {(["Active", "Draft", "Out of Stock"] as ProductStatus[]).map((s) => (
-                  <button
-                    key={s} type="button" onClick={() => setStatus(s)}
+                {(["Active", "Draft"] as ProductStatus[]).map((s) => (
+                  <button key={s} type="button" onClick={() => setStatus(s)}
                     className={`flex-1 py-2 rounded-lg border text-xs font-semibold transition-all ${
                       status === s ? "border-primary bg-primary/5 text-primary" : "border-gray-200 text-gray-500 hover:border-gray-300"
                     }`}
@@ -343,6 +419,56 @@ export default function AddProductPage() {
               </div>
             </Field>
           </div>
+        </div>
+
+        {/* ── Featured Section ────────────────────────────────────────────── */}
+        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+          <div className="pb-3 border-b border-gray-100">
+            <h2 className="text-sm font-bold text-gray-800">Featured on Home Page</h2>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Trending ya New Arrivals section mein dikhana chahte ho?
+            </p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            {FEATURED_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setFeatured(opt.value)}
+                className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-center transition-all ${
+                  featured === opt.value
+                    ? opt.color + " shadow-sm"
+                    : "border-gray-100 text-gray-400 hover:border-gray-200"
+                }`}
+              >
+                {featured === opt.value && (
+                  <span className="absolute top-2 right-2 w-4 h-4 bg-current rounded-full flex items-center justify-center">
+                    <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </span>
+                )}
+                <span className="text-sm font-bold">{opt.label}</span>
+                <span className="text-[11px] leading-tight">{opt.desc}</span>
+              </button>
+            ))}
+          </div>
+
+          {featured !== "none" && (
+            <div className={`flex items-start gap-2.5 rounded-lg px-3 py-2.5 text-xs ${
+              featured === "trending" ? "bg-amber-50 text-amber-700" : "bg-primary/5 text-primary"
+            }`}>
+              <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>
+                Yeh product shop home page ke{" "}
+                <strong>{featured === "trending" ? "Trending Now 🔥" : "New Arrivals ✨"}</strong>{" "}
+                section mein dikhega. 3 latest products home pe show honge.
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Variants */}
@@ -425,9 +551,19 @@ export default function AddProductPage() {
                 </svg>
                 Saving…
               </>
-            ) : "Save Product"}
+            ) : (
+              <>
+                Save Product
+                {featured !== "none" && (
+                  <span className="ml-1 text-xs opacity-80">
+                    + {featured === "trending" ? "Trending" : "New Arrival"}
+                  </span>
+                )}
+              </>
+            )}
           </button>
         </div>
+
       </form>
     </div>
   );

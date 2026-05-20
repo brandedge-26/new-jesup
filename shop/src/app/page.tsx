@@ -15,6 +15,51 @@ export const metadata: Metadata = {
   },
 };
 
+// ── Fetch featured products from backend ──────────────────────────────────────
+
+async function fetchFeatured(type: "trending" | "new-arrival"): Promise<Product[]> {
+  try {
+    const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5510/api";
+    const res = await fetch(`${API}/featured?type=${type}`, {
+      next: { revalidate: 60 }, // ISR: refresh every 60 seconds
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    // 3 latest products home pe dikhenge
+    return (data as Record<string, unknown>[]).slice(0, 3).map((p, i) => ({
+      id:            String(p._id ?? i),
+      name:          p.name,
+      brand:         p.brand,
+      price:         p.price,
+      originalPrice: p.originalPrice ?? null,
+      rating:        p.rating ?? 4.5,
+      reviews:       p.reviews ?? 0,
+      image:         p.image,
+      badge:         p.badge ?? null,
+      colors:        p.colors ?? [],
+      inStock:       p.inStock ?? true,
+      slug:          p.slug ?? "",
+    }));
+  } catch {
+    return [];
+  }
+}
+
+// ── Static fallbacks (used when DB is empty) ──────────────────────────────────
+
+const FALLBACK_TRENDING: Product[] = [
+  COLLECTIONS.audio.products.find((p) => p.badge === "Best Seller")!,
+  COLLECTIONS.cases.products.find((p) => p.badge === "Best Seller")!,
+  COLLECTIONS["screen-protection"].products.find((p) => p.badge === "Top Rated")!,
+  COLLECTIONS.power.products.find((p) => p.badge === "Top Rated")!,
+];
+
+const FALLBACK_NEW_ARRIVALS: Product[] = [
+  ...COLLECTIONS.cases.products.filter((p) => p.badge === "New"),
+  ...COLLECTIONS.audio.products.filter((p) => p.badge === "New"),
+  ...COLLECTIONS.power.products.filter((p) => p.badge === "New"),
+].slice(0, 4);
+
 // ── Data ───────────────────────────────────────────────────────────────────────
 
 const categories = [
@@ -23,19 +68,6 @@ const categories = [
   { title: "Power & Cables", subtitle: "Fast charge, travel-ready", href: "/collections/power", image: COLLECTIONS.power.products[0].image },
   { title: "Screen Protection", subtitle: "Tempered glass for every screen", href: "/collections/screen-protection", image: COLLECTIONS["screen-protection"].products[0].image },
 ] as const;
-
-const trending: Product[] = [
-  COLLECTIONS.audio.products.find((p) => p.badge === "Best Seller")!,
-  COLLECTIONS.cases.products.find((p) => p.badge === "Best Seller")!,
-  COLLECTIONS["screen-protection"].products.find((p) => p.badge === "Top Rated")!,
-  COLLECTIONS.power.products.find((p) => p.badge === "Top Rated")!,
-];
-
-const newArrivals: Product[] = [
-  ...COLLECTIONS.cases.products.filter((p) => p.badge === "New"),
-  ...COLLECTIONS.audio.products.filter((p) => p.badge === "New"),
-  ...COLLECTIONS.power.products.filter((p) => p.badge === "New"),
-].slice(0, 4);
 
 const brands = ["JBL", "OtterBox", "Anker", "ZAGG", "mophie", "Belkin", "UAG", "PopSockets", "Oladance", "Ventev", "Gadget Guard", "Case-Mate"];
 
@@ -155,7 +187,15 @@ const valueProps = [
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
-export default function Home() {
+export default async function Home() {
+  // Fetch from backend; fallback to static if empty/unavailable
+  const [trendingData, newArrivalsData] = await Promise.all([
+    fetchFeatured("trending"),
+    fetchFeatured("new-arrival"),
+  ]);
+
+  const trending    = trendingData.length    > 0 ? trendingData    : FALLBACK_TRENDING;
+  const newArrivals = newArrivalsData.length > 0 ? newArrivalsData : FALLBACK_NEW_ARRIVALS;
   return (
     <>
       <Header />
@@ -289,12 +329,12 @@ export default function Home() {
                 <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">Trending Now</h2>
                 <p className="mt-1.5 text-gray-500 text-sm lg:text-base">Top-rated accessories customers love this week.</p>
               </div>
-              <Link href="/collections" className="hidden sm:inline-flex text-sm font-semibold text-primary hover:text-primary-hover transition-colors gap-1 items-center">
+              <Link href="/trending" className="hidden sm:inline-flex text-sm font-semibold text-primary hover:text-primary-hover transition-colors gap-1 items-center">
                 See all →
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5">
               {trending.map((item) => <ProductCard key={item.id} item={item} showBadge />)}
             </div>
           </section>
@@ -307,12 +347,12 @@ export default function Home() {
                 <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">New Arrivals</h2>
                 <p className="mt-1.5 text-gray-500 text-sm lg:text-base">Fresh drops — cases, audio &amp; power just landed.</p>
               </div>
-              <Link href="/collections/deals" className="hidden sm:inline-flex text-sm font-semibold text-primary hover:text-primary-hover transition-colors gap-1 items-center">
+              <Link href="/new-arrivals" className="hidden sm:inline-flex text-sm font-semibold text-primary hover:text-primary-hover transition-colors gap-1 items-center">
                 See all new →
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5">
               {newArrivals.map((item) => <ProductCard key={item.id} item={item} showBadge={false} />)}
             </div>
           </section>
