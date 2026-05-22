@@ -13,6 +13,10 @@ export interface Product {
   badge?: "New" | "Sale" | "Best Seller" | "Top Rated" | "Limited";
   inStock: boolean;
   slug: string;
+  // enriched from backend
+  description?: string;
+  specifications?: { key: string; value: string }[];
+  variantImages?: string[];
 }
 
 export interface CollectionInfo {

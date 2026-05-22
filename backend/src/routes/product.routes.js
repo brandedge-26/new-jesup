@@ -10,9 +10,9 @@ import { authMiddleware } from "../middlewares/auth.middleware.js";
 
 const productRoutes = Router();
 
-// Admin protected — all product CRUD
-productRoutes.get(   "/",    authMiddleware, getProducts);
-productRoutes.get(   "/:id", authMiddleware, getProductById);
+// GET is public (shop needs it); write operations are admin-only
+productRoutes.get(   "/",    getProducts);
+productRoutes.get(   "/:id", getProductById);
 productRoutes.post(  "/",    authMiddleware, createProduct);
 productRoutes.put(   "/:id", authMiddleware, updateProduct);
 productRoutes.delete("/:id", authMiddleware, deleteProduct);

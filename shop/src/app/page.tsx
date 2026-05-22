@@ -38,7 +38,7 @@ async function fetchFeatured(type: "trending" | "new-arrival"): Promise<Product[
       badge:         p.badge ?? null,
       colors:        p.colors ?? [],
       inStock:       p.inStock ?? true,
-      slug:          p.slug ?? "",
+      slug:          (p.slug && String(p.slug).length > 0) ? String(p.slug) : String(p._id ?? i),
     }));
   } catch {
     return [];

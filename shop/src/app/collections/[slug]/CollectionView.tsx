@@ -4,7 +4,47 @@ import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { COLLECTIONS, COLOR_HEX, type Product } from "@/lib/collectionData";
+import { useWishlistStore } from "@/store/wishlistStore";
+
+// ─── Backend Product Integration ──────────────────────────────────────────────
+
+interface _BPOption  { label: string }
+interface _BPVariant { name: string; options: _BPOption[] }
+interface _BackendProduct {
+  _id: string; name: string; brand?: string; price: number;
+  originalPrice?: number; rating?: number; reviews?: number;
+  image?: string; badge?: string; inStock?: boolean;
+  variants?: _BPVariant[];
+}
+
+const SLUG_TO_CATEGORY: Record<string, string> = {
+  audio:              "Audio",
+  cases:              "Cases",
+  "screen-protection":"Screen Protection",
+  power:              "Power",
+  accessories:        "Accessories",
+};
+
+function mapBackendProduct(p: _BackendProduct): Product {
+  const colorVariant = p.variants?.find((v) => v.name.toLowerCase() === "color");
+  const colors = colorVariant?.options.map((o) => o.label) ?? [];
+  return {
+    id:            p._id,
+    name:          p.name,
+    brand:         p.brand ?? "",
+    price:         p.price,
+    originalPrice: p.originalPrice,
+    rating:        p.rating ?? 4.5,
+    reviews:       p.reviews ?? 0,
+    colors,
+    image:         p.image ?? "",
+    badge:         p.badge as Product["badge"],
+    inStock:       p.inStock ?? true,
+    slug:          p._id,
+  };
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -70,18 +110,26 @@ function ProductCardSkeleton() {
 // ─── Product Card ─────────────────────────────────────────────────────────────
 
 function ProductCard({ product }: { product: Product }) {
-  const [added, setAdded] = useState(false);
-  const [wished, setWished] = useState(false);
+  const router = useRouter();
+  const { addItem, removeItem, isWishlisted } = useWishlistStore();
+  const wished = isWishlisted(product.id);
 
   const discountPct = product.originalPrice
     ? Math.round((1 - product.price / product.originalPrice) * 100)
     : null;
 
-  function handleAdd(e: React.MouseEvent) {
+  function toggleWish(e: React.MouseEvent) {
     e.preventDefault();
-    if (!product.inStock || added) return;
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+    if (wished) {
+      removeItem(product.id);
+    } else {
+      addItem({
+        id: product.id, slug: product.slug, name: product.name,
+        brand: product.brand, image: product.image, price: product.price,
+        originalPrice: product.originalPrice, rating: product.rating,
+        reviews: product.reviews, badge: product.badge,
+      });
+    }
   }
 
   return (
@@ -89,13 +137,18 @@ function ProductCard({ product }: { product: Product }) {
       {/* ── Image ── */}
       <div className="relative aspect-square bg-gray-50 overflow-hidden">
         <Link href={`/products/${product.slug}`} className="block w-full h-full">
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          />
+          {product.image.startsWith("data:") ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          ) : (
+            <Image
+              src={product.image}
+              alt={product.name}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            />
+          )}
         </Link>
 
         {product.badge && (
@@ -111,11 +164,11 @@ function ProductCard({ product }: { product: Product }) {
         )}
 
         <button
-          onClick={(e) => { e.preventDefault(); setWished((w) => !w); }}
+          onClick={toggleWish}
           className={`absolute ${discountPct ? "top-10 right-3 mt-1" : "top-3 right-3"} p-2 rounded-full shadow-md backdrop-blur-sm transition-all duration-200
             opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0
-            ${wished ? "bg-red-500 text-white" : "bg-white/90 text-gray-400 hover:text-red-500"}`}
-          aria-label="Wishlist"
+            ${wished ? "bg-red-500 text-white opacity-100 translate-y-0" : "bg-white/90 text-gray-400 hover:text-red-500"}`}
+          aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} fill={wished ? "currentColor" : "none"}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -178,31 +231,13 @@ function ProductCard({ product }: { product: Product }) {
           </div>
 
           <button
-            onClick={handleAdd}
-            disabled={!product.inStock}
-            className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 shrink-0 shadow-sm
-              ${added
-                ? "bg-emerald-500 text-white scale-95"
-                : product.inStock
-                  ? "bg-primary text-white hover:bg-primary-hover active:scale-95"
-                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
-              }`}
+            onClick={() => router.push(`/products/${product.slug}`)}
+            className="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold bg-primary text-white hover:bg-primary-hover active:scale-95 transition-all duration-200 shrink-0 shadow-sm"
           >
-            {added ? (
-              <>
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-                Added!
-              </>
-            ) : (
-              <>
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                Add
-              </>
-            )}
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+            Shop
           </button>
         </div>
       </div>
@@ -473,6 +508,7 @@ function Sidebar(props: SidebarProps) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 const SORT_OPTIONS = [
+  { value: "newest",     label: "Newest First" },
   { value: "featured",   label: "Featured" },
   { value: "price-asc",  label: "Price: Low to High" },
   { value: "price-desc", label: "Price: High to Low" },
@@ -484,10 +520,35 @@ export default function CollectionView({ slug }: { slug: string }) {
   const collection = COLLECTIONS[slug];
   const searchParams = useSearchParams();
 
-  const allBrands = useMemo(() => [...new Set(collection.products.map((p) => p.brand))].sort(), [collection]);
-  const allColors = useMemo(() => [...new Set(collection.products.flatMap((p) => p.colors))].sort(), [collection]);
-  const allBadges = useMemo(() => [...new Set(collection.products.map((p) => p.badge).filter(Boolean))] as string[], [collection]);
-  const maxProductPrice = useMemo(() => Math.ceil(Math.max(...collection.products.map((p) => p.price)) / 10) * 10, [collection]);
+  // Fetch live products from backend and merge with static data
+  const [backendProducts, setBackendProducts] = useState<Product[]>([]);
+  useEffect(() => {
+    const category = SLUG_TO_CATEGORY[slug];
+    if (!category) return;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5510/api";
+    fetch(`${apiUrl}/products?category=${encodeURIComponent(category)}&status=Active&limit=200`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data.products)) {
+          setBackendProducts(data.products.map(mapBackendProduct));
+        }
+      })
+      .catch(() => { /* silently ignore — static products still show */ });
+  }, [slug]);
+
+  // Backend products come first (newest first from API), then static catalog products
+  const allProducts = useMemo(
+    () => [...backendProducts, ...collection.products],
+    [collection.products, backendProducts]
+  );
+
+  const allBrands = useMemo(() => [...new Set(allProducts.map((p) => p.brand))].sort(), [allProducts]);
+  const allColors = useMemo(() => [...new Set(allProducts.flatMap((p) => p.colors))].sort(), [allProducts]);
+  const allBadges = useMemo(() => [...new Set(allProducts.map((p) => p.badge).filter(Boolean))] as string[], [allProducts]);
+  const maxProductPrice = useMemo(() => {
+    const prices = allProducts.map((p) => p.price);
+    return prices.length > 0 ? Math.ceil(Math.max(...prices) / 10) * 10 : 500;
+  }, [allProducts]);
 
   // Skeleton state
   const [ready, setReady] = useState(false);
@@ -512,7 +573,7 @@ export default function CollectionView({ slug }: { slug: string }) {
   const [maxPrice,       setMaxPrice]       = useState(urlMaxP ? Number(urlMaxP) : maxProductPrice);
   const [minRating,      setMinRating]      = useState(0);
   const [inStockOnly,    setInStockOnly]    = useState(false);
-  const [sortBy,         setSortBy]         = useState("featured");
+  const [sortBy,         setSortBy]         = useState("newest");
   const [gridCols,       setGridCols]       = useState<2 | 3 | 4>(3);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
@@ -527,7 +588,7 @@ export default function CollectionView({ slug }: { slug: string }) {
     setMinRating(0); setInStockOnly(false);
   }
 
-  const filtered = useMemo(() => collection.products.filter((p) => {
+  const filtered = useMemo(() => allProducts.filter((p) => {
     if (searchQuery && !p.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     if (selectedBrands.length && !selectedBrands.includes(p.brand)) return false;
     if (selectedColors.length && !p.colors.some((c) => selectedColors.includes(c))) return false;
@@ -536,7 +597,7 @@ export default function CollectionView({ slug }: { slug: string }) {
     if (p.rating < minRating) return false;
     if (inStockOnly && !p.inStock) return false;
     return true;
-  }), [collection, searchQuery, selectedBrands, selectedColors, selectedBadges, minPrice, maxPrice, minRating, inStockOnly]);
+  }), [allProducts, searchQuery, selectedBrands, selectedColors, selectedBadges, minPrice, maxPrice, minRating, inStockOnly]);
 
   const sorted = useMemo(() => [...filtered].sort((a, b) => {
     switch (sortBy) {
@@ -544,6 +605,7 @@ export default function CollectionView({ slug }: { slug: string }) {
       case "price-desc": return b.price - a.price;
       case "rating":     return b.rating - a.rating;
       case "reviews":    return b.reviews - a.reviews;
+      // "newest" and "featured" preserve insertion order (backendProducts first = newest)
       default:           return 0;
     }
   }), [filtered, sortBy]);
@@ -551,9 +613,9 @@ export default function CollectionView({ slug }: { slug: string }) {
   // Product count per brand (from unfiltered collection)
   const productCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    collection.products.forEach((p) => { counts[p.brand] = (counts[p.brand] ?? 0) + 1; });
+    allProducts.forEach((p) => { counts[p.brand] = (counts[p.brand] ?? 0) + 1; });
     return counts;
-  }, [collection]);
+  }, [allProducts]);
 
   const sidebarProps: SidebarProps = {
     brands: allBrands, allColors, allBadges, maxProductPrice, productCounts,
@@ -599,7 +661,7 @@ export default function CollectionView({ slug }: { slug: string }) {
               </span>
             </div>
           )}
-          <p className="mt-1 text-gray-400 text-xs">{collection.products.length} products</p>
+          <p className="mt-1 text-gray-400 text-xs">{allProducts.length} products</p>
         </div>
       </div>
 

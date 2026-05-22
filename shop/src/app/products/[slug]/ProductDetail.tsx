@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { COLOR_HEX, type Product } from "@/lib/collectionData";
 import { useCartStore } from "@/store/cartStore";
+import { useWishlistStore } from "@/store/wishlistStore";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -158,14 +159,19 @@ function ImageZoom({ src, alt }: { src: string; alt: string }) {
         onMouseLeave={() => setActive(false)}
         onMouseMove={handleMove}
       >
-        <Image
-          src={src}
-          alt={alt}
-          fill
-          className="object-cover pointer-events-none"
-          sizes="(max-width: 1024px) 100vw, 50vw"
-          priority
-        />
+        {src.startsWith("data:") ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={src} alt={alt} className="w-full h-full object-cover pointer-events-none" />
+        ) : (
+          <Image
+            src={src}
+            alt={alt}
+            fill
+            className="object-cover pointer-events-none"
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            priority
+          />
+        )}
 
         {/* Lens overlay */}
         {active && (
@@ -206,9 +212,14 @@ function RelatedCard({ product }: { product: Product }) {
       className="group flex flex-col rounded-2xl border border-gray-100 bg-white overflow-hidden shadow-sm hover:shadow-lg hover:border-gray-200 transition-all duration-300"
     >
       <div className="relative aspect-square bg-gray-50 overflow-hidden">
-        <Image src={product.image} alt={product.name} fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-          sizes="(max-width: 640px) 50vw, 25vw" />
+        {product.image.startsWith("data:") ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+        ) : (
+          <Image src={product.image} alt={product.name} fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 640px) 50vw, 25vw" />
+        )}
         {product.badge && (
           <span className={`absolute top-2.5 left-2.5 text-[9px] font-bold uppercase tracking-widest rounded-full px-2 py-0.5 ${BADGE_STYLES[product.badge]}`}>
             {product.badge}
@@ -237,17 +248,37 @@ export default function ProductDetail({ product, collectionId, collectionTitle, 
   const [selectedColor, setSelectedColor] = useState(product.colors[0] ?? "");
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
-  const [wished, setWished] = useState(false);
   const [activeTab, setActiveTab] = useState<"features" | "reviews">("features");
+  const [activeImage, setActiveImage] = useState(product.image);
   const addItem = useCartStore((s) => s.addItem);
+  const { addItem: wishAdd, removeItem: wishRemove, isWishlisted } = useWishlistStore();
+  const wished = isWishlisted(product.id);
+
+  function toggleWish() {
+    if (wished) {
+      wishRemove(product.id);
+    } else {
+      wishAdd({
+        id: product.id, slug: product.slug, name: product.name,
+        brand: product.brand, image: product.image, price: product.price,
+        originalPrice: product.originalPrice, rating: product.rating,
+        reviews: product.reviews, badge: product.badge,
+      });
+    }
+  }
 
   const discountPct = product.originalPrice
     ? Math.round((1 - product.price / product.originalPrice) * 100)
     : null;
 
   const features = getFeatures(product.name, product.brand);
-  const description = getDescription(product.name, product.brand);
+  const description = product.description || getDescription(product.name, product.brand);
   const ratingBars = getRatingBars(product.rating);
+
+  // Build gallery: main image + variant images (deduped)
+  const gallery = [product.image, ...(product.variantImages ?? [])].filter(
+    (src, idx, arr) => src && arr.indexOf(src) === idx
+  );
 
   function handleAdd() {
     if (added) return;
@@ -288,7 +319,7 @@ export default function ProductDetail({ product, collectionId, collectionTitle, 
           <div className="space-y-4">
             {/* Main image with zoom */}
             <div className="relative">
-              <ImageZoom src={product.image} alt={product.name} />
+              <ImageZoom src={activeImage} alt={product.name} />
 
               {/* Badges & wishlist — overlay on top of zoom component */}
               <div className="absolute inset-0 pointer-events-none rounded-2xl overflow-hidden">
@@ -304,10 +335,10 @@ export default function ProductDetail({ product, collectionId, collectionTitle, 
                 )}
               </div>
               <button
-                onClick={() => setWished((w) => !w)}
+                onClick={toggleWish}
                 className={`absolute bottom-4 right-4 p-2.5 rounded-full shadow-lg backdrop-blur-sm transition-all z-10
                   ${wished ? "bg-red-500 text-white" : "bg-white/90 text-gray-400 hover:text-red-500"}`}
-                aria-label="Wishlist"
+                aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} fill={wished ? "currentColor" : "none"}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -315,8 +346,30 @@ export default function ProductDetail({ product, collectionId, collectionTitle, 
               </button>
             </div>
 
-            {/* Color thumbnails */}
-            {product.colors.length > 1 && (
+            {/* Variant image thumbnails */}
+            {gallery.length > 1 && (
+              <div className="flex gap-2 flex-wrap">
+                {gallery.map((src, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveImage(src)}
+                    className={`relative w-16 h-16 rounded-xl border-2 overflow-hidden transition-all bg-gray-50 ${
+                      activeImage === src ? "border-primary shadow-md" : "border-gray-200 hover:border-gray-400"
+                    }`}
+                  >
+                    {src.startsWith("data:") ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={src} alt="" className="w-full h-full object-contain" />
+                    ) : (
+                      <Image src={src} alt="" fill className="object-contain" sizes="64px" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Color thumbnails (when no variant images — static products) */}
+            {gallery.length <= 1 && product.colors.length > 1 && (
               <div className="flex gap-2 flex-wrap">
                 {product.colors.map((color) => (
                   <button
@@ -487,10 +540,10 @@ export default function ProductDetail({ product, collectionId, collectionTitle, 
               </button>
 
               <button
-                onClick={() => setWished((w) => !w)}
+                onClick={toggleWish}
                 className={`flex items-center justify-center w-13 h-13 rounded-full border-2 transition-all px-3.5 py-3.5
                   ${wished ? "border-red-200 bg-red-50 text-red-500" : "border-gray-200 text-gray-400 hover:border-red-200 hover:text-red-400"}`}
-                aria-label="Wishlist"
+                aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} fill={wished ? "currentColor" : "none"}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -557,12 +610,15 @@ export default function ProductDetail({ product, collectionId, collectionTitle, 
               <div>
                 <h3 className="text-base font-bold text-gray-900 mb-4">Specifications</h3>
                 <dl className="space-y-3">
+                  {/* Always show base specs */}
                   {[
-                    { label: "Brand",      value: product.brand },
-                    { label: "Colors",     value: product.colors.join(", ") },
-                    { label: "Rating",     value: `${product.rating} / 5.0` },
-                    { label: "Reviews",    value: product.reviews.toLocaleString() },
+                    { label: "Brand",        value: product.brand },
+                    ...(product.colors.length > 0 ? [{ label: "Colors", value: product.colors.join(", ") }] : []),
+                    { label: "Rating",       value: `${product.rating} / 5.0` },
+                    { label: "Reviews",      value: product.reviews.toLocaleString() },
                     { label: "Availability", value: product.inStock ? "In Stock" : "Out of Stock" },
+                    // Append product-specific specs from backend
+                    ...(product.specifications ?? []).map((s) => ({ label: s.key, value: s.value })),
                   ].map((spec) => (
                     <div key={spec.label} className="flex items-start gap-4 py-2.5 border-b border-gray-100 last:border-0">
                       <dt className="text-sm font-semibold text-gray-500 w-28 shrink-0">{spec.label}</dt>

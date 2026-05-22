@@ -6,7 +6,7 @@ import Link from "next/link";
 import { adminAxios } from "@/lib/axios";
 import type { ProductStatus, Variant, Specification } from "@/lib/mockData";
 
-const CATEGORIES = ["Audio", "Cases", "Power", "Accessories", "Screen Protection"];
+const CATEGORIES = ["Audio", "Cases", "Power", "Accessories", "Screen Protection", "Devices"];
 
 type FeaturedType = "none" | "trending" | "new-arrival";
 
@@ -150,6 +150,42 @@ function VariantImageSlot({ value, onChange, onClear }: {
   );
 }
 
+// ── Color Tag Input ───────────────────────────────────────────────────────────
+
+function ColorTagInput({ colors, onChange }: { colors: string[]; onChange: (colors: string[]) => void }) {
+  const [input, setInput] = useState("");
+
+  function add() {
+    const val = input.trim();
+    if (val && !colors.includes(val)) onChange([...colors, val]);
+    setInput("");
+  }
+
+  function handleKey(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(); }
+    if (e.key === "Backspace" && !input && colors.length) onChange(colors.slice(0, -1));
+  }
+
+  return (
+    <div className={`${INPUT} min-h-[42px] h-auto flex flex-wrap gap-1.5 cursor-text`} onClick={(e) => (e.currentTarget.querySelector("input") as HTMLInputElement)?.focus()}>
+      {colors.map((c) => (
+        <span key={c} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-semibold">
+          {c}
+          <button type="button" onClick={() => onChange(colors.filter((x) => x !== c))} className="text-primary/60 hover:text-primary leading-none">×</button>
+        </span>
+      ))}
+      <input
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={handleKey}
+        onBlur={add}
+        placeholder={colors.length === 0 ? "Type a color and press Enter…" : ""}
+        className="flex-1 min-w-[140px] outline-none bg-transparent text-sm text-gray-800 placeholder-gray-400"
+      />
+    </div>
+  );
+}
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface VariantRow { name: string; optionsStr: string }
@@ -175,6 +211,7 @@ export default function AddProductPage() {
   // New fields
   const [inStock,   setInStock]   = useState(true);
   const [featured,  setFeatured]  = useState<FeaturedType>("none");
+  const [colors,    setColors]    = useState<string[]>([]);
 
   // Images
   const [mainImage,     setMainImage]     = useState("");
@@ -205,10 +242,10 @@ export default function AddProductPage() {
 
   function validate() {
     const e: Record<string, string> = {};
-    if (!name.trim())                      e.name  = "Product name required hai";
-    if (!price || Number(price) <= 0)      e.price = "Valid price daalo";
-    if (stock === "" || Number(stock) < 0) e.stock = "Valid stock quantity daalo";
-    if (!mainImage)                        e.image = "Main image required hai";
+    if (!name.trim())                      e.name  = "Product name is required";
+    if (!price || Number(price) <= 0)      e.price = "Enter a valid price";
+    if (stock === "" || Number(stock) < 0) e.stock = "Enter a valid stock quantity";
+    if (!mainImage)                        e.image = "Main image is required";
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -234,7 +271,7 @@ export default function AddProductPage() {
 
     try {
       // Save to backend Products collection
-      await adminAxios.post("/products", {
+      const { data: createdProduct } = await adminAxios.post("/products", {
         name:           name.trim(),
         description:    desc.trim(),
         sku:            "",
@@ -252,6 +289,7 @@ export default function AddProductPage() {
         badge:          featured === "new-arrival" ? "New" : featured === "trending" ? "Best Seller" : "",
         image:          mainImage,
         variantImages:  variantImages.filter(Boolean),
+        colors,
         variants:       parsedVariants,
         specifications: parsedSpecs,
       });
@@ -269,6 +307,7 @@ export default function AddProductPage() {
           badge:         featured === "new-arrival" ? "New" : "Best Seller",
           inStock,
           type:          featured,
+          slug:          createdProduct.slug || createdProduct._id,
         });
         setSaveMsg(`✅ Product saved and added to ${featured === "trending" ? "Trending Now 🔥" : "New Arrivals ✨"}!`);
       } else {
@@ -277,13 +316,13 @@ export default function AddProductPage() {
 
       setTimeout(() => router.push("/products"), 1200);
     } catch {
-      setSaveMsg("❌ Error: Product save nahi hua. Backend check karo.");
+      setSaveMsg("❌ Failed to save product. Please try again.");
       setSaving(false);
     }
   }
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl w-full px-4 sm:px-0">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-gray-400 mb-5">
         <Link href="/products" className="hover:text-primary transition-colors">Products</Link>
@@ -334,7 +373,7 @@ export default function AddProductPage() {
         {/* Brand & Company */}
         <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
           <h2 className="text-sm font-bold text-gray-800 pb-3 border-b border-gray-100">Brand & Company</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Brand">
               <input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="e.g. JBL" className={INPUT} />
             </Field>
@@ -347,7 +386,7 @@ export default function AddProductPage() {
         {/* Pricing & Inventory */}
         <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
           <h2 className="text-sm font-bold text-gray-800 pb-3 border-b border-gray-100">Pricing & Inventory</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Price (USD)" required>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
@@ -368,7 +407,7 @@ export default function AddProductPage() {
             </Field>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Stock Quantity" required>
               <input type="number" min={0} value={stock}
                 onChange={(e) => { setStock(e.target.value); setErrors((err) => ({ ...err, stock: "" })); }}
@@ -399,7 +438,7 @@ export default function AddProductPage() {
         {/* Organisation */}
         <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
           <h2 className="text-sm font-bold text-gray-800 pb-3 border-b border-gray-100">Organisation</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Category" required>
               <select value={category} onChange={(e) => setCategory(e.target.value)} className={`${INPUT} cursor-pointer`}>
                 {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -426,11 +465,11 @@ export default function AddProductPage() {
           <div className="pb-3 border-b border-gray-100">
             <h2 className="text-sm font-bold text-gray-800">Featured on Home Page</h2>
             <p className="text-xs text-gray-400 mt-0.5">
-              Trending ya New Arrivals section mein dikhana chahte ho?
+              Show this product in the Trending or New Arrivals section?
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {FEATURED_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
@@ -463,9 +502,9 @@ export default function AddProductPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span>
-                Yeh product shop home page ke{" "}
+                This product will appear in the{" "}
                 <strong>{featured === "trending" ? "Trending Now 🔥" : "New Arrivals ✨"}</strong>{" "}
-                section mein dikhega. 3 latest products home pe show honge.
+                section on the home page. The 3 latest products will be shown.
               </span>
             </div>
           )}
@@ -490,10 +529,10 @@ export default function AddProductPage() {
           ) : (
             <div className="space-y-2">
               {variants.map((v, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <input value={v.name} onChange={(e) => setVField(i, "name", e.target.value)} placeholder="Type (e.g. Color)" className={`${INPUT} flex-1`} />
-                  <input value={v.optionsStr} onChange={(e) => setVField(i, "optionsStr", e.target.value)} placeholder="Options, comma-separated (e.g. Black, Blue, Red)" className={`${INPUT} flex-[2]`} />
-                  <button type="button" onClick={() => removeVariant(i)} className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+                <div key={i} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <input value={v.name} onChange={(e) => setVField(i, "name", e.target.value)} placeholder="Type (e.g. Color)" className={`${INPUT} sm:flex-1`} />
+                  <input value={v.optionsStr} onChange={(e) => setVField(i, "optionsStr", e.target.value)} placeholder="Options, comma-separated (e.g. Black, Blue, Red)" className={`${INPUT} sm:flex-[2]`} />
+                  <button type="button" onClick={() => removeVariant(i)} className="self-end sm:self-auto p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -502,6 +541,15 @@ export default function AddProductPage() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Colors */}
+        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+          <div className="pb-3 border-b border-gray-100">
+            <h2 className="text-sm font-bold text-gray-800">Colors</h2>
+            <p className="text-[11px] text-gray-400 mt-0.5">Type a color name and press Enter to add (e.g. Black, White, Blue)</p>
+          </div>
+          <ColorTagInput colors={colors} onChange={setColors} />
         </div>
 
         {/* Specifications */}
@@ -520,10 +568,10 @@ export default function AddProductPage() {
           ) : (
             <div className="space-y-2">
               {specs.map((s, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <input value={s.key}   onChange={(e) => setSField(i, "key",   e.target.value)} placeholder="Key (e.g. Battery Life)" className={`${INPUT} flex-1`} />
-                  <input value={s.value} onChange={(e) => setSField(i, "value", e.target.value)} placeholder="Value (e.g. 12 hours)"   className={`${INPUT} flex-1`} />
-                  <button type="button" onClick={() => removeSpec(i)} className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+                <div key={i} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <input value={s.key}   onChange={(e) => setSField(i, "key",   e.target.value)} placeholder="Key (e.g. Battery Life)" className={`${INPUT} sm:flex-1`} />
+                  <input value={s.value} onChange={(e) => setSField(i, "value", e.target.value)} placeholder="Value (e.g. 12 hours)"   className={`${INPUT} sm:flex-1`} />
+                  <button type="button" onClick={() => removeSpec(i)} className="self-end sm:self-auto p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -535,7 +583,7 @@ export default function AddProductPage() {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-3 pt-1 pb-6">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1 pb-6">
           <Link href="/products" className="px-5 py-2.5 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
             Cancel
           </Link>

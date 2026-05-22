@@ -42,7 +42,7 @@ interface Product {
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const PAGE_SIZE = 8;
-const CATS = ["All", "Audio", "Cases", "Power", "Accessories", "Screen Protection"];
+const CATS = ["All", "Audio", "Cases", "Power", "Accessories", "Screen Protection", "Devices"];
 
 const CAT_COLOR: Record<string, string> = {
   Audio:              "bg-violet-100 text-violet-700",
@@ -87,7 +87,7 @@ function DeleteModal({ name, onConfirm, onCancel, loading }: {
         </div>
         <h3 className="text-base font-bold text-gray-900 text-center">Delete Product?</h3>
         <p className="text-sm text-gray-500 text-center mt-1">
-          <span className="font-semibold text-gray-700">{name}</span> permanently delete ho jayega.
+          <span className="font-semibold text-gray-700">{name}</span> will be permanently deleted.
         </p>
         <div className="flex gap-3 mt-6">
           <button onClick={onCancel} className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
@@ -393,7 +393,7 @@ export default function ProductsPage() {
       setTotal(res.data.total);
       setTotalPages(res.data.totalPages);
     } catch {
-      setError("Products load nahi ho sake. Backend check karo.");
+      setError("Failed to load products. Please check your connection.");
     } finally {
       setLoading(false);
     }
@@ -415,7 +415,7 @@ export default function ProductsPage() {
       setDeleteTarget(null);
       fetchProducts(page);
     } catch {
-      alert("Delete nahi hua. Dobara try karo.");
+      alert("Failed to delete product. Please try again.");
     } finally {
       setDeleteLoading(false);
     }
@@ -520,7 +520,7 @@ export default function ProductsPage() {
                 ) : products.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-4 py-12 text-center text-sm text-gray-400">
-                      {error ? "Error loading products." : "Koi product nahi mila."}
+                      {error ? "Error loading products." : "No products found."}
                     </td>
                   </tr>
                 ) : (
