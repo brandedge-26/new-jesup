@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   },
   description: "Shop premium phone cases, audio, screen protection, power accessories and more — curated by repair experts at Jesup.",
   keywords: ["phone cases", "screen protectors", "earbuds", "power banks", "phone accessories"],
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+  },
   openGraph: {
     siteName: "Jesup Shop",
     type: "website",

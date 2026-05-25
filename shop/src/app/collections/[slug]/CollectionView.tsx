@@ -16,6 +16,7 @@ interface _BackendProduct {
   _id: string; name: string; brand?: string; price: number;
   originalPrice?: number; rating?: number; reviews?: number;
   image?: string; badge?: string; inStock?: boolean;
+  slug?: string; colors?: string[];
   variants?: _BPVariant[];
 }
 
@@ -29,7 +30,8 @@ const SLUG_TO_CATEGORY: Record<string, string> = {
 
 function mapBackendProduct(p: _BackendProduct): Product {
   const colorVariant = p.variants?.find((v) => v.name.toLowerCase() === "color");
-  const colors = colorVariant?.options.map((o) => o.label) ?? [];
+  const variantColors = colorVariant?.options.map((o) => o.label) ?? [];
+  const colors = (p.colors && p.colors.length > 0) ? p.colors : variantColors;
   return {
     id:            p._id,
     name:          p.name,
@@ -42,7 +44,7 @@ function mapBackendProduct(p: _BackendProduct): Product {
     image:         p.image ?? "",
     badge:         p.badge as Product["badge"],
     inStock:       p.inStock ?? true,
-    slug:          p._id,
+    slug:          p.slug || p._id,
   };
 }
 
@@ -161,6 +163,14 @@ function ProductCard({ product }: { product: Product }) {
           <span className="absolute top-3 right-3 bg-red-500 text-white text-[10px] font-bold rounded-full px-2 py-1 shadow">
             -{discountPct}%
           </span>
+        )}
+
+        {!product.inStock && (
+          <div className="absolute inset-0 bg-white/60 flex items-center justify-center pointer-events-none">
+            <span className="bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest rounded-full px-3 py-1 shadow">
+              Out of Stock
+            </span>
+          </div>
         )}
 
         <button
@@ -520,27 +530,20 @@ export default function CollectionView({ slug }: { slug: string }) {
   const collection = COLLECTIONS[slug];
   const searchParams = useSearchParams();
 
-  // Fetch live products from backend and merge with static data
-  const [backendProducts, setBackendProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   useEffect(() => {
     const category = SLUG_TO_CATEGORY[slug];
     if (!category) return;
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5510/api";
-    fetch(`${apiUrl}/products?category=${encodeURIComponent(category)}&status=Active&limit=200`)
+    fetch(`${apiUrl}/products?category=${encodeURIComponent(category)}&limit=200`)
       .then((r) => r.json())
       .then((data) => {
         if (Array.isArray(data.products)) {
-          setBackendProducts(data.products.map(mapBackendProduct));
+          setAllProducts(data.products.map(mapBackendProduct));
         }
       })
-      .catch(() => { /* silently ignore — static products still show */ });
+      .catch(() => {});
   }, [slug]);
-
-  // Backend products come first (newest first from API), then static catalog products
-  const allProducts = useMemo(
-    () => [...backendProducts, ...collection.products],
-    [collection.products, backendProducts]
-  );
 
   const allBrands = useMemo(() => [...new Set(allProducts.map((p) => p.brand))].sort(), [allProducts]);
   const allColors = useMemo(() => [...new Set(allProducts.flatMap((p) => p.colors))].sort(), [allProducts]);

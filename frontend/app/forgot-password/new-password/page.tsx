@@ -72,7 +72,7 @@ export default function NewPasswordPage() {
       {/* Logo */}
       <Link href="/" className="mb-10">
         <Image
-          src="/new-logo.png"
+          src="/jesup-logo.svg"
           alt="Jesup"
           width={140}
           height={50}

@@ -37,7 +37,7 @@ export default function LoginPage() {
 
       {/* Logo */}
       <Link href="/" className="mb-10">
-        <Image src="/new-logo.png" alt="Jesup" width={140} height={50} className="h-12 w-auto object-contain" priority />
+        <Image src="/jesup-logo.svg" alt="Jesup" width={140} height={50} className="h-12 w-auto object-contain" priority />
       </Link>
 
       <div className="w-full max-w-md">

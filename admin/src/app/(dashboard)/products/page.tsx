@@ -153,10 +153,8 @@ function EditModal({ product, onSave, onCancel }: {
   const [origPrice,setOrigPrice]= useState(String(product.originalPrice ?? ""));
   const [stock,    setStock]    = useState(String(product.stock));
   const [status,   setStatus]   = useState<ProductStatus>(product.status);
-  const [inStock,  setInStock]  = useState(product.inStock ?? true);
+  const [inStock,  setInStock]  = useState(product.status !== "Out of Stock" && (product.inStock ?? true));
   const [featured, setFeatured] = useState<FeaturedType>(product.featured ?? "none");
-  const [rating,   setRating]   = useState(String(product.rating ?? 4.5));
-  const [reviews,  setReviews]  = useState(String(product.reviews ?? 0));
   const [badge,    setBadge]    = useState(product.badge ?? "");
   const [image,    setImage]    = useState(product.image ?? "");
   const [variantImages, setVI]  = useState<string[]>(() => [...(product.variantImages ?? []), "", "", "", ""].slice(0, 4));
@@ -184,10 +182,9 @@ function EditModal({ product, onSave, onCancel }: {
       price: parseFloat(price) || 0,
       originalPrice: origPrice ? parseFloat(origPrice) : undefined,
       stock: parseInt(stock) || 0,
-      status: !inStock ? "Out of Stock" : status,
-      inStock, featured,
-      rating: parseFloat(rating) || 4.5,
-      reviews: parseInt(reviews) || 0,
+      status: !inStock || status === "Out of Stock" ? "Out of Stock" : status,
+      inStock: inStock && status !== "Out of Stock",
+      featured,
       badge,
       image, variantImages: variantImages.filter(Boolean),
       variants: parsedVariants, specifications: parsedSpecs,
@@ -243,13 +240,6 @@ function EditModal({ product, onSave, onCancel }: {
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5">Stock</label>
                   <input type="number" min={0} value={stock} onChange={(e) => setStock(e.target.value)} className={FIELD} />
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Rating / Reviews</label>
-                  <div className="flex gap-2">
-                    <input type="number" min={0} max={5} step={0.1} value={rating} onChange={(e) => setRating(e.target.value)} className={FIELD} placeholder="4.5" />
-                    <input type="number" min={0} value={reviews} onChange={(e) => setReviews(e.target.value)} className={FIELD} placeholder="0" />
-                  </div>
-                </div>
               </div>
             </div>
           </section>
@@ -263,12 +253,21 @@ function EditModal({ product, onSave, onCancel }: {
                   <p className="text-sm font-semibold text-gray-800">In Stock</p>
                   <p className="text-xs text-gray-400">{inStock ? "Available for purchase" : "Out of Stock"}</p>
                 </div>
-                <Toggle checked={inStock} onChange={setInStock} />
+                <Toggle checked={inStock} onChange={(v) => {
+                  setInStock(v);
+                  if (!v) setStatus("Out of Stock");
+                  else if (status === "Out of Stock") setStatus("Active");
+                }} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5">Status</label>
-                  <select value={status} onChange={(e) => setStatus(e.target.value as ProductStatus)} className={`${FIELD} bg-white cursor-pointer`}>
+                  <select value={status} onChange={(e) => {
+                    const s = e.target.value as ProductStatus;
+                    setStatus(s);
+                    if (s === "Out of Stock") setInStock(false);
+                    else setInStock(true);
+                  }} className={`${FIELD} bg-white cursor-pointer`}>
                     <option value="Active">Active</option>
                     <option value="Draft">Draft</option>
                     <option value="Out of Stock">Out of Stock</option>
@@ -608,6 +607,7 @@ export default function ProductsPage() {
       {/* Edit Modal */}
       {editTarget && (
         <EditModal
+          key={editTarget._id}
           product={editTarget}
           onSave={(updates) => handleEdit(editTarget._id, updates)}
           onCancel={() => setEditTarget(null)}

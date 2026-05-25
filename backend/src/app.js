@@ -11,6 +11,7 @@ import { cartRoutes }    from "./routes/cart.routes.js";
 import { userRoutes }        from "./routes/user.routes.js";
 import { featuredRoutes }   from "./routes/featuredProduct.routes.js";
 import { productRoutes }    from "./routes/product.routes.js";
+import { reviewRoutes }     from "./routes/review.routes.js";
 import { authMiddleware } from "./middlewares/auth.middleware.js";
 
 
@@ -67,6 +68,7 @@ app.use("/api/cart",         cartRoutes);
 app.use("/api/users",        userRoutes);
 app.use("/api/featured",     featuredRoutes);
 app.use("/api/products",     productRoutes);
+app.use("/api/reviews",      reviewRoutes);
 
 
 

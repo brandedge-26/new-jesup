@@ -90,11 +90,11 @@ export default function Footer() {
           <div className="flex flex-col gap-5">
             <Link href="/" className="inline-block">
               <Image
-                src="/new-logo.png"
+                src="/jesup-footer-logo.svg"
                 alt="Jesup"
                 width={110}
                 height={36}
-                className="h-12 w-auto object-contain brightness-0 invert"
+                className="h-12 w-auto object-contain"
               />
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed">

@@ -24,7 +24,7 @@ export default function ForgotPasswordPage() {
       {/* Logo */}
       <Link href="/" className="mb-10">
         <Image
-          src="/new-logo.png"
+          src="/jesup-logo.svg"
           alt="Jesup"
           width={140}
           height={50}

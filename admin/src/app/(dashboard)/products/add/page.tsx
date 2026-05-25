@@ -150,42 +150,6 @@ function VariantImageSlot({ value, onChange, onClear }: {
   );
 }
 
-// ── Color Tag Input ───────────────────────────────────────────────────────────
-
-function ColorTagInput({ colors, onChange }: { colors: string[]; onChange: (colors: string[]) => void }) {
-  const [input, setInput] = useState("");
-
-  function add() {
-    const val = input.trim();
-    if (val && !colors.includes(val)) onChange([...colors, val]);
-    setInput("");
-  }
-
-  function handleKey(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(); }
-    if (e.key === "Backspace" && !input && colors.length) onChange(colors.slice(0, -1));
-  }
-
-  return (
-    <div className={`${INPUT} min-h-[42px] h-auto flex flex-wrap gap-1.5 cursor-text`} onClick={(e) => (e.currentTarget.querySelector("input") as HTMLInputElement)?.focus()}>
-      {colors.map((c) => (
-        <span key={c} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-semibold">
-          {c}
-          <button type="button" onClick={() => onChange(colors.filter((x) => x !== c))} className="text-primary/60 hover:text-primary leading-none">×</button>
-        </span>
-      ))}
-      <input
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={handleKey}
-        onBlur={add}
-        placeholder={colors.length === 0 ? "Type a color and press Enter…" : ""}
-        className="flex-1 min-w-[140px] outline-none bg-transparent text-sm text-gray-800 placeholder-gray-400"
-      />
-    </div>
-  );
-}
-
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface VariantRow { name: string; optionsStr: string }
@@ -205,14 +169,9 @@ export default function AddProductPage() {
   const [status,   setStatus]   = useState<ProductStatus>("Active");
   const [brand,    setBrand]    = useState("");
   const [company,  setCompany]  = useState("");
-  const [rating,   setRating]   = useState("4.5");
-  const [reviews,  setReviews]  = useState("0");
-
   // New fields
   const [inStock,   setInStock]   = useState(true);
   const [featured,  setFeatured]  = useState<FeaturedType>("none");
-  const [colors,    setColors]    = useState<string[]>([]);
-
   // Images
   const [mainImage,     setMainImage]     = useState("");
   const [variantImages, setVariantImages] = useState<string[]>(["", "", "", ""]);
@@ -284,12 +243,12 @@ export default function AddProductPage() {
         status:         finalStatus,
         inStock,
         featured,
-        rating:         parseFloat(rating) || 4.5,
-        reviews:        parseInt(reviews)  || 0,
+        rating:         0,
+        reviews:        0,
         badge:          featured === "new-arrival" ? "New" : featured === "trending" ? "Best Seller" : "",
         image:          mainImage,
         variantImages:  variantImages.filter(Boolean),
-        colors,
+        colors:         [],
         variants:       parsedVariants,
         specifications: parsedSpecs,
       });
@@ -301,8 +260,8 @@ export default function AddProductPage() {
           brand:         brand.trim(),
           price:         parseFloat(price),
           originalPrice: origPrice ? parseFloat(origPrice) : undefined,
-          rating:        parseFloat(rating) || 4.5,
-          reviews:       parseInt(reviews)  || 0,
+          rating:        0,
+          reviews:       0,
           image:         mainImage,
           badge:         featured === "new-arrival" ? "New" : "Best Seller",
           inStock,
@@ -414,14 +373,6 @@ export default function AddProductPage() {
                 placeholder="0" className={INPUT} />
               {errors.stock && <p className="text-xs text-red-500 mt-1">{errors.stock}</p>}
             </Field>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Rating">
-                <input type="number" min={0} max={5} step={0.1} value={rating} onChange={(e) => setRating(e.target.value)} className={INPUT} />
-              </Field>
-              <Field label="Reviews">
-                <input type="number" min={0} value={reviews} onChange={(e) => setReviews(e.target.value)} className={INPUT} />
-              </Field>
-            </div>
           </div>
 
           {/* In Stock Toggle */}
@@ -541,15 +492,6 @@ export default function AddProductPage() {
               ))}
             </div>
           )}
-        </div>
-
-        {/* Colors */}
-        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
-          <div className="pb-3 border-b border-gray-100">
-            <h2 className="text-sm font-bold text-gray-800">Colors</h2>
-            <p className="text-[11px] text-gray-400 mt-0.5">Type a color name and press Enter to add (e.g. Black, White, Blue)</p>
-          </div>
-          <ColorTagInput colors={colors} onChange={setColors} />
         </div>
 
         {/* Specifications */}

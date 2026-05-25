@@ -134,7 +134,7 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="shrink-0">
             <Image
-              src="/new-logo.png"
+              src="/jesup-logo.svg"
               alt="Jesup"
               width={200}
               height={60}
@@ -283,7 +283,7 @@ export default function Header() {
             {/* Drawer header */}
             <div className="flex items-center justify-between px-5 h-16 border-b border-gray-100 shrink-0">
               <Image
-                src="/new-logo.png"
+                src="/jesup-logo.svg"
                 alt="Jesup"
                 width={200}
                 height={40}

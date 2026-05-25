@@ -3,11 +3,11 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import Image from "next/image";
-import { COLLECTIONS, type Product } from "@/lib/collectionData";
+import { type Product } from "@/lib/collectionData";
 
 export const metadata: Metadata = {
   title: "All Collections — Shop by Category",
-  description: "Browse all accessory collections at Jesup Shop — cases, audio, screen protection, power, accessories and exclusive deals for every device.",
+  description: "Browse all accessory collections at Jesup Shop — cases, audio, screen protection, power, and accessories for every device.",
   openGraph: {
     title: "All Collections | Jesup Shop",
     description: "Shop cases, audio, screen protection, power accessories and more — all in one place.",
@@ -15,29 +15,38 @@ export const metadata: Metadata = {
   },
 };
 
-const p = (filename: string) => `/products/${filename}`;
+// ─── API helper ───────────────────────────────────────────────────────────────
+
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5510/api";
+
+async function fetchFeaturedByCategory(category: string, limit = 4): Promise<Product[]> {
+  try {
+    const res = await fetch(
+      `${API}/products?category=${encodeURIComponent(category)}&status=Active&limit=${limit}`,
+      { next: { revalidate: 300 } }
+    );
+    if (!res.ok) return [];
+    const data = await res.json() as { products: Record<string, unknown>[] };
+    return (data.products ?? []).map((p, i) => ({
+      id:            String(p._id ?? i),
+      name:          p.name as string,
+      brand:         (p.brand as string) ?? "",
+      price:         p.price as number,
+      originalPrice: (p.originalPrice as number) ?? undefined,
+      rating:        (p.rating as number) ?? 4.5,
+      reviews:       (p.reviews as number) ?? 0,
+      colors:        (p.colors as string[]) ?? [],
+      image:         (p.image as string) ?? "",
+      badge:         (p.badge as Product["badge"]) ?? undefined,
+      inStock:       (p.inStock as boolean) ?? true,
+      slug:          (p.slug as string) || String(p._id ?? i),
+    }));
+  } catch { return []; }
+}
 
 // ─── Static collection meta ────────────────────────────────────────────────
 
 const collectionMeta = [
-  {
-    id: "deals",
-    label: "Deals & More",
-    description: "Hand-picked bundles and value sets — save on top accessories.",
-    icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-      </svg>
-    ),
-    typeItems: [
-      { label: "Under $25",           href: "/collections/deals", image: p("JBLJR320PURAM.png") },
-      { label: "Under $50",           href: "/collections/deals", image: p("JBLT520BTBLKAM.png") },
-      { label: "Under $100",          href: "/collections/deals", image: p("A1367H11-1.png") },
-      { label: "For Gamers",          href: "/collections/deals", image: p("JBLQTUM100M2BLKAM.png") },
-      { label: "For Students",        href: "/collections/deals", image: p("EBGAIRPOPRBLK124.png") },
-      { label: "For Travelers",       href: "/collections/deals", image: p("JBLCLIP5BLKAM.png") },
-    ],
-  },
   {
     id: "audio",
     label: "Audio",
@@ -48,12 +57,12 @@ const collectionMeta = [
       </svg>
     ),
     typeItems: [
-      { label: "Premium",         href: "/collections/audio", image: p("EBOLA07XPDEN01.png") },
-      { label: "Gaming",          href: "/collections/audio", image: p("JBLQTUM100M2BLKAM.png") },
-      { label: "Noise-Canceling", href: "/collections/audio", image: p("JBLTBUDS2BLKAM.png") },
-      { label: "In-Ear",          href: "/collections/audio", image: p("EBOLA06XBUEN02.png") },
-      { label: "Over-Ear",        href: "/collections/audio", image: p("JBLJR470NCWHTAM.png") },
-      { label: "Bluetooth",       href: "/collections/audio", image: p("JBLFLIP7BLKAM.png") },
+      { label: "Premium",         href: "/collections/audio" },
+      { label: "Gaming",          href: "/collections/audio" },
+      { label: "Noise-Canceling", href: "/collections/audio" },
+      { label: "In-Ear",          href: "/collections/audio" },
+      { label: "Over-Ear",        href: "/collections/audio" },
+      { label: "Bluetooth",       href: "/collections/audio" },
     ],
   },
   {
@@ -66,12 +75,12 @@ const collectionMeta = [
       </svg>
     ),
     typeItems: [
-      { label: "MagSafe",      href: "/collections/cases", image: p("77-98429.png") },
-      { label: "Fashion",      href: "/collections/cases", image: p("114546114040.png") },
-      { label: "Case Wallets", href: "/collections/cases", image: p("CM046030.png") },
-      { label: "Rugged",       href: "/collections/cases", image: p("77-92554.png") },
-      { label: "Slim",         href: "/collections/cases", image: p("77-98294.png") },
-      { label: "Waterproof",   href: "/collections/cases", image: p("214461113636.png") },
+      { label: "MagSafe",      href: "/collections/cases" },
+      { label: "Fashion",      href: "/collections/cases" },
+      { label: "Case Wallets", href: "/collections/cases" },
+      { label: "Rugged",       href: "/collections/cases" },
+      { label: "Slim",         href: "/collections/cases" },
+      { label: "Waterproof",   href: "/collections/cases" },
     ],
     deviceGroups: [
       {
@@ -102,12 +111,12 @@ const collectionMeta = [
       </svg>
     ),
     typeItems: [
-      { label: "iPhone",    href: "/collections/screen-protection", image: p("200118666.png") },
-      { label: "Galaxy",    href: "/collections/screen-protection", image: p("77-97840.png") },
-      { label: "Pixel",     href: "/collections/screen-protection", image: p("GGBILEC208GG01A.png") },
-      { label: "Motorola",  href: "/collections/screen-protection", image: p("AA-CELERO3-33SINGLE.png") },
-      { label: "Tablet",    href: "/collections/screen-protection", image: p("GGGLAST340AP04A.png") },
-      { label: "Wearables", href: "/collections/screen-protection", image: p("VG-GGFLEXW215AP04A.png") },
+      { label: "iPhone",    href: "/collections/screen-protection" },
+      { label: "Galaxy",    href: "/collections/screen-protection" },
+      { label: "Pixel",     href: "/collections/screen-protection" },
+      { label: "Motorola",  href: "/collections/screen-protection" },
+      { label: "Tablet",    href: "/collections/screen-protection" },
+      { label: "Wearables", href: "/collections/screen-protection" },
     ],
   },
   {
@@ -120,11 +129,11 @@ const collectionMeta = [
       </svg>
     ),
     typeItems: [
-      { label: "Cables & Adapters",         href: "/collections/power", image: p("WC30-CCBX-87438.png") },
-      { label: "Power Banks",               href: "/collections/power", image: p("A1367H11-1.png") },
-      { label: "Charging Stands",           href: "/collections/power", image: p("WLS10-ASR266583.png") },
-      { label: "Car Chargers",              href: "/collections/power", image: p("78-80892.png") },
-      { label: "Wireless Charging",         href: "/collections/power", image: p("401107913.png") },
+      { label: "Cables & Adapters", href: "/collections/power" },
+      { label: "Power Banks",       href: "/collections/power" },
+      { label: "Charging Stands",   href: "/collections/power" },
+      { label: "Car Chargers",      href: "/collections/power" },
+      { label: "Wireless Charging", href: "/collections/power" },
     ],
   },
   {
@@ -137,14 +146,24 @@ const collectionMeta = [
       </svg>
     ),
     typeItems: [
-      { label: "Grips & Stands",    href: "/collections/accessories", image: p("800859.png") },
-      { label: "Gaming",            href: "/collections/accessories", image: p("JBLQTUM100M2BLKAM.png") },
-      { label: "Car Mounts",        href: "/collections/accessories", image: p("78-80446.png") },
-      { label: "Wallets & Charms",  href: "/collections/accessories", image: p("KS053956.png") },
-      { label: "MagSafe",           href: "/collections/accessories", image: p("801938.png") },
+      { label: "Grips & Stands",   href: "/collections/accessories" },
+      { label: "Gaming",           href: "/collections/accessories" },
+      { label: "Car Mounts",       href: "/collections/accessories" },
+      { label: "Wallets & Charms", href: "/collections/accessories" },
+      { label: "MagSafe",          href: "/collections/accessories" },
     ],
   },
-] as const;
+];
+
+// ─── Gradient palette per collection ─────────────────────────────────────────
+
+const TYPE_CARD_GRADIENTS: Record<string, string[]> = {
+  audio:             ["from-violet-600 to-purple-500","from-purple-500 to-pink-500","from-blue-600 to-indigo-500","from-indigo-500 to-violet-600","from-fuchsia-500 to-purple-600","from-sky-500 to-blue-600"],
+  cases:             ["from-gray-700 to-gray-500","from-slate-600 to-blue-500","from-zinc-600 to-gray-500","from-neutral-600 to-stone-500","from-gray-600 to-slate-700","from-stone-500 to-zinc-600"],
+  "screen-protection":["from-emerald-500 to-teal-400","from-teal-500 to-cyan-400","from-cyan-500 to-sky-400","from-sky-500 to-blue-400","from-green-500 to-emerald-400","from-lime-500 to-green-500"],
+  power:             ["from-yellow-500 to-amber-400","from-amber-400 to-orange-400","from-orange-400 to-yellow-500","from-lime-500 to-yellow-400","from-green-500 to-lime-400"],
+  accessories:       ["from-rose-500 to-pink-400","from-pink-500 to-fuchsia-400","from-fuchsia-400 to-violet-500","from-purple-500 to-indigo-400","from-indigo-400 to-blue-500"],
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -168,18 +187,34 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
-// ─── Type image card ──────────────────────────────────────────────────────────
+// ─── Type card (image or gradient) ───────────────────────────────────────────
 
-function TypeCard({ label, image, href }: { label: string; image: string; href: string }) {
+function TypeCard({ label, href, gradient, image }: { label: string; href: string; gradient: string; image?: string }) {
+  if (image) {
+    return (
+      <Link href={href} className="group relative overflow-hidden rounded-xl block aspect-square bg-gray-100 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]">
+        <Image src={image} alt={label} fill
+          className="object-contain p-2 transition-transform duration-500 group-hover:scale-105"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-3">
+          <p className="text-xs font-bold text-white leading-tight drop-shadow-sm">{label}</p>
+          <span className="mt-1 inline-flex items-center gap-0.5 text-[10px] font-medium text-white/70 group-hover:text-white transition-colors">
+            Shop
+            <svg className="w-3 h-3 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
+        </div>
+      </Link>
+    );
+  }
   return (
-    <Link href={href} className="group relative overflow-hidden rounded-xl block aspect-square bg-gray-100 shadow-sm hover:shadow-md transition-shadow">
-      <Image src={image} alt={label} fill
-        className="object-cover transition-transform duration-500 group-hover:scale-105"
-        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
-      <div className="absolute bottom-0 left-0 right-0 p-3">
-        <p className="text-xs font-bold text-white leading-tight">{label}</p>
-        <span className="mt-1 inline-flex items-center gap-0.5 text-[10px] font-medium text-white/60 group-hover:text-white transition-colors">
+    <Link href={href} className={`group relative overflow-hidden rounded-xl block aspect-square bg-gradient-to-br ${gradient} shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]`}>
+      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-300" />
+      <div className="absolute inset-0 flex flex-col items-center justify-center p-3 text-center">
+        <p className="text-xs font-bold text-white leading-tight drop-shadow-sm">{label}</p>
+        <span className="mt-1.5 inline-flex items-center gap-0.5 text-[10px] font-medium text-white/70 group-hover:text-white transition-colors">
           Shop
           <svg className="w-3 h-3 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -240,7 +275,31 @@ function DeviceItem({ label }: { label: string }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function CollectionsPage() {
+export default async function CollectionsPage() {
+  const CATEGORY_MAP: Record<string, string> = {
+    audio:              "Audio",
+    cases:              "Cases",
+    "screen-protection":"Screen Protection",
+    power:              "Power",
+    accessories:        "Accessories",
+  };
+
+  // Fetch featured products + card images for all sections in parallel
+  const [featuredMap, cardImageMap] = await Promise.all([
+    Promise.all(
+      Object.entries(CATEGORY_MAP).map(async ([id, category]) => [
+        id,
+        await fetchFeaturedByCategory(category, 4),
+      ])
+    ).then(Object.fromEntries) as Promise<Record<string, Product[]>>,
+    Promise.all(
+      Object.entries(CATEGORY_MAP).map(async ([id, category]) => [
+        id,
+        await fetchFeaturedByCategory(category, 6),
+      ])
+    ).then(Object.fromEntries) as Promise<Record<string, Product[]>>,
+  ]);
+
   return (
     <>
       <Header />
@@ -279,14 +338,9 @@ export default function CollectionsPage() {
         <div className="mx-auto max-w-screen-xl px-3 sm:px-4 lg:px-6 py-14 space-y-20">
 
           {collectionMeta.map((col, colIdx) => {
-            const products = COLLECTIONS[col.id]?.products ?? [];
-            // Pick best 4 products (badge first, then top rated)
-            const featured = [
-              ...products.filter((p) => p.badge === "Best Seller"),
-              ...products.filter((p) => p.badge === "Top Rated"),
-              ...products.filter((p) => p.badge === "New"),
-              ...products.filter((p) => !p.badge),
-            ].filter((p, i, arr) => arr.findIndex((x) => x.id === p.id) === i).slice(0, 4);
+            const featured = featuredMap[col.id] ?? [];
+            const gradients = TYPE_CARD_GRADIENTS[col.id] ?? [];
+            const cardImages = cardImageMap[col.id] ?? [];
 
             return (
               <section key={col.id} id={col.id} className="scroll-mt-6">
@@ -311,10 +365,16 @@ export default function CollectionsPage() {
                   </Link>
                 </div>
 
-                {/* Type image cards */}
+                {/* Type gradient cards */}
                 <div className={`grid gap-3 mb-10 ${col.typeItems.length === 5 ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6"}`}>
-                  {col.typeItems.map((item) => (
-                    <TypeCard key={item.label} label={item.label} image={item.image} href={item.href} />
+                  {col.typeItems.map((item, i) => (
+                    <TypeCard
+                      key={item.label}
+                      label={item.label}
+                      href={item.href}
+                      gradient={gradients[i] ?? "from-gray-600 to-gray-400"}
+                      image={cardImages[i]?.image || undefined}
+                    />
                   ))}
                 </div>
 
@@ -337,7 +397,7 @@ export default function CollectionsPage() {
                   </div>
                 )}
 
-                {/* Featured products */}
+                {/* Featured products from API */}
                 {featured.length > 0 && (
                   <div>
                     <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Featured Products</h3>

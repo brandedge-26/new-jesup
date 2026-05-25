@@ -153,15 +153,18 @@ export default function Sidebar() {
       >
         {/* Logo */}
         <div className={`flex items-center gap-3 px-4 h-16 border-b border-slate-800 shrink-0 ${sidebarCollapsed ? "lg:justify-center" : ""}`}>
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} style={{ width: "18px", height: "18px" }} className="text-white">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          </div>
+          {sidebarCollapsed ? (
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/jesup-admin-logo.svg" alt="Jesup" className="w-5 h-5 object-contain" />
+            </div>
+          ) : (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img src="/jesup-admin-logo.svg" alt="Jesup" className="h-8 object-contain" />
+          )}
           {!sidebarCollapsed && (
-            <div>
-              <p className="text-white font-bold text-sm leading-none">Jesup</p>
-              <p className="text-slate-400 text-[11px] mt-0.5">Admin Panel</p>
+            <div className="hidden">
+              {/* spacer */}
             </div>
           )}
         </div>

@@ -13,18 +13,44 @@ import { useAuthStore } from "@/store/authStore";
 
 const navItems = [
   {
-    label: "Deals & More",
-    href: "/collections/deals",
+    label: "Devices",
+    href: "/collections/devices",
+    featured: true,
     columns: [
       {
-        heading: "Featured collections",
+        heading: "Apple iPhone",
         links: [
-          { label: "Expert picks for a jet-setter", href: "/collections/deals?q=jet-setter" },
-          { label: "Expert picks for gamers", href: "/collections/deals?q=Gaming" },
-          { label: "Expert picks for students", href: "/collections/deals?q=student" },
-          { label: "Expert picks under $25", href: "/collections/deals?maxPrice=25" },
-          { label: "Expert picks under $50", href: "/collections/deals?maxPrice=50" },
-          { label: "Expert picks under $100", href: "/collections/deals?maxPrice=100" },
+          { label: "iPhone 17 Pro Max", href: "/collections/devices?q=iPhone+17+Pro+Max" },
+          { label: "iPhone 17 Pro",     href: "/collections/devices?q=iPhone+17+Pro" },
+          { label: "iPhone 17",         href: "/collections/devices?q=iPhone+17" },
+          { label: "iPhone 16 Pro Max", href: "/collections/devices?q=iPhone+16+Pro+Max" },
+          { label: "iPhone 16 Pro",     href: "/collections/devices?q=iPhone+16+Pro" },
+          { label: "iPhone 16 Plus",    href: "/collections/devices?q=iPhone+16+Plus" },
+          { label: "iPhone 16",         href: "/collections/devices?q=iPhone+16" },
+          { label: "iPhone 16e",        href: "/collections/devices?q=iPhone+16e" },
+          { label: "iPhone 15 Pro Max", href: "/collections/devices?q=iPhone+15+Pro+Max" },
+          { label: "iPhone 15 Pro",     href: "/collections/devices?q=iPhone+15+Pro" },
+          { label: "iPhone 15 Plus",    href: "/collections/devices?q=iPhone+15+Plus" },
+          { label: "iPhone 15",         href: "/collections/devices?q=iPhone+15" },
+          { label: "Shop all Apple →",  href: "/collections/devices?q=iPhone" },
+        ],
+      },
+      {
+        heading: "Samsung Galaxy",
+        links: [
+          { label: "Galaxy S26 Ultra",  href: "/collections/devices?q=Galaxy+S26+Ultra" },
+          { label: "Galaxy S26 Plus",   href: "/collections/devices?q=Galaxy+S26+Plus" },
+          { label: "Galaxy S26",        href: "/collections/devices?q=Galaxy+S26" },
+          { label: "Galaxy S25 Ultra",  href: "/collections/devices?q=Galaxy+S25+Ultra" },
+          { label: "Galaxy S25 Plus",   href: "/collections/devices?q=Galaxy+S25+Plus" },
+          { label: "Galaxy S25",        href: "/collections/devices?q=Galaxy+S25" },
+          { label: "Galaxy S24 Ultra",  href: "/collections/devices?q=Galaxy+S24+Ultra" },
+          { label: "Galaxy S24 Plus",   href: "/collections/devices?q=Galaxy+S24+Plus" },
+          { label: "Galaxy S24",        href: "/collections/devices?q=Galaxy+S24" },
+          { label: "Galaxy Z Fold 6",   href: "/collections/devices?q=Galaxy+Z+Fold" },
+          { label: "Galaxy Z Flip 6",   href: "/collections/devices?q=Galaxy+Z+Flip" },
+          { label: "Galaxy A16 5G",     href: "/collections/devices?q=Galaxy+A16" },
+          { label: "Shop all Samsung →",href: "/collections/devices?q=Samsung" },
         ],
       },
     ],
@@ -66,37 +92,37 @@ const navItems = [
       {
         heading: "Apple",
         links: [
-          { label: "iPhone 17 Pro Max", href: "/collections/cases?q=iPhone+17+Pro+Max" },
-          { label: "iPhone 17 Pro", href: "/collections/cases?q=iPhone+17+Pro" },
-          { label: "iPhone 17", href: "/collections/cases?q=iPhone+17" },
-          { label: "iPhone 16 Pro Max", href: "/collections/cases?q=iPhone+16+Pro+Max" },
-          { label: "iPhone 16 Pro", href: "/collections/cases?q=iPhone+16+Pro" },
-          { label: "iPhone 16 Plus", href: "/collections/cases?q=iPhone+16+Plus" },
-          { label: "iPhone 16", href: "/collections/cases?q=iPhone+16" },
-          { label: "iPhone 16e", href: "/collections/cases?q=iPhone+16e" },
-          { label: "iPhone 15 Pro Max", href: "/collections/cases?q=iPhone+15+Pro+Max" },
-          { label: "iPhone 15 Pro", href: "/collections/cases?q=iPhone+15+Pro" },
-          { label: "iPhone 15 Plus", href: "/collections/cases?q=iPhone+15+Plus" },
-          { label: "iPhone 15", href: "/collections/cases?q=iPhone+15" },
-          { label: "Shop all Apple →", href: "/collections/cases?q=iPhone" },
+          { label: "iPhone 17 Pro Max", href: "/collections/devices?q=iPhone+17+Pro+Max" },
+          { label: "iPhone 17 Pro", href: "/collections/devices?q=iPhone+17+Pro" },
+          { label: "iPhone 17", href: "/collections/devices?q=iPhone+17" },
+          { label: "iPhone 16 Pro Max", href: "/collections/devices?q=iPhone+16+Pro+Max" },
+          { label: "iPhone 16 Pro", href: "/collections/devices?q=iPhone+16+Pro" },
+          { label: "iPhone 16 Plus", href: "/collections/devices?q=iPhone+16+Plus" },
+          { label: "iPhone 16", href: "/collections/devices?q=iPhone+16" },
+          { label: "iPhone 16e", href: "/collections/devices?q=iPhone+16e" },
+          { label: "iPhone 15 Pro Max", href: "/collections/devices?q=iPhone+15+Pro+Max" },
+          { label: "iPhone 15 Pro", href: "/collections/devices?q=iPhone+15+Pro" },
+          { label: "iPhone 15 Plus", href: "/collections/devices?q=iPhone+15+Plus" },
+          { label: "iPhone 15", href: "/collections/devices?q=iPhone+15" },
+          { label: "Shop all Apple →", href: "/collections/devices?q=iPhone" },
         ],
       },
       {
         heading: "Samsung",
         links: [
-          { label: "Galaxy S26", href: "/collections/cases?q=Galaxy+S26" },
-          { label: "Galaxy S26 Plus", href: "/collections/cases?q=Galaxy+S26+Plus" },
-          { label: "Galaxy S26 Ultra", href: "/collections/cases?q=Galaxy+S26+Ultra" },
-          { label: "Galaxy S25", href: "/collections/cases?q=Galaxy+S25" },
-          { label: "Galaxy S25 Plus", href: "/collections/cases?q=Galaxy+S25+Plus" },
-          { label: "Galaxy S25 Ultra", href: "/collections/cases?q=Galaxy+S25+Ultra" },
-          { label: "Galaxy S24", href: "/collections/cases?q=Galaxy+S24" },
-          { label: "Galaxy S24 Plus", href: "/collections/cases?q=Galaxy+S24+Plus" },
-          { label: "Galaxy S24 Ultra", href: "/collections/cases?q=Galaxy+S24+Ultra" },
-          { label: "Galaxy Z Fold 6", href: "/collections/cases?q=Galaxy+Z+Fold" },
-          { label: "Galaxy Z Flip 6", href: "/collections/cases?q=Galaxy+Z+Flip" },
-          { label: "Galaxy A16 5G", href: "/collections/cases?q=Galaxy+A16" },
-          { label: "Shop all Samsung →", href: "/collections/cases?q=Samsung" },
+          { label: "Galaxy S26", href: "/collections/devices?q=Galaxy+S26" },
+          { label: "Galaxy S26 Plus", href: "/collections/devices?q=Galaxy+S26+Plus" },
+          { label: "Galaxy S26 Ultra", href: "/collections/devices?q=Galaxy+S26+Ultra" },
+          { label: "Galaxy S25", href: "/collections/devices?q=Galaxy+S25" },
+          { label: "Galaxy S25 Plus", href: "/collections/devices?q=Galaxy+S25+Plus" },
+          { label: "Galaxy S25 Ultra", href: "/collections/devices?q=Galaxy+S25+Ultra" },
+          { label: "Galaxy S24", href: "/collections/devices?q=Galaxy+S24" },
+          { label: "Galaxy S24 Plus", href: "/collections/devices?q=Galaxy+S24+Plus" },
+          { label: "Galaxy S24 Ultra", href: "/collections/devices?q=Galaxy+S24+Ultra" },
+          { label: "Galaxy Z Fold 6", href: "/collections/devices?q=Galaxy+Z+Fold" },
+          { label: "Galaxy Z Flip 6", href: "/collections/devices?q=Galaxy+Z+Flip" },
+          { label: "Galaxy A16 5G", href: "/collections/devices?q=Galaxy+A16" },
+          { label: "Shop all Samsung →", href: "/collections/devices?q=Samsung" },
         ],
       },
       {
@@ -245,7 +271,7 @@ export default function Header() {
 
         {/* Logo */}
         <Link href="/" className="shrink-0">
-          <Image src="/new-logo.png" alt="Logo" width={90} height={40} className="object-contain" priority />
+          <Image src="/jesup-logo.svg" alt="Logo" width={90} height={40} className="object-contain" priority />
         </Link>
 
         {/* Nav */}
@@ -495,7 +521,7 @@ export default function Header() {
       {/* ── Mobile bar ── */}
       <div className="lg:hidden flex items-center justify-between px-4 h-14">
         <Link href="/">
-          <Image src="/new-logo.png" alt="Logo" width={80} height={32} className="object-contain" priority />
+          <Image src="/jesup-logo.svg" alt="Logo" width={80} height={32} className="object-contain" priority />
         </Link>
         <div className="flex items-center gap-1">
           <button onClick={() => setSearchOpen(true)} className="p-2 rounded-xl text-gray-700 hover:text-primary hover:bg-gray-100 transition-colors" aria-label="Search">

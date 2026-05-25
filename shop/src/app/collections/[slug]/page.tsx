@@ -4,10 +4,10 @@ import { Suspense } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CollectionView from "./CollectionView";
-import { COLLECTIONS } from "@/lib/collectionData";
+import { COLLECTIONS, VALID_COLLECTION_SLUGS } from "@/lib/collectionData";
 
 export async function generateStaticParams() {
-  return Object.keys(COLLECTIONS).map((slug) => ({ slug }));
+  return VALID_COLLECTION_SLUGS.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({
@@ -35,7 +35,7 @@ export default async function CollectionPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  if (!COLLECTIONS[slug]) notFound();
+  if (!VALID_COLLECTION_SLUGS.includes(slug)) notFound();
 
   return (
     <>

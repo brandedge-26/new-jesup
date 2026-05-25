@@ -3,19 +3,53 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { COLLECTIONS, type Product } from "@/lib/collectionData";
+import { type Product } from "@/lib/collectionData";
 
-// ─── Build flat search index ─────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface SearchEntry extends Product {
   collectionId: string;
   collectionTitle: string;
 }
 
-const ALL_PRODUCTS: SearchEntry[] = Object.entries(COLLECTIONS).flatMap(
-  ([id, col]) =>
-    col.products.map((p) => ({ ...p, collectionId: id, collectionTitle: col.title }))
-);
+const CATEGORY_TO_SLUG: Record<string, string> = {
+  Audio:              "audio",
+  Cases:              "cases",
+  "Screen Protection":"screen-protection",
+  Power:              "power",
+  Accessories:        "accessories",
+};
+
+const COLLECTION_TITLE: Record<string, string> = {
+  audio:              "Audio",
+  cases:              "Cases",
+  "screen-protection":"Screen Protection",
+  power:              "Power",
+  accessories:        "Accessories",
+};
+
+interface _BPVariant { name: string; options: { label: string }[] }
+interface _BP {
+  _id: string; name: string; brand?: string; price: number;
+  originalPrice?: number; rating?: number; reviews?: number;
+  image?: string; badge?: string; inStock?: boolean;
+  slug?: string; category?: string; colors?: string[];
+  variants?: _BPVariant[];
+}
+
+function mapBP(p: _BP): SearchEntry {
+  const colorVariant = p.variants?.find((v) => v.name.toLowerCase() === "color");
+  const colors = (p.colors?.length ? p.colors : colorVariant?.options.map((o) => o.label)) ?? [];
+  const collectionId = CATEGORY_TO_SLUG[p.category ?? ""] ?? "audio";
+  return {
+    id: p._id, name: p.name, brand: p.brand ?? "", price: p.price,
+    originalPrice: p.originalPrice, rating: p.rating ?? 4.5,
+    reviews: p.reviews ?? 0, colors, image: p.image ?? "",
+    badge: p.badge as Product["badge"], inStock: p.inStock ?? true,
+    slug: p.slug || p._id,
+    collectionId, collectionTitle: COLLECTION_TITLE[collectionId] ?? p.category ?? "",
+  };
+}
 
 const TABS = [
   { id: "all",                label: "All" },
@@ -36,9 +70,11 @@ interface Props {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function SearchModal({ open, onClose }: Props) {
-  const [query, setQuery]       = useState("");
+  const [query, setQuery]         = useState("");
   const [activeTab, setActiveTab] = useState("all");
-  const [visible, setVisible]   = useState(false);   // drives CSS transition
+  const [visible, setVisible]     = useState(false);
+  const [apiResults, setApiResults] = useState<SearchEntry[]>([]);
+  const [apiLoading, setApiLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // ── animation: mount → next tick → set visible=true for transition in
@@ -60,6 +96,27 @@ export default function SearchModal({ open, onClose }: Props) {
     }
   }, [open]);
 
+  // ── API search with debounce
+  useEffect(() => {
+    if (query.trim().length < 2) { setApiResults([]); return; }
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setApiLoading(true);
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5510/api";
+        const res = await fetch(
+          `${apiUrl}/products?search=${encodeURIComponent(query.trim())}&limit=12`,
+          { signal: controller.signal }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setApiResults((data.products ?? []).map(mapBP));
+        }
+      } catch { /* ignore */ } finally { setApiLoading(false); }
+    }, 300);
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [query]);
+
   // ── close on Escape
   useEffect(() => {
     if (!open) return;
@@ -80,25 +137,11 @@ export default function SearchModal({ open, onClose }: Props) {
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
-  // ── filter logic
+  // ── filter logic: API only
   const results = useCallback((): SearchEntry[] => {
-    const pool =
-      activeTab === "all"
-        ? ALL_PRODUCTS
-        : ALL_PRODUCTS.filter((p) => p.collectionId === activeTab);
-
-    if (!query.trim()) return pool.slice(0, 12);
-
-    const q = query.toLowerCase();
-    return pool
-      .filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.brand.toLowerCase().includes(q) ||
-          p.collectionTitle.toLowerCase().includes(q)
-      )
-      .slice(0, 20);
-  }, [query, activeTab])();
+    if (!query.trim()) return [];
+    return apiResults.filter((p) => activeTab === "all" || p.collectionId === activeTab).slice(0, 20);
+  }, [query, activeTab, apiResults])();
 
   if (!open && !visible) return null;
 
@@ -169,13 +212,28 @@ export default function SearchModal({ open, onClose }: Props) {
 
         {/* ── Results ── */}
         <div className="overflow-y-auto flex-1">
-          {results.length === 0 ? (
+          {apiLoading && (
+            <div className="flex items-center gap-2 px-5 py-3 border-b border-gray-100 text-xs text-gray-400">
+              <svg className="w-3.5 h-3.5 animate-spin text-primary" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+              Searching…
+            </div>
+          )}
+          {results.length === 0 && !apiLoading ? (
             <div className="flex flex-col items-center justify-center py-16 text-center px-8">
               <svg className="w-12 h-12 text-gray-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
               </svg>
-              <p className="text-gray-500 font-medium">No products found</p>
-              <p className="text-sm text-gray-400 mt-1">Try a different keyword or category</p>
+              {!query.trim() ? (
+                <p className="text-gray-400 font-medium">Start typing to search products…</p>
+              ) : (
+                <>
+                  <p className="text-gray-500 font-medium">No products found</p>
+                  <p className="text-sm text-gray-400 mt-1">Try a different keyword or category</p>
+                </>
+              )}
             </div>
           ) : (
             <ul className="divide-y divide-gray-50">

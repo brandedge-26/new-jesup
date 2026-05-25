@@ -1,11 +1,14 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { COLOR_HEX, type Product } from "@/lib/collectionData";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
+import { useAuthStore } from "@/store/authStore";
+import { publicAxios } from "@/lib/axios";
+import ReviewModal, { type ReviewData } from "@/components/ReviewModal";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -250,9 +253,61 @@ export default function ProductDetail({ product, collectionId, collectionTitle, 
   const [added, setAdded] = useState(false);
   const [activeTab, setActiveTab] = useState<"features" | "reviews">("features");
   const [activeImage, setActiveImage] = useState(product.image);
+  const [reviews, setReviews] = useState<ReviewData[]>([]);
+  const [reviewsLoaded, setReviewsLoaded] = useState(false);
+  const [reviewTotalPages, setReviewTotalPages] = useState(1);
+  const [reviewPage, setReviewPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const isDbProduct = /^[a-f\d]{24}$/i.test(product.id);
+  const [reviewCount, setReviewCount] = useState(isDbProduct ? 0 : product.reviews);
+  const [avgRating, setAvgRating] = useState(isDbProduct ? 0 : product.rating);
+  const [showModal, setShowModal] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
   const { addItem: wishAdd, removeItem: wishRemove, isWishlisted } = useWishlistStore();
+  const { isAuthenticated } = useAuthStore();
   const wished = isWishlisted(product.id);
+
+  // Fetch first page of reviews on mount (count shows in tab immediately)
+  useEffect(() => {
+    if (!isDbProduct) { setReviewsLoaded(true); return; }
+    publicAxios.get(`/reviews/${product.id}?page=1&limit=6`)
+      .then((res) => {
+        const { reviews: data, total, totalPages } = res.data;
+        setReviews(data);
+        setReviewsLoaded(true);
+        setReviewCount(total);
+        setReviewTotalPages(totalPages);
+        setReviewPage(1);
+        if (total > 0) {
+          const avg = data.reduce((s: number, r: ReviewData) => s + r.rating, 0) / data.length;
+          setAvgRating(Math.round(avg * 10) / 10);
+        } else {
+          setAvgRating(0);
+        }
+      })
+      .catch(() => setReviewsLoaded(true));
+  }, [product.id]); // eslint-disable-line
+
+  async function loadMoreReviews() {
+    if (loadingMore || reviewPage >= reviewTotalPages) return;
+    setLoadingMore(true);
+    try {
+      const res = await publicAxios.get(`/reviews/${product.id}?page=${reviewPage + 1}&limit=6`);
+      setReviews((prev) => [...prev, ...res.data.reviews]);
+      setReviewPage((p) => p + 1);
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
+  function handleReviewSuccess(review: ReviewData) {
+    setReviews((prev) => [review, ...prev]);
+    setReviewCount((c) => c + 1);
+    const updated = [review, ...reviews];
+    const avg = updated.reduce((s, r) => s + r.rating, 0) / updated.length;
+    setAvgRating(Math.round(avg * 10) / 10);
+    setShowModal(false);
+  }
 
   function toggleWish() {
     if (wished) {
@@ -273,7 +328,7 @@ export default function ProductDetail({ product, collectionId, collectionTitle, 
 
   const features = getFeatures(product.name, product.brand);
   const description = product.description || getDescription(product.name, product.brand);
-  const ratingBars = getRatingBars(product.rating);
+  const ratingBars = getRatingBars(avgRating);
 
   // Build gallery: main image + variant images (deduped)
   const gallery = [product.image, ...(product.variantImages ?? [])].filter(
@@ -298,6 +353,15 @@ export default function ProductDetail({ product, collectionId, collectionTitle, 
 
   return (
     <>
+      {showModal && isDbProduct && (
+        <ReviewModal
+          productId={product.id}
+          productName={product.name}
+          onClose={() => setShowModal(false)}
+          onSuccess={handleReviewSuccess}
+        />
+      )}
+
       {/* Breadcrumb */}
       <div className="border-b border-gray-100 bg-gray-50">
         <div className="mx-auto max-w-screen-xl px-4 lg:px-6 py-3 flex items-center gap-2 text-sm text-gray-500 flex-wrap">
@@ -582,7 +646,7 @@ export default function ProductDetail({ product, collectionId, collectionTitle, 
                     : "border-transparent text-gray-500 hover:text-gray-800"
                 }`}
               >
-                {tab === "features" ? "Features & Details" : `Reviews (${product.reviews.toLocaleString()})`}
+                {tab === "features" ? "Features & Details" : `Reviews (${reviewCount.toLocaleString()})`}
               </button>
             ))}
           </div>
@@ -632,42 +696,108 @@ export default function ProductDetail({ product, collectionId, collectionTitle, 
             <div className="grid md:grid-cols-3 gap-10">
               {/* Rating summary */}
               <div className="md:col-span-1">
-                <div className="text-center mb-6">
-                  <p className="text-6xl font-extrabold text-gray-900">{product.rating}</p>
-                  <div className="flex justify-center mt-2">
-                    <Stars rating={product.rating} count={product.reviews} />
+                {reviewCount > 0 ? (
+                  <>
+                    <div className="text-center mb-6">
+                      <p className="text-6xl font-extrabold text-gray-900">{avgRating}</p>
+                      <div className="flex justify-center mt-2">
+                        <Stars rating={avgRating} count={reviewCount} />
+                      </div>
+                      <p className="mt-1 text-sm text-gray-500">{reviewCount.toLocaleString()} total reviews</p>
+                    </div>
+                    <div className="space-y-2">
+                      {ratingBars.map((b) => <RatingBar key={b.label} label={b.label} pct={b.pct} />)}
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center mb-6">
+                    <p className="text-sm text-gray-400">No ratings yet</p>
                   </div>
-                  <p className="mt-1 text-sm text-gray-500">{product.reviews.toLocaleString()} total reviews</p>
-                </div>
-                <div className="space-y-2">
-                  {ratingBars.map((b) => <RatingBar key={b.label} label={b.label} pct={b.pct} />)}
-                </div>
+                )}
+
+                {/* Write a Review button — only for DB products */}
+                {isDbProduct && (
+                  <div className="mt-6">
+                    {isAuthenticated ? (
+                      <button
+                        onClick={() => setShowModal(true)}
+                        className="w-full rounded-full bg-primary text-white py-3 text-sm font-bold hover:bg-primary-hover active:scale-[0.98] transition-all"
+                      >
+                        Write a Review
+                      </button>
+                    ) : (
+                      <Link
+                        href="/login"
+                        className="flex items-center justify-center w-full rounded-full border-2 border-primary text-primary py-3 text-sm font-bold hover:bg-primary/5 transition-all"
+                      >
+                        Login to Write a Review
+                      </Link>
+                    )}
+                  </div>
+                )}
               </div>
 
-              {/* Sample reviews */}
+              {/* Reviews list */}
               <div className="md:col-span-2 space-y-5">
-                {[
-                  { name: "Alex M.", date: "2 weeks ago", rating: 5, body: `Really happy with this ${product.brand} product. The quality is top-notch and it fits perfectly. Delivery was fast too.` },
-                  { name: "Jordan T.", date: "1 month ago", rating: Math.min(5, Math.round(product.rating)), body: `Good product overall. Does exactly what it says. Would buy again from this brand.` },
-                  { name: "Sam R.", date: "3 months ago", rating: Math.max(3, Math.round(product.rating) - 1), body: `Decent quality for the price. Took a while to arrive but worth the wait.` },
-                ].map((review) => (
-                  <div key={review.name} className="rounded-2xl border border-gray-100 bg-gray-50 p-5">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <p className="text-sm font-bold text-gray-900">{review.name}</p>
-                        <p className="text-xs text-gray-400">{review.date}</p>
+                {!reviewsLoaded ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="rounded-2xl border border-gray-100 bg-gray-50 p-5 animate-pulse">
+                        <div className="h-4 bg-gray-200 rounded w-1/3 mb-2" />
+                        <div className="h-3 bg-gray-200 rounded w-full mb-1" />
+                        <div className="h-3 bg-gray-200 rounded w-4/5" />
                       </div>
-                      <div className="flex gap-0.5">
-                        {[1,2,3,4,5].map((s) => (
-                          <svg key={s} className={`w-3.5 h-3.5 ${s <= review.rating ? "fill-amber-400" : "fill-gray-200"}`} viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                        ))}
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-600 leading-relaxed">{review.body}</p>
+                    ))}
                   </div>
-                ))}
+                ) : reviews.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <svg className="w-14 h-14 text-gray-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    <p className="text-base font-semibold text-gray-700">No reviews yet</p>
+                    <p className="text-sm text-gray-400 mt-1">Be the first to share your experience!</p>
+                  </div>
+                ) : (
+                  reviews.map((review) => {
+                    const initials = review.userName.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase();
+                    return (
+                    <div key={review._id} className="rounded-2xl border border-gray-100 bg-gray-50 p-5">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <span className="w-9 h-9 rounded-full bg-primary/20 text-primary text-xs font-bold flex items-center justify-center shrink-0">
+                            {initials}
+                          </span>
+                          <div>
+                            <p className="text-sm font-bold text-gray-900">{review.userName}</p>
+                            <p className="text-xs text-gray-400">
+                              {new Date(review.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-0.5">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <svg key={s} className={`w-3.5 h-3.5 ${s <= review.rating ? "fill-amber-400" : "fill-gray-200"}`} viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          ))}
+                        </div>
+                      </div>
+                      {review.title && <p className="text-sm font-semibold text-gray-800 mb-1">{review.title}</p>}
+                      <p className="text-sm text-gray-600 leading-relaxed">{review.body}</p>
+                    </div>
+                  );})
+                )}
+
+                {/* Load More */}
+                {reviewsLoaded && reviewPage < reviewTotalPages && (
+                  <button
+                    onClick={loadMoreReviews}
+                    disabled={loadingMore}
+                    className="w-full mt-2 py-3 rounded-full border border-gray-200 text-sm font-semibold text-gray-600 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all disabled:opacity-50"
+                  >
+                    {loadingMore ? "Loading…" : `Load More (${reviewCount - reviews.length} remaining)`}
+                  </button>
+                )}
               </div>
             </div>
           )}

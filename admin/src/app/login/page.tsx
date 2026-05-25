@@ -38,7 +38,8 @@ export default function AdminLoginPage() {
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-8 py-10">
                     {/* Logo */}
                     <div className="flex justify-center mb-8">
-                        <span className="text-2xl font-extrabold text-primary tracking-tight">Jesup Wireless</span>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/jesup-admin-logo.svg" alt="Jesup" className="h-10 object-contain" />
                     </div>
 
                     <h1 className="text-xl font-bold text-gray-900 text-center mb-1">Admin Login</h1>
