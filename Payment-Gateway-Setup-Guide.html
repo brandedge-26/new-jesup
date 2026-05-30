@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Gateway Setup Guide</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 13.5px;
+      color: #1a1a1a;
+      background: #fff;
+      padding: 48px 56px;
+      max-width: 820px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Header */
+    .header {
+      border-bottom: 2px solid #1a1a1a;
+      padding-bottom: 18px;
+      margin-bottom: 32px;
+    }
+    .header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    .header p {
+      color: #555;
+      margin-top: 4px;
+      font-size: 13px;
+    }
+
+    /* Section */
+    .section {
+      margin-bottom: 36px;
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.3px;
+    }
+    .badge-stripe { background: #635bff18; color: #635bff; border: 1px solid #635bff44; }
+    .badge-paypal { background: #003087 18; color: #003087; border: 1px solid #00308744; }
+    .badge-paypal { background: #e8f0fa; color: #003087; border: 1px solid #99bbe8; }
+
+    /* Steps */
+    .steps { list-style: none; }
+    .steps li {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 14px;
+      align-items: flex-start;
+    }
+    .step-num {
+      min-width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #1a1a1a;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+      flex-shrink: 0;
+    }
+    .step-content strong {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .step-content span {
+      color: #444;
+      font-size: 13px;
+    }
+
+    /* Keys box */
+    .keys-box {
+      background: #f6f6f6;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin-top: 10px;
+    }
+    .keys-box .key-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .keys-box .key-row:last-child { margin-bottom: 0; }
+    .key-label {
+      font-weight: 600;
+      font-size: 12.5px;
+      min-width: 180px;
+      color: #1a1a1a;
+    }
+    .key-desc {
+      font-size: 12.5px;
+      color: #555;
+    }
+    .key-where {
+      font-size: 11.5px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    /* Note box */
+    .note {
+      background: #fffbe6;
+      border: 1px solid #ffe58f;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 12.5px;
+      color: #5c4400;
+      margin-top: 12px;
+    }
+    .note strong { font-weight: 600; }
+
+    /* Divider */
+    .divider {
+      border: none;
+      border-top: 1px solid #ebebeb;
+      margin: 28px 0;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 40px;
+      border-top: 1px solid #e0e0e0;
+      padding-top: 16px;
+      font-size: 12px;
+      color: #888;
+    }
+
+    @media print {
+      body { padding: 32px 40px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Payment Gateway Setup Guide</h1>
+    <p>Step-by-step instructions to obtain Stripe and PayPal credentials &nbsp;|&nbsp; Share with your developer once done</p>
+  </div>
+
+  <!-- ── STRIPE ──────────────────────────────────────── -->
+
+  <div class="section">
+    <div class="section-title">
+      1. Stripe &nbsp;<span class="badge badge-stripe">Card Payments</span>
+    </div>
+
+    <ul class="steps">
+      <li>
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <strong>Create a Stripe Account</strong>
+          <span>Go to <strong>stripe.com</strong> and click <em>Start now</em>. Sign up with your email address and complete email verification.</span>
+        </div>
+      </li>
+      <li>
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <strong>Complete Business Activation (for live payments)</strong>
+          <span>After logging in, click <em>Activate your account</em> in the top banner. Fill in your business details, bank account info, and personal ID. This is required to receive real money. You can skip this step during development/testing.</span>
+        </div>
+      </li>
+      <li>
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <strong>Go to the API Keys page</strong>
+          <span>In the Stripe Dashboard, click <em>Developers</em> (top-right) → then click <em>API keys</em> in the left menu.</span>
+        </div>
+      </li>
+      <li>
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <strong>Copy your keys</strong>
+          <span>You will see two keys on this page. Copy both and send them to your developer.</span>
+        </div>
+      </li>
+    </ul>
+
+    <div class="keys-box">
+      <div class="key-row">
+        <div>
+          <div class="key-label">Publishable Key</div>
+          <div class="key-where">Starts with <code>pk_test_</code> (test) or <code>pk_live_</code> (live)</div>
+        </div>
+        <div class="key-desc">Used on the website frontend. Safe to share with developer.</div>
+      </div>
+      <div class="key-row">
+        <div>
+          <div class="key-label">Secret Key</div>
+          <div class="key-where">Starts with <code>sk_test_</code> (test) or <code>sk_live_</code> (live)</div>
+        </div>
+        <div class="key-desc">Used on the server. <strong>Never share publicly.</strong> Send only to your developer privately.</div>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Note:</strong> Use <em>test mode</em> keys first (toggle at the top of Stripe Dashboard). Switch to live keys only when you are ready to accept real payments. Test card number: <strong>4242 4242 4242 4242</strong>, any future expiry, any 3-digit CVC.
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ── PAYPAL ──────────────────────────────────────── -->
+
+  <div class="section">
+    <div class="section-title">
+      2. PayPal &nbsp;<span class="badge badge-paypal">PayPal Payments</span>
+    </div>
+
+    <ul class="steps">
+      <li>
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <strong>Create a PayPal Business Account</strong>
+          <span>Go to <strong>paypal.com</strong> → click <em>Sign Up</em> → choose <em>Business Account</em>. Complete registration with your business email and details.</span>
+        </div>
+      </li>
+      <li>
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <strong>Go to PayPal Developer Dashboard</strong>
+          <span>Visit <strong>developer.paypal.com</strong> and log in with your PayPal business account.</span>
+        </div>
+      </li>
+      <li>
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <strong>Create an App</strong>
+          <span>Go to <em>Apps &amp; Credentials</em> in the top menu. Make sure you are on the <em>Sandbox</em> tab for testing. Click <em>Create App</em>, give it any name (e.g., "My Store"), and click <em>Create App</em> again.</span>
+        </div>
+      </li>
+      <li>
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <strong>Copy your credentials</strong>
+          <span>After creating the app, you will see your credentials on the same page. Copy both and send them to your developer.</span>
+        </div>
+      </li>
+    </ul>
+
+    <div class="keys-box">
+      <div class="key-row">
+        <div>
+          <div class="key-label">Client ID</div>
+          <div class="key-where">Long string of letters and numbers</div>
+        </div>
+        <div class="key-desc">Used on both frontend and backend. Safe to share with developer.</div>
+      </div>
+      <div class="key-row">
+        <div>
+          <div class="key-label">Client Secret</div>
+          <div class="key-where">Click "Show" to reveal it</div>
+        </div>
+        <div class="key-desc">Used only on the server. <strong>Never share publicly.</strong> Send only to your developer privately.</div>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Note:</strong> Use <em>Sandbox</em> credentials for testing. When ready to go live, switch to the <em>Live</em> tab in the developer dashboard and create/copy your live app credentials.
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ── SUMMARY ──────────────────────────────────────── -->
+
+  <div class="section">
+    <div class="section-title">3. What to Send Your Developer</div>
+    <div class="keys-box">
+      <div class="key-row">
+        <div class="key-label">Stripe Publishable Key</div>
+        <div class="key-desc">pk_test_... or pk_live_...</div>
+      </div>
+      <div class="key-row">
+        <div class="key-label">Stripe Secret Key</div>
+        <div class="key-desc">sk_test_... or sk_live_...</div>
+      </div>
+      <div class="key-row">
+        <div class="key-label">PayPal Client ID</div>
+        <div class="key-desc">From PayPal Developer Dashboard → Your App</div>
+      </div>
+      <div class="key-row">
+        <div class="key-label">PayPal Client Secret</div>
+        <div class="key-desc">From PayPal Developer Dashboard → Your App → Show</div>
+      </div>
+    </div>
+    <div class="note">
+      <strong>Security tip:</strong> Send credentials privately — via a secure message or encrypted email. Do not share them over regular SMS, WhatsApp, or in screenshots that could be forwarded.
+    </div>
+  </div>
+
+  <div class="footer">
+    Prepared for client handoff &nbsp;·&nbsp; Share this document along with your credentials securely &nbsp;·&nbsp; For questions, contact your developer
+  </div>
+
+</body>
+</html>

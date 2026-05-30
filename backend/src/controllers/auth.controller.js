@@ -3,6 +3,7 @@ import User from "../models/User.js";
 import { registerSchema, loginSchema } from "../schema/auth.schema.js";
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../utils/tokens.js";
 import { ENV } from "../config/env.js";
+import { sendWelcomeEmail } from "../utils/mailer.js";
 
 
 
@@ -54,6 +55,9 @@ const registerController = async (req, res, next) => {
 
         // SET REFRESH TOKEN IN COOKIE
         res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
+
+        // Send welcome email (non-blocking)
+        sendWelcomeEmail({ to: user.email, fname: user.fname });
 
         res.status(201).json({
             success: true,

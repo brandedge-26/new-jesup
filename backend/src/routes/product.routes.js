@@ -7,14 +7,15 @@ import {
     deleteProduct,
 } from "../controllers/product.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
+import { adminMiddleware } from "../middlewares/adminMiddleware.js";
 
 const productRoutes = Router();
 
 // GET is public (shop needs it); write operations are admin-only
 productRoutes.get(   "/",    getProducts);
 productRoutes.get(   "/:id", getProductById);
-productRoutes.post(  "/",    authMiddleware, createProduct);
-productRoutes.put(   "/:id", authMiddleware, updateProduct);
-productRoutes.delete("/:id", authMiddleware, deleteProduct);
+productRoutes.post(  "/",    authMiddleware, adminMiddleware, createProduct);
+productRoutes.put(   "/:id", authMiddleware, adminMiddleware, updateProduct);
+productRoutes.delete("/:id", authMiddleware, adminMiddleware, deleteProduct);
 
 export { productRoutes };

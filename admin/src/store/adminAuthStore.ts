@@ -18,6 +18,7 @@ interface AdminAuthState {
     login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
     initAuth: () => Promise<void>;
+    updateUser: (data: Partial<AdminUser>) => void;
 }
 
 export const useAdminAuthStore = create<AdminAuthState>((set) => ({
@@ -44,6 +45,8 @@ export const useAdminAuthStore = create<AdminAuthState>((set) => ({
         setAdminToken(accessToken);
         set({ user, isAuthenticated: true });
     },
+
+    updateUser: (data) => set((s) => ({ user: s.user ? { ...s.user, ...data } : s.user })),
 
     logout: async () => {
         try {

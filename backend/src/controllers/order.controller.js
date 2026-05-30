@@ -1,9 +1,18 @@
+import Stripe from "stripe";
 import Order from "../models/Order.js";
+import Product from "../models/Product.js";
+import Promo from "../models/Promo.js";
+import User from "../models/User.js";
+import { findValidPromo, calcDiscount } from "./promo.controller.js";
+import { sendOrderConfirmationEmail } from "../utils/mailer.js";
+import { ENV } from "../config/env.js";
+
+const stripe = ENV.STRIPE_SECRET_KEY ? new Stripe(ENV.STRIPE_SECRET_KEY, { apiVersion: "2024-06-20" }) : null;
 
 // ── CREATE ORDER (checkout) ───────────────────────────────────────────────────
 const createOrderController = async (req, res, next) => {
     try {
-        const { items, subtotal, shipping, total, shippingAddress } = req.body;
+        const { items, shippingAddress, paymentMethod = "cod", paymentIntentId = "" } = req.body;
 
         if (!items?.length) {
             throw new Error("Cart is empty", { cause: { statusCode: 400 } });
@@ -12,13 +21,131 @@ const createOrderController = async (req, res, next) => {
             throw new Error("Complete shipping address is required", { cause: { statusCode: 400 } });
         }
 
+        // ── Verify prices + stock from DB (never trust client) ─────────────
+        const slugs = items.map((i) => i.slug).filter(Boolean);
+        const dbProducts = await Product.find({ slug: { $in: slugs } }).select("slug price originalPrice inStock stock");
+
+        const productMap = {};
+        for (const p of dbProducts) productMap[p.slug] = p;
+
+        const verifiedItems = [];
+        for (const item of items) {
+            const dbProduct = productMap[item.slug];
+            if (!dbProduct) {
+                throw new Error(`Product "${item.name}" not found.`, { cause: { statusCode: 400 } });
+            }
+            if (!dbProduct.inStock || dbProduct.stock < 1) {
+                throw new Error(`"${item.name}" is out of stock.`, { cause: { statusCode: 400 } });
+            }
+            if (dbProduct.stock < item.qty) {
+                throw new Error(
+                    `Only ${dbProduct.stock} unit(s) of "${item.name}" available.`,
+                    { cause: { statusCode: 400 } }
+                );
+            }
+            verifiedItems.push({
+                productId:     item.productId,
+                slug:          item.slug,
+                name:          item.name,
+                brand:         item.brand,
+                image:         item.image,
+                color:         item.color ?? "",
+                qty:           item.qty,
+                price:         dbProduct.price,
+                originalPrice: dbProduct.originalPrice,
+            });
+        }
+
+        // ── Recalculate totals server-side ──────────────────────────────────
+        const subtotal = verifiedItems.reduce((sum, i) => sum + i.price * i.qty, 0);
+        const shipping  = subtotal >= 50 ? 0 : 4.99;
+
+        // ── Apply promo code (if provided) ───────────────────────────────────
+        let discount  = 0;
+        let promoCode = "";
+        if (req.body.promoCode) {
+            try {
+                const promo = await findValidPromo(req.body.promoCode, subtotal);
+                discount    = parseFloat(calcDiscount(promo, subtotal).toFixed(2));
+                promoCode   = promo.code;
+                await Promo.findByIdAndUpdate(promo._id, { $inc: { usedCount: 1 } });
+            } catch {
+                // invalid promo — silently ignore, just don't apply
+            }
+        }
+
+        const total = parseFloat((subtotal + shipping - discount).toFixed(2));
+
+        // ── Stripe payment verification ──────────────────────────────────────
+        let resolvedPaymentStatus = "pending";
+
+        if (paymentMethod === "stripe") {
+            if (!paymentIntentId) {
+                throw new Error("Payment intent ID is required for card payments.", { cause: { statusCode: 400 } });
+            }
+            if (!stripe) {
+                throw new Error("Stripe is not configured.", { cause: { statusCode: 503 } });
+            }
+
+            // Check this paymentIntentId hasn't already been used
+            const existingOrder = await Order.findOne({ paymentIntentId });
+            if (existingOrder) {
+                throw new Error("This payment has already been used.", { cause: { statusCode: 400 } });
+            }
+
+            // Retrieve & verify PaymentIntent from Stripe
+            const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+            if (intent.status !== "succeeded") {
+                throw new Error("Payment has not been completed.", { cause: { statusCode: 402 } });
+            }
+
+            // Verify amount matches (in cents) — prevents price manipulation
+            const expectedCents = Math.round(total * 100);
+            if (intent.amount !== expectedCents) {
+                throw new Error("Payment amount mismatch. Please contact support.", { cause: { statusCode: 400 } });
+            }
+
+            // Verify the payment was made by this user
+            if (intent.metadata?.userId && intent.metadata.userId !== req.user._id.toString()) {
+                throw new Error("Payment does not belong to this account.", { cause: { statusCode: 403 } });
+            }
+
+            resolvedPaymentStatus = "paid";
+        }
+
         const order = await Order.create({
             userId: req.user._id,
-            items,
+            items: verifiedItems,
             subtotal,
             shipping,
+            discount,
+            promoCode,
             total,
             shippingAddress,
+            paymentMethod,
+            paymentStatus: resolvedPaymentStatus,
+            paymentIntentId,
+        });
+
+        // ── Decrement stock for each product ────────────────────────────────
+        await Product.bulkWrite(
+            verifiedItems.map((item) => ({
+                updateOne: {
+                    filter: { slug: item.slug },
+                    update: [
+                        { $set: { stock: { $max: [0, { $subtract: ["$stock", item.qty] }] } } },
+                        { $set: { inStock: { $gt: ["$stock", 0] } } },
+                    ],
+                },
+            }))
+        );
+
+        // ── Send order confirmation email (non-blocking) ─────────────────────
+        sendOrderConfirmationEmail({
+            to:    req.user.email,
+            fname: req.user.fname,
+            order,
         });
 
         res.status(201).json({ success: true, order });

@@ -12,6 +12,14 @@ import ReviewModal, { type ReviewData } from "@/components/ReviewModal";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+/** Case-insensitive color lookup. Falls back to the raw string as a CSS color (e.g. "red", "#ff0000"). */
+function resolveColor(color: string): string {
+  if (COLOR_HEX[color]) return COLOR_HEX[color];
+  const capitalized = color.charAt(0).toUpperCase() + color.slice(1).toLowerCase();
+  if (COLOR_HEX[capitalized]) return COLOR_HEX[capitalized];
+  return color; // treat as raw CSS color name / hex
+}
+
 const BADGE_STYLES: Record<string, string> = {
   "Best Seller": "bg-amber-500 text-white",
   "Top Rated":   "bg-emerald-500 text-white",
@@ -446,13 +454,13 @@ export default function ProductDetail({ product, collectionId, collectionTitle, 
                         : "border-gray-200 hover:border-gray-400"
                     }`}
                     style={{
-                      backgroundColor: COLOR_HEX[color] ?? "#e5e7eb",
+                      backgroundColor: resolveColor(color),
                       ...(color === "Clear" ? { background: "linear-gradient(135deg,#e5e7eb 40%,#fff 40%)" } : {}),
                     }}
                   >
                     {selectedColor === color && (
                       <svg
-                        className={`absolute inset-0 m-auto w-4 h-4 ${["White","Clear","Silver","Starlight","Cream"].includes(color) ? "text-gray-700" : "text-white"}`}
+                        className={`absolute inset-0 m-auto w-4 h-4 ${["White","Clear","Silver","Starlight","Cream","white","clear","silver","starlight","cream"].includes(color) ? "text-gray-700" : "text-white"}`}
                         fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -527,7 +535,7 @@ export default function ProductDetail({ product, collectionId, collectionTitle, 
                       <span
                         className="w-3.5 h-3.5 rounded-full border border-gray-300 shrink-0"
                         style={{
-                          backgroundColor: COLOR_HEX[color] ?? "#e5e7eb",
+                          backgroundColor: resolveColor(color),
                           ...(color === "Clear" ? { background: "linear-gradient(135deg,#e5e7eb 40%,#fff 40%)" } : {}),
                         }}
                       />

@@ -24,9 +24,11 @@ const orderSchema = new mongoose.Schema(
 
         items: [orderItemSchema],
 
-        subtotal: { type: Number, required: true },
-        shipping:  { type: Number, required: true, default: 0 },
-        total:     { type: Number, required: true },
+        subtotal:   { type: Number, required: true },
+        shipping:   { type: Number, required: true, default: 0 },
+        discount:   { type: Number, default: 0 },
+        promoCode:  { type: String, default: "" },
+        total:      { type: Number, required: true },
 
         status: {
             type: String,
@@ -42,6 +44,10 @@ const orderSchema = new mongoose.Schema(
             state:  { type: String, required: true },
             zip:    { type: String, required: true },
         },
+
+        paymentMethod:   { type: String, enum: ["stripe", "cod"], default: "cod" },
+        paymentStatus:   { type: String, enum: ["pending", "paid", "failed"], default: "pending" },
+        paymentIntentId: { type: String, default: "" },
 
         tracking:          { type: String, default: "" },
         estimatedDelivery: { type: String, default: "" },

@@ -7,14 +7,15 @@ import {
     deleteAppointmentController,
 } from "../controllers/appointment.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
+import { adminMiddleware } from "../middlewares/adminMiddleware.js";
 
 export const appointmentRoutes = express.Router();
 
-// PUBLIC — anyone can book (auth optional)
+// PUBLIC — anyone can book
 appointmentRoutes.post("/", createAppointmentController);
 
-// PROTECTED
-appointmentRoutes.get("/", authMiddleware, getAppointmentsController);
-appointmentRoutes.get("/:id", authMiddleware, getAppointmentController);
-appointmentRoutes.patch("/:id/status", authMiddleware, updateAppointmentStatusController);
-appointmentRoutes.delete("/:id",        authMiddleware, deleteAppointmentController);
+// Admin only
+appointmentRoutes.get("/",             authMiddleware, adminMiddleware, getAppointmentsController);
+appointmentRoutes.get("/:id",          authMiddleware, adminMiddleware, getAppointmentController);
+appointmentRoutes.patch("/:id/status", authMiddleware, adminMiddleware, updateAppointmentStatusController);
+appointmentRoutes.delete("/:id",       authMiddleware, adminMiddleware, deleteAppointmentController);

@@ -17,8 +17,13 @@ interface Order {
     items: OrderItem[];
     subtotal: number;
     shipping: number;
+    discount?: number;
+    promoCode?: string;
     total: number;
     status: OrderStatus;
+    paymentMethod: "stripe" | "cod";
+    paymentStatus: "pending" | "paid" | "failed";
+    paymentIntentId?: string;
     shippingAddress: { name: string; phone?: string; street: string; city: string; state: string; zip: string };
     tracking?: string;
     estimatedDelivery?: string;
@@ -41,6 +46,28 @@ function StatusBadge({ status }: { status: OrderStatus }) {
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${STATUS_STYLES[status]}`}>
             {status}
         </span>
+    );
+}
+
+function PaymentBadge({ method, status }: { method: "stripe" | "cod"; status: "pending" | "paid" | "failed" }) {
+    const isCard = method === "stripe";
+    const isPaid = status === "paid";
+    const isFailed = status === "failed";
+
+    return (
+        <div className="flex flex-col gap-1">
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border w-fit ${isCard ? "bg-indigo-50 text-indigo-700 border-indigo-200" : "bg-gray-50 text-gray-600 border-gray-200"}`}>
+                {isCard ? (
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5z" /></svg>
+                ) : (
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75" /></svg>
+                )}
+                {isCard ? "Card" : "COD"}
+            </span>
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border w-fit ${isPaid ? "bg-emerald-50 text-emerald-700 border-emerald-200" : isFailed ? "bg-red-50 text-red-600 border-red-200" : "bg-amber-50 text-amber-700 border-amber-200"}`}>
+                {isPaid ? "Paid" : isFailed ? "Failed" : "Pending"}
+            </span>
+        </div>
     );
 }
 
@@ -174,7 +201,7 @@ export default function OrdersPage() {
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-y border-gray-100">
-                                    {["Order", "Customer", "Items", "Date", "Status", "Total", ""].map((h) => (
+                                    {["Order", "Customer", "Items", "Date", "Status", "Payment", "Total", ""].map((h) => (
                                         <th key={h} className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wide text-gray-400 whitespace-nowrap">{h}</th>
                                     ))}
                                 </tr>
@@ -194,6 +221,7 @@ export default function OrdersPage() {
                                         </td>
                                         <td className="px-5 py-4 text-gray-500 whitespace-nowrap text-xs">{formatDate(o.createdAt)}</td>
                                         <td className="px-5 py-4"><StatusBadge status={o.status} /></td>
+                                        <td className="px-5 py-4"><PaymentBadge method={o.paymentMethod ?? "cod"} status={o.paymentStatus ?? "pending"} /></td>
                                         <td className="px-5 py-4 font-extrabold text-gray-900 whitespace-nowrap">${o.total.toFixed(2)}</td>
                                         <td className="px-5 py-4">
                                             <button onClick={() => setSelected(o)} className="opacity-0 group-hover:opacity-100 transition-opacity text-xs font-semibold text-primary hover:text-primary-hover">
@@ -279,7 +307,24 @@ export default function OrdersPage() {
                             <div className="rounded-xl bg-gray-50 border border-gray-100 px-4 py-3 space-y-1.5 text-sm">
                                 <div className="flex justify-between text-gray-500"><span>Subtotal</span><span>${selected.subtotal.toFixed(2)}</span></div>
                                 <div className="flex justify-between text-gray-500"><span>Shipping</span><span>{selected.shipping === 0 ? "Free" : `$${selected.shipping.toFixed(2)}`}</span></div>
+                                {(selected.discount ?? 0) > 0 && (
+                                    <div className="flex justify-between text-emerald-600">
+                                        <span>Discount {selected.promoCode && <span className="font-mono text-[10px] bg-emerald-100 px-1 rounded">{selected.promoCode}</span>}</span>
+                                        <span>-${selected.discount!.toFixed(2)}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between font-bold text-gray-900 pt-1 border-t border-gray-200"><span>Total</span><span>${selected.total.toFixed(2)}</span></div>
+                            </div>
+
+                            {/* Payment info */}
+                            <div className="rounded-xl border border-gray-100 px-4 py-3 text-sm space-y-2">
+                                <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Payment</p>
+                                <div className="flex items-center justify-between">
+                                    <PaymentBadge method={selected.paymentMethod ?? "cod"} status={selected.paymentStatus ?? "pending"} />
+                                    {selected.paymentIntentId && (
+                                        <span className="text-[10px] font-mono text-gray-400 truncate max-w-[160px]">{selected.paymentIntentId}</span>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Status update */}

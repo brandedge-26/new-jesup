@@ -12,7 +12,12 @@ import { userRoutes }        from "./routes/user.routes.js";
 import { featuredRoutes }   from "./routes/featuredProduct.routes.js";
 import { productRoutes }    from "./routes/product.routes.js";
 import { reviewRoutes }     from "./routes/review.routes.js";
+import { promoRoutes }     from "./routes/promo.routes.js";
+import { analyticsRoutes } from "./routes/analytics.routes.js";
+import { paymentRoutes, webhookRoute } from "./routes/payment.routes.js";
 import { authMiddleware } from "./middlewares/auth.middleware.js";
+import passport from "./passport/auth.passport.js";
+import { authLimiter, generalLimiter } from "./middlewares/rateLimiter.js";
 
 
 
@@ -28,6 +33,9 @@ export const app = express();
 
 
 
+// WEBHOOK — raw body, MUST be before express.json()
+app.post("/api/payments/webhook", express.raw({ type: "application/json" }), webhookRoute);
+
 // COOKIE PARSING
 app.use(cookieParser());
 
@@ -36,6 +44,12 @@ app.use(cookieParser());
 // PARSING INCOMING DATA
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+
+
+
+// PASSPORT
+app.use(passport.initialize());
 
 
 
@@ -60,15 +74,18 @@ app.get("/", authMiddleware, (req, res) => {
 
 
 // ROUTES
-app.use("/api/auth", authRoutes);
-app.use("/api/appointments", appointmentRoutes);
-app.use("/api/contacts",     contactRoutes);
-app.use("/api/orders",       orderRoutes);
-app.use("/api/cart",         cartRoutes);
-app.use("/api/users",        userRoutes);
-app.use("/api/featured",     featuredRoutes);
-app.use("/api/products",     productRoutes);
-app.use("/api/reviews",      reviewRoutes);
+app.use("/api/auth",         authLimiter,    authRoutes);
+app.use("/api/appointments", generalLimiter, appointmentRoutes);
+app.use("/api/contacts",     generalLimiter, contactRoutes);
+app.use("/api/orders",       generalLimiter, orderRoutes);
+app.use("/api/cart",         generalLimiter, cartRoutes);
+app.use("/api/users",        generalLimiter, userRoutes);
+app.use("/api/featured",     generalLimiter, featuredRoutes);
+app.use("/api/products",     generalLimiter, productRoutes);
+app.use("/api/reviews",      generalLimiter, reviewRoutes);
+app.use("/api/promos",       generalLimiter, promoRoutes);
+app.use("/api/analytics",   generalLimiter, analyticsRoutes);
+app.use("/api/payments",    generalLimiter, paymentRoutes);
 
 
 

@@ -9,6 +9,7 @@ import {
     trackOrderController,
 } from "../controllers/order.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
+import { adminMiddleware } from "../middlewares/adminMiddleware.js";
 
 export const orderRoutes = express.Router();
 
@@ -21,6 +22,6 @@ orderRoutes.get("/my",         authMiddleware, getMyOrdersController);
 orderRoutes.get("/:id",        authMiddleware, getOrderController);
 
 // Admin routes
-orderRoutes.get("/",           authMiddleware, getAllOrdersController);
-orderRoutes.patch("/:id/status", authMiddleware, updateOrderStatusController);
-orderRoutes.delete("/:id",     authMiddleware, deleteOrderController);
+orderRoutes.get("/",             authMiddleware, adminMiddleware, getAllOrdersController);
+orderRoutes.patch("/:id/status", authMiddleware, adminMiddleware, updateOrderStatusController);
+orderRoutes.delete("/:id",       authMiddleware, adminMiddleware, deleteOrderController);
