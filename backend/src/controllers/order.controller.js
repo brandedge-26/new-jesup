@@ -4,7 +4,7 @@ import Product from "../models/Product.js";
 import Promo from "../models/Promo.js";
 import User from "../models/User.js";
 import { findValidPromo, calcDiscount } from "./promo.controller.js";
-import { sendOrderConfirmationEmail } from "../utils/mailer.js";
+import { sendOrderConfirmationEmail, sendOrderStatusEmail } from "../utils/mailer.js";
 import { ENV } from "../config/env.js";
 
 const stripe = ENV.STRIPE_SECRET_KEY ? new Stripe(ENV.STRIPE_SECRET_KEY, { apiVersion: "2024-06-20" }) : null;
@@ -208,8 +208,21 @@ const updateOrderStatusController = async (req, res, next) => {
         if (tracking) update.tracking = tracking;
         if (estimatedDelivery) update.estimatedDelivery = estimatedDelivery;
 
-        const order = await Order.findByIdAndUpdate(req.params.id, update, { new: true });
+        const order = await Order.findByIdAndUpdate(req.params.id, update, { new: true })
+            .populate("userId", "fname lname email");
         if (!order) throw new Error("Order not found", { cause: { statusCode: 404 } });
+
+        // Send status update email (non-blocking)
+        if (order.userId?.email) {
+            sendOrderStatusEmail({
+                to:                order.userId.email,
+                fname:             order.userId.fname,
+                orderNumber:       order.orderNumber,
+                status,
+                tracking:          order.tracking,
+                estimatedDelivery: order.estimatedDelivery,
+            });
+        }
 
         res.status(200).json({ success: true, order });
     } catch (err) {

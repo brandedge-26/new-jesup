@@ -193,3 +193,85 @@ export async function sendOrderConfirmationEmail({ to, fname, order }) {
 
     await sendMail({ to, subject: `Order Confirmed — ${order.orderNumber} | Jesup Wireless`, html });
 }
+
+// ── Order Status Update Email ─────────────────────────────────────────────────
+export async function sendOrderStatusEmail({ to, fname, orderNumber, status, tracking, estimatedDelivery }) {
+
+    const STATUS_CONFIG = {
+        Shipped: {
+            emoji:   "🚚",
+            subject: `Your Order is On the Way! — ${orderNumber}`,
+            heading: "Your Order Has Shipped!",
+            sub:     `Great news, ${fname}! Your order is on its way to you.`,
+            badge:   { text: "Shipped", color: "#2563eb", bg: "#eff6ff" },
+            message: tracking
+                ? `Your tracking number is <strong style="color:#111827;">${tracking}</strong>${estimatedDelivery ? `. Estimated delivery: <strong style="color:#111827;">${estimatedDelivery}</strong>` : ""}.`
+                : `Your package is on its way.${estimatedDelivery ? ` Estimated delivery: <strong style="color:#111827;">${estimatedDelivery}</strong>.` : ""}`,
+        },
+        Delivered: {
+            emoji:   "✅",
+            subject: `Order Delivered — ${orderNumber}`,
+            heading: "Order Delivered!",
+            sub:     `Hi ${fname}, your order has been successfully delivered.`,
+            badge:   { text: "Delivered", color: "#059669", bg: "#f0fdf4" },
+            message: "We hope you love your purchase! If you have any issues, please contact our support team.",
+        },
+        Cancelled: {
+            emoji:   "❌",
+            subject: `Order Cancelled — ${orderNumber}`,
+            heading: "Order Cancelled",
+            sub:     `Hi ${fname}, your order has been cancelled.`,
+            badge:   { text: "Cancelled", color: "#dc2626", bg: "#fef2f2" },
+            message: "If you didn't request this cancellation or have any questions, please contact our support team immediately.",
+        },
+    };
+
+    const config = STATUS_CONFIG[status];
+    if (!config) return; // Don't send email for Processing (already sent on order creation)
+
+    const html = baseTemplate(`
+        <h2 style="margin:0 0 4px;font-size:22px;font-weight:700;color:#111827;">${config.emoji} ${config.heading}</h2>
+        <p style="margin:0 0 28px;font-size:15px;color:#6b7280;">${config.sub}</p>
+
+        <!-- Order Number + Status -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0ff;border-radius:12px;padding:16px 20px;margin-bottom:28px;">
+          <tr>
+            <td>
+              <p style="margin:0 0 2px;font-size:12px;color:#8223D2;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Order Number</p>
+              <p style="margin:0;font-size:20px;color:#111827;font-weight:800;letter-spacing:1px;">${orderNumber}</p>
+            </td>
+            <td align="right">
+              <span style="display:inline-block;background:${config.badge.bg};color:${config.badge.color};font-size:11px;font-weight:700;padding:4px 12px;border-radius:100px;border:1px solid ${config.badge.color}33;">
+                ${config.badge.text}
+              </span>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Status message -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:12px;padding:16px 20px;margin-bottom:28px;">
+          <tr>
+            <td>
+              <p style="margin:0;font-size:14px;color:#374151;line-height:1.6;">${config.message}</p>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Track Button (not shown for Cancelled) -->
+        ${status !== "Cancelled" ? `
+        <a href="${ENV.CLIENT_URL}/track-order/${orderNumber}"
+           style="display:inline-block;background:#8223D2;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:14px 32px;border-radius:100px;">
+          Track Your Order →
+        </a>` : `
+        <a href="${ENV.CLIENT_URL}/collections"
+           style="display:inline-block;background:#8223D2;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:14px 32px;border-radius:100px;">
+          Continue Shopping →
+        </a>`}
+
+        <p style="margin:24px 0 0;font-size:13px;color:#9ca3af;">
+          Questions? Reply to this email and our team will help you out.
+        </p>
+    `);
+
+    await sendMail({ to, subject: config.subject, html });
+}
