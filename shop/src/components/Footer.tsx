@@ -17,15 +17,6 @@ const footerLinks = [
     ],
   },
   {
-    title: "About Jesup",
-    links: [
-      { label: "Partnerships", href: "/about/partnerships" },
-      { label: "Franchising", href: "/about/franchising" },
-      { label: "Brands", href: "/about/brands" },
-      { label: "Newsroom", href: "/about/newsroom" },
-    ],
-  },
-  {
     title: "Support",
     links: [
       { label: "FAQ", href: "/faq" },
@@ -81,7 +72,7 @@ export default function Footer() {
       <div className="bg-gray-950 rounded-3xl overflow-hidden">
 
         {/* Main content */}
-        <div className="px-8 lg:px-12 pt-12 pb-10 grid grid-cols-1 lg:grid-cols-[220px_1fr_1fr_1fr_1fr_220px] gap-10">
+        <div className="px-8 lg:px-12 pt-12 pb-10 grid grid-cols-1 lg:grid-cols-[220px_1fr_1fr_1fr_220px] gap-10">
 
           {/* Logo + tagline + socials */}
           <div className="flex flex-col gap-5">

@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 // ─── API helper ───────────────────────────────────────────────────────────────
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5510/api";
+const API = process.env.NEXT_PUBLIC_API_URL;
 
 async function fetchFeaturedByCategory(category: string, limit = 4): Promise<Product[]> {
   try {

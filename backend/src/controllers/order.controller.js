@@ -4,7 +4,7 @@ import Product from "../models/Product.js";
 import Promo from "../models/Promo.js";
 import User from "../models/User.js";
 import { findValidPromo, calcDiscount } from "./promo.controller.js";
-import { sendOrderConfirmationEmail, sendOrderStatusEmail } from "../utils/mailer.js";
+import { sendOrderConfirmationEmail, sendOrderStatusEmail, sendAdminCancellationEmail } from "../utils/mailer.js";
 import { ENV } from "../config/env.js";
 
 const stripe = ENV.STRIPE_SECRET_KEY ? new Stripe(ENV.STRIPE_SECRET_KEY, { apiVersion: "2024-06-20" }) : null;
@@ -268,6 +268,48 @@ const trackOrderController = async (req, res, next) => {
     }
 };
 
+// ── CANCEL OWN ORDER (customer) ───────────────────────────────────────────────
+const cancelOrderController = async (req, res, next) => {
+    try {
+        const order = await Order.findById(req.params.id).populate("userId", "fname lname email");
+
+        if (!order) throw new Error("Order not found.", { cause: { statusCode: 404 } });
+
+        // Only the owner can cancel
+        if (order.userId._id.toString() !== req.user._id.toString()) {
+            throw new Error("Forbidden.", { cause: { statusCode: 403 } });
+        }
+
+        // Only Processing orders can be cancelled
+        if (order.status !== "Processing") {
+            throw new Error(`Order cannot be cancelled — it is already ${order.status}.`, { cause: { statusCode: 400 } });
+        }
+
+        order.status = "Cancelled";
+        await order.save();
+
+        // Email customer
+        sendOrderStatusEmail({
+            to:          order.userId.email,
+            fname:       order.userId.fname,
+            orderNumber: order.orderNumber,
+            status:      "Cancelled",
+        });
+
+        // Email admin
+        sendAdminCancellationEmail({
+            orderNumber: order.orderNumber,
+            customerName:  `${order.userId.fname} ${order.userId.lname}`,
+            customerEmail: order.userId.email,
+            total:         order.total,
+        });
+
+        res.json({ success: true, order });
+    } catch (err) {
+        next(err);
+    }
+};
+
 export {
     createOrderController,
     getMyOrdersController,
@@ -276,4 +318,5 @@ export {
     updateOrderStatusController,
     deleteOrderController,
     trackOrderController,
+    cancelOrderController,
 };

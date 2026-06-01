@@ -517,6 +517,8 @@ function Sidebar(props: SidebarProps) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
+const ITEMS_PER_PAGE = 20;
+
 const SORT_OPTIONS = [
   { value: "newest",     label: "Newest First" },
   { value: "featured",   label: "Featured" },
@@ -534,7 +536,7 @@ export default function CollectionView({ slug }: { slug: string }) {
   useEffect(() => {
     const category = SLUG_TO_CATEGORY[slug];
     if (!category) return;
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5510/api";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     fetch(`${apiUrl}/products?category=${encodeURIComponent(category)}&limit=200`)
       .then((r) => r.json())
       .then((data) => {
@@ -579,6 +581,7 @@ export default function CollectionView({ slug }: { slug: string }) {
   const [sortBy,         setSortBy]         = useState("newest");
   const [gridCols,       setGridCols]       = useState<2 | 3 | 4>(3);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [page, setPage] = useState(1);
 
   const activeFilterCount =
     selectedBrands.length + selectedColors.length + selectedBadges.length +
@@ -612,6 +615,12 @@ export default function CollectionView({ slug }: { slug: string }) {
       default:           return 0;
     }
   }), [filtered, sortBy]);
+
+  // Reset to page 1 whenever filters or sort change
+  useEffect(() => { setPage(1); }, [sorted]);
+
+  const totalPages = Math.ceil(sorted.length / ITEMS_PER_PAGE);
+  const paginated  = sorted.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
   // Product count per brand (from unfiltered collection)
   const productCounts = useMemo(() => {
@@ -697,7 +706,7 @@ export default function CollectionView({ slug }: { slug: string }) {
 
               <p className="text-sm text-gray-500 mr-auto">
                 {ready
-                  ? <><span className="font-semibold text-gray-900">{sorted.length}</span> products</>
+                  ? <><span className="font-semibold text-gray-900">{sorted.length}</span> products{totalPages > 1 && <span className="text-gray-400"> · page {page}/{totalPages}</span>}</>
                   : <span className="inline-block h-4 w-24 bg-gray-200 rounded-full animate-pulse" />
                 }
               </p>
@@ -786,11 +795,57 @@ export default function CollectionView({ slug }: { slug: string }) {
                 ))}
               </div>
             ) : sorted.length > 0 ? (
-              <div className={`grid gap-4 ${gridClass}`}>
-                {sorted.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
+              <>
+                <div className={`grid gap-4 ${gridClass}`}>
+                  {paginated.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-1.5 mt-10">
+                    <button
+                      onClick={() => { setPage((p) => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                      disabled={page === 1}
+                      className="px-3 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:border-primary hover:text-primary transition-all disabled:opacity-40 disabled:pointer-events-none"
+                    >
+                      ←
+                    </button>
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                      const isActive = p === page;
+                      const isNear   = Math.abs(p - page) <= 2;
+                      const isEdge   = p === 1 || p === totalPages;
+                      if (!isNear && !isEdge) {
+                        if (p === 2 || p === totalPages - 1) return <span key={p} className="text-gray-300 text-sm px-1">…</span>;
+                        return null;
+                      }
+                      return (
+                        <button
+                          key={p}
+                          onClick={() => { setPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                          className={`min-w-[38px] h-[38px] rounded-xl text-sm font-bold transition-all ${
+                            isActive
+                              ? "bg-primary text-white shadow-sm shadow-primary/20"
+                              : "border border-gray-200 text-gray-600 hover:border-primary hover:text-primary"
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      );
+                    })}
+
+                    <button
+                      onClick={() => { setPage((p) => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                      disabled={page === totalPages}
+                      className="px-3 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:border-primary hover:text-primary transition-all disabled:opacity-40 disabled:pointer-events-none"
+                    >
+                      →
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="flex flex-col items-center justify-center py-24 text-center">
                 <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useAuthStore } from "@/store/authStore";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5510/api";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // PUBLIC INSTANCE — no token needed (login, register, refresh)
 export const publicAxios = axios.create({

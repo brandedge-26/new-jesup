@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import { COLLECTIONS, CATEGORY_TO_SLUG, type Product } from "@/lib/collectionData";
 import ProductDetail from "./ProductDetail";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5510/api";
+const API = process.env.NEXT_PUBLIC_API_URL;
 
 export async function generateMetadata({
   params,

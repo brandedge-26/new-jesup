@@ -30,7 +30,7 @@ interface Product {
 
 async function getTrendingProducts(): Promise<Product[]> {
   try {
-    const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5510/api";
+    const API = process.env.NEXT_PUBLIC_API_URL;
     const res = await fetch(`${API}/featured?type=trending`, {
       next: { revalidate: 60 },
     });

@@ -103,7 +103,7 @@ export default function SearchModal({ open, onClose }: Props) {
     const timer = setTimeout(async () => {
       setApiLoading(true);
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5510/api";
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         const res = await fetch(
           `${apiUrl}/products?search=${encodeURIComponent(query.trim())}&limit=12`,
           { signal: controller.signal }
@@ -242,58 +242,23 @@ export default function SearchModal({ open, onClose }: Props) {
                   <Link
                     href={`/products/${product.slug}`}
                     onClick={onClose}
-                    className="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-colors group"
+                    className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors group"
                   >
                     {/* Product image */}
-                    <div className="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden shrink-0 relative">
+                    <div className="w-11 h-11 rounded-xl bg-gray-100 overflow-hidden shrink-0 relative">
                       <Image
                         src={product.image}
                         alt={product.name}
                         fill
-                        className="object-contain p-1.5"
-                        sizes="56px"
+                        className="object-contain p-1"
+                        sizes="44px"
                       />
                     </div>
 
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-primary transition-colors">
-                        {product.name}
-                      </p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs text-gray-500">{product.brand}</span>
-                        <span className="text-gray-200">·</span>
-                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                          {product.collectionTitle}
-                        </span>
-                        {product.badge && (
-                          <>
-                            <span className="text-gray-200">·</span>
-                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full
-                              ${product.badge === "Sale" ? "bg-red-100 text-red-600"
-                              : product.badge === "New" ? "bg-emerald-100 text-emerald-600"
-                              : product.badge === "Best Seller" ? "bg-amber-100 text-amber-700"
-                              : "bg-purple-100 text-purple-700"}`}
-                            >
-                              {product.badge}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Price */}
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-bold text-gray-900">${product.price.toFixed(2)}</p>
-                      {product.originalPrice && (
-                        <p className="text-xs text-gray-400 line-through">${product.originalPrice.toFixed(2)}</p>
-                      )}
-                    </div>
-
-                    {/* Arrow */}
-                    <svg className="w-4 h-4 text-gray-300 group-hover:text-primary transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
+                    {/* Name only */}
+                    <p className="flex-1 text-sm font-semibold text-gray-900 truncate group-hover:text-primary transition-colors">
+                      {product.name}
+                    </p>
                   </Link>
                 </li>
               ))}

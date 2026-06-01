@@ -275,3 +275,42 @@ export async function sendOrderStatusEmail({ to, fname, orderNumber, status, tra
 
     await sendMail({ to, subject: config.subject, html });
 }
+
+// ── Admin Cancellation Notification ──────────────────────────────────────────
+export async function sendAdminCancellationEmail({ orderNumber, customerName, customerEmail, total }) {
+    const html = baseTemplate(`
+        <h2 style="margin:0 0 4px;font-size:22px;font-weight:700;color:#111827;">⚠️ Order Cancelled by Customer</h2>
+        <p style="margin:0 0 28px;font-size:15px;color:#6b7280;">A customer has cancelled their order. Please review it in the dashboard.</p>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef2f2;border-radius:12px;padding:16px 20px;margin-bottom:28px;border:1px solid #fecaca;">
+          <tr>
+            <td>
+              <p style="margin:0 0 2px;font-size:12px;color:#dc2626;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Cancelled Order</p>
+              <p style="margin:0;font-size:20px;color:#111827;font-weight:800;letter-spacing:1px;">${orderNumber}</p>
+            </td>
+            <td align="right">
+              <p style="margin:0;font-size:18px;font-weight:800;color:#111827;">$${total.toFixed(2)}</p>
+            </td>
+          </tr>
+        </table>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:12px;padding:16px 20px;margin-bottom:28px;">
+          <tr><td style="padding-bottom:8px;">
+            <p style="margin:0 0 2px;font-size:12px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Customer</p>
+            <p style="margin:0;font-size:14px;color:#111827;font-weight:600;">${customerName}</p>
+            <p style="margin:2px 0 0;font-size:13px;color:#6b7280;">${customerEmail}</p>
+          </td></tr>
+        </table>
+
+        <a href="${ENV.CLIENT_URL?.replace("3001", "3002") ?? "#"}/orders"
+           style="display:inline-block;background:#8223D2;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:14px 32px;border-radius:100px;">
+          View in Dashboard →
+        </a>
+    `);
+
+    await sendMail({
+        to:      ENV.SENDER_EMAIL,
+        subject: `⚠️ Order Cancelled — ${orderNumber} | Jesup Wireless`,
+        html,
+    });
+}

@@ -463,7 +463,7 @@ export default function Header() {
                       )}
                       {user.role === "admin" && (
                         <a
-                          href={process.env.NEXT_PUBLIC_ADMIN_URL || "http://localhost:3002"}
+                          href={process.env.NEXT_PUBLIC_ADMIN_URL}
                           onClick={() => setUserMenuOpen(false)}
                           className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors"
                         >

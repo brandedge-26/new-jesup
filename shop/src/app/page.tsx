@@ -15,24 +15,24 @@ export const metadata: Metadata = {
   },
 };
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5510/api";
+const API = process.env.NEXT_PUBLIC_API_URL;
 
 // ── API helpers ───────────────────────────────────────────────────────────────
 
 function mapProduct(p: Record<string, unknown>, i: number): Product {
   return {
-    id:            String(p._id ?? i),
-    name:          p.name as string,
-    brand:         (p.brand as string) ?? "",
-    price:         p.price as number,
+    id: String(p._id ?? i),
+    name: p.name as string,
+    brand: (p.brand as string) ?? "",
+    price: p.price as number,
     originalPrice: (p.originalPrice as number) ?? undefined,
-    rating:        (p.rating as number) ?? 4.5,
-    reviews:       (p.reviews as number) ?? 0,
-    image:         (p.image as string) ?? "",
-    badge:         (p.badge as Product["badge"]) ?? undefined,
-    colors:        (p.colors as string[]) ?? [],
-    inStock:       (p.inStock as boolean) ?? true,
-    slug:          (p.slug && String(p.slug).length > 0) ? String(p.slug) : String(p._id ?? i),
+    rating: (p.rating as number) ?? 4.5,
+    reviews: (p.reviews as number) ?? 0,
+    image: (p.image as string) ?? "",
+    badge: (p.badge as Product["badge"]) ?? undefined,
+    colors: (p.colors as string[]) ?? [],
+    inStock: (p.inStock as boolean) ?? true,
+    slug: (p.slug && String(p.slug).length > 0) ? String(p.slug) : String(p._id ?? i),
   };
 }
 
@@ -45,28 +45,16 @@ async function fetchFeatured(type: "trending" | "new-arrival"): Promise<Product[
   } catch { return []; }
 }
 
-async function fetchCategoryProduct(category: string): Promise<Product | null> {
-  try {
-    const res = await fetch(
-      `${API}/products?category=${encodeURIComponent(category)}&status=Active&limit=1`,
-      { next: { revalidate: 3600 } }
-    );
-    if (!res.ok) return null;
-    const data = await res.json() as { products: Record<string, unknown>[] };
-    return data.products?.[0] ? mapProduct(data.products[0], 0) : null;
-  } catch { return null; }
-}
-
 // ── Static UI data ─────────────────────────────────────────────────────────────
 
 const brands = ["JBL", "OtterBox", "Anker", "ZAGG", "mophie", "Belkin", "UAG", "PopSockets", "Oladance", "Ventev", "Gadget Guard", "Case-Mate"];
 
 const BADGE_STYLES: Record<string, string> = {
   "Best Seller": "bg-amber-500 text-white",
-  "Top Rated":   "bg-emerald-500 text-white",
-  "Sale":        "bg-red-500 text-white",
-  "New":         "bg-primary text-white",
-  "Limited":     "bg-orange-500 text-white",
+  "Top Rated": "bg-emerald-500 text-white",
+  "Sale": "bg-red-500 text-white",
+  "New": "bg-primary text-white",
+  "Limited": "bg-orange-500 text-white",
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -150,28 +138,24 @@ function ProductCard({ item, showBadge = true }: { item: Product; showBadge?: bo
 }
 
 const valueProps = [
-  { title: "Fast, Tracked Shipping",  body: "Most orders ship within one business day so you can gear up quickly.",                                    icon: <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-14 0h14" /> },
-  { title: "Easy 30-Day Returns",     body: "Changed your mind? Hassle-free returns on eligible items within 30 days.",                                icon: <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /> },
-  { title: "Expert-Approved Picks",   body: "Curated accessories tested by repair pros for fit, finish, and durability.",                              icon: <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /> },
+  { title: "Fast, Tracked Shipping", body: "Most orders ship within one business day so you can gear up quickly.", icon: <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-14 0h14" /> },
+  { title: "Easy 30-Day Returns", body: "Changed your mind? Hassle-free returns on eligible items within 30 days.", icon: <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /> },
+  { title: "Expert-Approved Picks", body: "Curated accessories tested by repair pros for fit, finish, and durability.", icon: <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /> },
 ] as const;
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function Home() {
-  const [trending, newArrivals, casesProduct, audioProduct, powerProduct, spProduct] = await Promise.all([
+  const [trending, newArrivals] = await Promise.all([
     fetchFeatured("trending"),
     fetchFeatured("new-arrival"),
-    fetchCategoryProduct("Cases"),
-    fetchCategoryProduct("Audio"),
-    fetchCategoryProduct("Power"),
-    fetchCategoryProduct("Screen Protection"),
   ]);
 
   const categories = [
-    { title: "Cases",            subtitle: "Slim, rugged & MagSafe-ready",       href: "/collections/cases",              image: casesProduct?.image   ?? "" },
-    { title: "Audio",            subtitle: "Earbuds & over-ear picks",            href: "/collections/audio",              image: audioProduct?.image   ?? "" },
-    { title: "Power & Cables",   subtitle: "Fast charge, travel-ready",           href: "/collections/power",              image: powerProduct?.image   ?? "" },
-    { title: "Screen Protection",subtitle: "Tempered glass for every screen",     href: "/collections/screen-protection",  image: spProduct?.image      ?? "" },
+    { title: "Cases", subtitle: "Slim, rugged & MagSafe-ready", href: "/collections/cases", image: "/home/phone-cases.jpg" },
+    { title: "Audio", subtitle: "Earbuds & over-ear picks", href: "/collections/audio", image: "/home/audio.jpg" },
+    { title: "Power & Cables", subtitle: "Fast charge, travel-ready", href: "/collections/power", image: "/home/power_cables.jpg" },
+    { title: "Screen Protection", subtitle: "Tempered glass for every screen", href: "/collections/screen-protection", image: "/home/screen-protection.jpg" },
   ];
 
   return (
@@ -183,7 +167,7 @@ export default async function Home() {
         {/* ── Hero Banner ── */}
         <section className="relative overflow-hidden mx-3 sm:mx-4 lg:mx-6 mt-4 rounded-2xl" style={{ height: "calc(100vh - 100px)" }}>
           <Image src="/home/desktpo-banner.png" alt="Jesup Shop — Premium Accessories" fill className="object-cover hidden md:block" priority />
-          <Image src="/home/mobile-banner.png"  alt="Jesup Shop — Premium Accessories" fill className="object-cover block md:hidden"  priority />
+          <Image src="/home/mobile-banner.png" alt="Jesup Shop — Premium Accessories" fill className="object-cover block md:hidden" priority />
           <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent rounded-2xl" />
           <div className="absolute inset-0 flex flex-col justify-center px-6 sm:px-10 lg:px-14">
             <span className="inline-block text-[11px] font-bold uppercase tracking-widest text-white/70 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 w-fit mb-3">
@@ -210,13 +194,13 @@ export default async function Home() {
         </section>
 
         {/* ── Brand trust bar ── */}
-        <div className="border-y border-gray-100 bg-gray-50 overflow-hidden py-4 mt-6">
+        {/* <div className="border-y border-gray-100 bg-gray-50 overflow-hidden py-4 mt-6">
           <div className="flex gap-10 animate-marquee whitespace-nowrap">
             {[...brands, ...brands].map((b, i) => (
               <span key={i} className="text-sm font-bold text-gray-400 tracking-wide shrink-0">{b}</span>
             ))}
           </div>
-        </div>
+        </div> */}
 
         <div className="mx-auto max-w-screen-xl px-3 sm:px-4 lg:px-6 mt-14 space-y-20 pb-24">
 
@@ -234,7 +218,7 @@ export default async function Home() {
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5">
-              {categories.filter((c) => c.image).map((cat) => (
+              {categories.map((cat) => (
                 <Link key={cat.title} href={cat.href} className="group relative overflow-hidden rounded-2xl bg-gray-100 shadow-sm hover:shadow-lg transition-shadow">
                   <div className="aspect-[4/5] relative overflow-hidden">
                     <Image src={cat.image} alt={cat.title} fill
@@ -262,20 +246,38 @@ export default async function Home() {
           </section>
 
           {/* ── Promo strip ── */}
-          <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#8223D2] to-[#4a0f8a]">
-            <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)", backgroundSize: "36px 36px" }} />
-            <div className="absolute -right-10 -top-10 w-64 h-64 bg-white/5 rounded-full blur-2xl" />
-            <div className="relative px-6 py-10 lg:px-14 lg:py-14 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+          <section className="relative overflow-hidden rounded-2xl bg-[#0a0a0f]">
+            {/* Glow blobs */}
+            <div className="absolute -left-20 -top-20 w-72 h-72 bg-[#8223D2]/40 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -right-20 -bottom-20 w-72 h-72 bg-indigo-600/30 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-32 bg-[#8223D2]/15 rounded-full blur-2xl pointer-events-none" />
+            {/* Subtle grid */}
+            <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)", backgroundSize: "40px 40px" }} />
+
+            <div className="relative px-6 py-10 lg:px-14 lg:py-14 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-8">
               <div className="max-w-lg">
-                <span className="inline-block text-xs font-bold uppercase tracking-widest text-white/70 bg-white/10 rounded-full px-3 py-1 mb-3">Limited time offer</span>
-                <h2 className="text-2xl lg:text-3xl font-bold text-white leading-snug">Bundle &amp; save — cases + screen protection</h2>
-                <p className="mt-2 text-white/75 text-sm lg:text-base">Pair a slim case with tempered glass and save automatically at checkout.</p>
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-[#c084fc] bg-[#8223D2]/20 border border-[#8223D2]/30 rounded-full px-3 py-1 mb-4">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#c084fc] animate-pulse" />
+                  Limited time offer
+                </span>
+                <h2 className="text-2xl lg:text-4xl font-extrabold text-white leading-tight tracking-tight">
+                  Bundle &amp; save —<br className="hidden sm:block" />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#c084fc] to-[#818cf8]">cases + screen protection</span>
+                </h2>
+                <p className="mt-3 text-white/60 text-sm lg:text-base leading-relaxed">
+                  Pair a slim case with tempered glass and save automatically at checkout.
+                </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3 shrink-0">
-                <Link href="/collections/deals" className="inline-flex items-center justify-center px-7 py-3.5 rounded-full bg-white text-[#8223D2] font-bold text-sm hover:bg-gray-50 transition-colors shadow-lg">
+                <Link href="/collections/deals"
+                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-gradient-to-r from-[#8223D2] to-indigo-600 text-white font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-[#8223D2]/30">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
                   Shop bundles
                 </Link>
-                <Link href="/collections" className="inline-flex items-center justify-center px-7 py-3.5 rounded-full border border-white/30 text-white font-semibold text-sm hover:bg-white/10 transition-colors">
+                <Link href="/collections"
+                  className="inline-flex items-center justify-center px-7 py-3.5 rounded-full border border-white/15 text-white/80 font-semibold text-sm hover:bg-white/10 hover:border-white/30 hover:text-white transition-all backdrop-blur-sm">
                   Browse all
                 </Link>
               </div>
@@ -321,56 +323,54 @@ export default async function Home() {
           )}
 
           {/* ── Split feature ── */}
-          {casesProduct && (
-            <section className="grid lg:grid-cols-2 gap-4 lg:gap-6">
-              <div className="relative min-h-[260px] lg:min-h-[380px] rounded-2xl overflow-hidden group shadow-md">
-                <Image src={casesProduct.image} alt="New arrivals" fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  sizes="(max-width: 1024px) 100vw, 50vw" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-9 text-white">
-                  <span className="text-xs font-bold uppercase tracking-widest text-white/60">Just dropped</span>
-                  <h3 className="mt-1.5 text-xl lg:text-2xl font-bold leading-snug">New Arrivals Weekly</h3>
-                  <p className="mt-2 text-sm text-white/75 max-w-sm">Fresh colors, limited drops, and seasonal bundles — check back often.</p>
-                  <Link href="/collections/deals" className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/30 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/25 transition-all">
-                    Explore new arrivals
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
-                </div>
+          <section className="grid lg:grid-cols-2 gap-4 lg:gap-6">
+            <div className="relative min-h-[260px] lg:min-h-[380px] rounded-2xl overflow-hidden group shadow-md">
+              <Image src="/home/new-arrivels-banner.jpg" alt="New arrivals" fill
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                sizes="(max-width: 1024px) 100vw, 50vw" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-9 text-white">
+                <span className="text-xs font-bold uppercase tracking-widest text-white/60">Just dropped</span>
+                <h3 className="mt-1.5 text-xl lg:text-2xl font-bold leading-snug">New Arrivals Weekly</h3>
+                <p className="mt-2 text-sm text-white/75 max-w-sm">Fresh colors, limited drops, and seasonal bundles — check back often.</p>
+                <Link href="/collections/deals" className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/30 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/25 transition-all">
+                  Explore new arrivals
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
               </div>
+            </div>
 
-              <div className="flex flex-col justify-center rounded-2xl border border-gray-100 bg-gray-50 p-7 lg:p-10 shadow-sm">
-                <SectionLabel>Built for real life</SectionLabel>
-                <h3 className="text-xl lg:text-2xl font-bold text-gray-900">Protection that fits your routine</h3>
-                <p className="mt-3 text-gray-500 text-sm lg:text-base leading-relaxed">
-                  Whether you commute, travel, or work from home — we stock screen protectors, cases, and chargers chosen for real-world wear.
-                </p>
-                <ul className="mt-5 space-y-3 text-sm text-gray-700">
-                  {["Oleophobic coatings that stay clearer, longer", "Qi2 and MagSafe compatible power accessories", "Cases rated for drops without the bulk"].map((t) => (
-                    <li key={t} className="flex items-start gap-3">
-                      <span className="mt-0.5 shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary/15 text-primary">
-                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                      </span>
-                      {t}
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-7 flex gap-3">
-                  <Link href="/collections/screen-protection" className="inline-flex items-center justify-center px-6 py-3 bg-primary text-white font-semibold rounded-full hover:bg-primary-hover transition-colors text-sm gap-2 shadow-sm">
-                    Shop protection
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-                  </Link>
-                  <Link href="/collections/cases" className="inline-flex items-center justify-center px-6 py-3 border border-gray-200 text-gray-700 font-semibold rounded-full hover:border-primary hover:text-primary transition-colors text-sm">
-                    Shop cases
-                  </Link>
-                </div>
+            <div className="flex flex-col justify-center rounded-2xl border border-gray-100 bg-gray-50 p-7 lg:p-10 shadow-sm">
+              <SectionLabel>Built for real life</SectionLabel>
+              <h3 className="text-xl lg:text-2xl font-bold text-gray-900">Protection that fits your routine</h3>
+              <p className="mt-3 text-gray-500 text-sm lg:text-base leading-relaxed">
+                Whether you commute, travel, or work from home — we stock screen protectors, cases, and chargers chosen for real-world wear.
+              </p>
+              <ul className="mt-5 space-y-3 text-sm text-gray-700">
+                {["Oleophobic coatings that stay clearer, longer", "Qi2 and MagSafe compatible power accessories", "Cases rated for drops without the bulk"].map((t) => (
+                  <li key={t} className="flex items-start gap-3">
+                    <span className="mt-0.5 shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary/15 text-primary">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                    {t}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-7 flex gap-3">
+                <Link href="/collections/screen-protection" className="inline-flex items-center justify-center px-6 py-3 bg-primary text-white font-semibold rounded-full hover:bg-primary-hover transition-colors text-sm gap-2 shadow-sm">
+                  Shop protection
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                </Link>
+                <Link href="/collections/cases" className="inline-flex items-center justify-center px-6 py-3 border border-gray-200 text-gray-700 font-semibold rounded-full hover:border-primary hover:text-primary transition-colors text-sm">
+                  Shop cases
+                </Link>
               </div>
-            </section>
-          )}
+            </div>
+          </section>
 
           {/* ── Value props ── */}
           <section className="grid md:grid-cols-3 gap-4 lg:gap-5">
