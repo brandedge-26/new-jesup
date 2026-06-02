@@ -6,13 +6,13 @@ import Link from "next/link";
 
 const slides = [
   {
-    desktop: "/home/banner/heapphone-desktop-banner.jpeg",
-    mobile:  "/home/banner/headphone-mobile-banner.jpeg",
-    badge:   "Top Audio Picks",
-    title:   "Sound Like\nNever Before.",
-    body:    "Earbuds & over-ear headphones handpicked for clarity, comfort & deep bass.",
-    cta1:    { label: "Shop Audio",  href: "/collections/audio" },
-    cta2:    { label: "View Deals",  href: "/collections/deals" },
+    desktop: "/home/banner/accessori-desktop-banner.jpeg",
+    mobile:  "/home/banner/accessori-mobile-banner.jpeg",
+    badge:   "New Collection",
+    title:   "Gear Up.\nStay Protected.",
+    body:    "Premium cases, screen protectors & chargers — expert-picked for every device.",
+    cta1:    { label: "Shop Collections", href: "/collections" },
+    cta2:    { label: "View Deals",       href: "/collections/deals" },
   },
   {
     desktop: "/home/banner/game-desktop-banner.jpeg",
@@ -24,13 +24,13 @@ const slides = [
     cta2:    { label: "Browse All",  href: "/collections/deals" },
   },
   {
-    desktop: "/home/banner/accessori-desktop-banner.jpeg",
-    mobile:  "/home/banner/accessori-mobile-banner.jpeg",
-    badge:   "New Collection",
-    title:   "Gear Up.\nStay Protected.",
-    body:    "Premium cases, screen protectors & chargers — expert-picked for every device.",
-    cta1:    { label: "Shop Collections", href: "/collections" },
-    cta2:    { label: "View Deals",       href: "/collections/deals" },
+    desktop: "/home/banner/heapphone-desktop-banner.jpeg",
+    mobile:  "/home/banner/headphone-mobile-banner.jpeg",
+    badge:   "Top Audio Picks",
+    title:   "Sound Like\nNever Before.",
+    body:    "Earbuds & over-ear headphones handpicked for clarity, comfort & deep bass.",
+    cta1:    { label: "Shop Audio",  href: "/collections/audio" },
+    cta2:    { label: "View Deals",  href: "/collections/deals" },
   },
 ];
 

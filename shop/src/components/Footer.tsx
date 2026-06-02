@@ -6,13 +6,13 @@ const footerLinks = [
   {
     title: "Repairs",
     links: [
-      { label: "iPhone repair", href: "/phone-repair/iphone" },
-      { label: "Samsung repair", href: "/phone-repair/samsung" },
-      { label: "Google repair", href: "/phone-repair/google" },
-      { label: "Cell phone repair", href: "/phone-repair" },
-      { label: "Tablet repair", href: "/tech-repair/tablet" },
-      { label: "Computer repair", href: "/tech-repair/computer" },
-      { label: "Game console repair", href: "/tech-repair/gaming-console" },
+      { label: "iPhone repair", href: "/start-repair" },
+      { label: "Samsung repair", href: "/start-repair" },
+      { label: "Google repair", href: "/start-repair" },
+      { label: "Cell phone repair", href: "/start-repair" },
+      { label: "Tablet repair", href: "/start-repair" },
+      { label: "Computer repair", href: "/start-repair" },
+      { label: "Game console repair", href: "/start-repair" },
       { label: "All repairs", href: "/start-repair" },
     ],
   },
@@ -20,8 +20,9 @@ const footerLinks = [
     title: "Support",
     links: [
       { label: "FAQ", href: "/faq" },
-      { label: "Track repair", href: "/support/track" },
-      { label: "Repair guides", href: "/repair-guides" },
+      { label: "Track order", href: "/track-order" },
+      { label: "Start a repair", href: "/start-repair" },
+      { label: "Contact us", href: "/contact" },
     ],
   },
   {
