@@ -379,7 +379,7 @@ export default async function CollectionsPage() {
                 </div>
 
                 {/* Cases: device groups */}
-                {"deviceGroups" in col && (
+                {"deviceGroups" in col && col.deviceGroups && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                     {col.deviceGroups.map((group) => (
                       <div key={group.heading}>
