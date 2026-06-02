@@ -241,6 +241,19 @@ const deleteOrderController = async (req, res, next) => {
     }
 };
 
+// ── BULK DELETE ORDERS (admin) ────────────────────────────────────────────────
+const bulkDeleteOrdersController = async (req, res, next) => {
+    try {
+        const { ids } = req.body;
+        if (!Array.isArray(ids) || ids.length === 0)
+            return res.status(400).json({ message: "No IDs provided" });
+        const result = await Order.deleteMany({ _id: { $in: ids } });
+        res.json({ success: true, deleted: result.deletedCount });
+    } catch (err) {
+        next(err);
+    }
+};
+
 // ── TRACK ORDER BY ORDER NUMBER (public) ─────────────────────────────────────
 const trackOrderController = async (req, res, next) => {
     try {
@@ -317,6 +330,7 @@ export {
     getAllOrdersController,
     updateOrderStatusController,
     deleteOrderController,
+    bulkDeleteOrdersController,
     trackOrderController,
     cancelOrderController,
 };

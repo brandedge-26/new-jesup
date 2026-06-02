@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import HeroBanner from "@/components/HeroBanner";
 import Image from "next/image";
 import Link from "next/link";
 import { type Product } from "@/lib/collectionData";
@@ -14,6 +15,8 @@ export const metadata: Metadata = {
     url: "/",
   },
 };
+
+export const dynamic = "force-dynamic";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -38,7 +41,7 @@ function mapProduct(p: Record<string, unknown>, i: number): Product {
 
 async function fetchFeatured(type: "trending" | "new-arrival"): Promise<Product[]> {
   try {
-    const res = await fetch(`${API}/featured?type=${type}`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API}/featured?type=${type}`, { cache: "no-store" });
     if (!res.ok) return [];
     const data = await res.json() as Record<string, unknown>[];
     return data.slice(0, 3).map(mapProduct);
@@ -165,33 +168,7 @@ export default async function Home() {
       <main className="flex-1 bg-white">
 
         {/* ── Hero Banner ── */}
-        <section className="relative overflow-hidden mx-3 sm:mx-4 lg:mx-6 mt-4 rounded-2xl" style={{ height: "calc(100vh - 100px)" }}>
-          <Image src="/home/desktpo-banner.png" alt="Jesup Shop — Premium Accessories" fill className="object-cover hidden md:block" priority />
-          <Image src="/home/mobile-banner.png" alt="Jesup Shop — Premium Accessories" fill className="object-cover block md:hidden" priority />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent rounded-2xl" />
-          <div className="absolute inset-0 flex flex-col justify-center px-6 sm:px-10 lg:px-14">
-            <span className="inline-block text-[11px] font-bold uppercase tracking-widest text-white/70 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 w-fit mb-3">
-              New Collection
-            </span>
-            <h1 className="text-2xl sm:text-3xl lg:text-5xl font-extrabold text-white leading-tight max-w-lg drop-shadow-md">
-              Gear Up.<br className="hidden sm:block" /> Stay Protected.
-            </h1>
-            <p className="mt-2 sm:mt-3 text-sm sm:text-base text-white/80 max-w-sm leading-relaxed drop-shadow">
-              Premium cases, audio &amp; power accessories — expert-picked for every device.
-            </p>
-            <div className="mt-5 sm:mt-7 flex flex-col sm:flex-row gap-3 items-start">
-              <Link href="/collections" className="inline-flex items-center gap-2 rounded-full bg-white px-5 sm:px-7 py-2.5 sm:py-3 text-sm font-bold text-gray-900 shadow-lg hover:bg-gray-100 transition-all group">
-                Shop Collections
-                <svg className="w-4 h-4 text-primary transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-              <Link href="/collections/deals" className="inline-flex items-center gap-2 rounded-full bg-primary px-5 sm:px-7 py-2.5 sm:py-3 text-sm font-bold text-white shadow-lg hover:bg-primary-hover transition-all border border-primary/60">
-                View Deals
-              </Link>
-            </div>
-          </div>
-        </section>
+        <HeroBanner />
 
         {/* ── Brand trust bar ── */}
         {/* <div className="border-y border-gray-100 bg-gray-50 overflow-hidden py-4 mt-6">

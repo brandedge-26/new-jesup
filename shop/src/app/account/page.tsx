@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { privateAxios } from "@/lib/axios";
 import { Loader2, Package, Heart, LogOut, User, Lock, ChevronRight } from "lucide-react";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -173,17 +175,21 @@ export default function AccountPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-5">
-          <User className="w-8 h-8 text-primary" />
-        </div>
-        <h2 className="text-xl font-bold text-gray-900">Sign in to view your account</h2>
-        <p className="mt-2 text-sm text-gray-400">You need to be logged in to manage your profile.</p>
-        <button onClick={() => router.push("/login")}
-          className="mt-6 px-7 py-3 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary-hover transition-colors">
-          Sign in
-        </button>
-      </div>
+      <>
+        <Header />
+        <main className="flex-1 bg-gray-50 min-h-screen flex flex-col items-center justify-center text-center px-4">
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-5">
+            <User className="w-8 h-8 text-primary" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900">Sign in to view your account</h2>
+          <p className="mt-2 text-sm text-gray-400">You need to be logged in to manage your profile.</p>
+          <button onClick={() => router.push("/login")}
+            className="mt-6 px-7 py-3 rounded-full bg-primary text-white text-sm font-semibold hover:bg-primary-hover transition-colors">
+            Sign in
+          </button>
+        </main>
+        <Footer />
+      </>
     );
   }
 
@@ -194,57 +200,63 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
+    <>
+      <Header />
+      <main className="flex-1 bg-gray-50 min-h-screen">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
 
-      {/* Header */}
-      <div className="mb-8">
-        <p className="text-xs font-bold uppercase tracking-widest text-primary mb-1">Account</p>
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">My Profile</h1>
-        <p className="mt-1 text-sm text-gray-400">
-          Logged in as <span className="font-semibold text-gray-600">{user?.fname} {user?.lname}</span>
-        </p>
-      </div>
+          {/* Header */}
+          <div className="mb-8">
+            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-1">Account</p>
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">My Profile</h1>
+            <p className="mt-1 text-sm text-gray-400">
+              Logged in as <span className="font-semibold text-gray-600">{user?.fname} {user?.lname}</span>
+            </p>
+          </div>
 
-      {/* Quick links */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        {QUICK_LINKS.map((l) => (
-          <Link key={l.href} href={l.href}
-            className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-4 hover:border-primary/30 hover:shadow-md transition-all group">
-            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-              {l.icon}
+          {/* Quick links */}
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            {QUICK_LINKS.map((l) => (
+              <Link key={l.href} href={l.href}
+                className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-4 hover:border-primary/30 hover:shadow-md transition-all group">
+                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                  {l.icon}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors">{l.label}</p>
+                  <p className="text-xs text-gray-400 truncate">{l.sub}</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-primary transition-colors shrink-0" />
+              </Link>
+            ))}
+          </div>
+
+          {/* Sections */}
+          <div className="space-y-4">
+            <ProfileSection />
+            <PasswordSection />
+
+            {/* Sign out */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-bold text-gray-900">Sign Out</p>
+                  <p className="text-xs text-gray-400 mt-0.5">You will be logged out of your account</p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  disabled={loggingOut}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-red-200 text-red-500 text-sm font-semibold hover:bg-red-50 transition-colors disabled:opacity-60"
+                >
+                  {loggingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
+                  {loggingOut ? "Signing out..." : "Sign Out"}
+                </button>
+              </div>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors">{l.label}</p>
-              <p className="text-xs text-gray-400 truncate">{l.sub}</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-primary transition-colors shrink-0" />
-          </Link>
-        ))}
-      </div>
-
-      {/* Sections */}
-      <div className="space-y-4">
-        <ProfileSection />
-        <PasswordSection />
-
-        {/* Sign out */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-bold text-gray-900">Sign Out</p>
-              <p className="text-xs text-gray-400 mt-0.5">You will be logged out of your account</p>
-            </div>
-            <button
-              onClick={handleLogout}
-              disabled={loggingOut}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-red-200 text-red-500 text-sm font-semibold hover:bg-red-50 transition-colors disabled:opacity-60"
-            >
-              {loggingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
-              {loggingOut ? "Signing out..." : "Sign Out"}
-            </button>
           </div>
         </div>
-      </div>
-    </div>
+      </main>
+      <Footer />
+    </>
   );
 }

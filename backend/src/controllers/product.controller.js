@@ -88,3 +88,21 @@ export const deleteProduct = async (req, res, next) => {
         next(err);
     }
 };
+
+// DELETE /api/products/bulk  (admin) — body: { ids: [...] }
+export const bulkDeleteProducts = async (req, res, next) => {
+    try {
+        const { ids } = req.body;
+        if (!Array.isArray(ids) || ids.length === 0)
+            return res.status(400).json({ message: "No IDs provided" });
+
+        const products = await Product.find({ _id: { $in: ids } }).select("slug _id");
+        await Product.deleteMany({ _id: { $in: ids } });
+        const slugsAndIds = products.flatMap((p) => [p.slug, String(p._id)].filter(Boolean));
+        if (slugsAndIds.length) await FeaturedProduct.deleteMany({ slug: { $in: slugsAndIds } });
+
+        res.json({ success: true, deleted: products.length });
+    } catch (err) {
+        next(err);
+    }
+};

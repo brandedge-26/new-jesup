@@ -4,6 +4,8 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "New Arrivals — Jesup Shop",
   description: "Fresh drops — the latest cases, audio & power accessories just landed.",
@@ -31,9 +33,7 @@ interface Product {
 async function getNewArrivals(): Promise<Product[]> {
   try {
     const API = process.env.NEXT_PUBLIC_API_URL;
-    const res = await fetch(`${API}/featured?type=new-arrival`, {
-      next: { revalidate: 60 },
-    });
+    const res = await fetch(`${API}/featured?type=new-arrival`, { cache: "no-store" });
     if (!res.ok) return [];
     return res.json();
   } catch {

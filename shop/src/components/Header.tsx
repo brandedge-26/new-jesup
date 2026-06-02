@@ -428,6 +428,16 @@ export default function Header() {
                     {/* Menu items */}
                     <div className="py-2">
                       <Link
+                        href="/account"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors"
+                      >
+                        <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
+                        </svg>
+                        Profile
+                      </Link>
+                      <Link
                         href="/my-orders"
                         onClick={() => setUserMenuOpen(false)}
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors"
@@ -573,6 +583,9 @@ export default function Header() {
                 </div>
               </div>
               <div className="mt-2 grid grid-cols-2 gap-2">
+                <Link href="/account" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-primary/10 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors">
+                  Profile
+                </Link>
                 <Link href="/my-orders" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-gray-100 text-xs font-semibold text-gray-700 hover:bg-gray-200 transition-colors">
                   My Orders
                 </Link>
@@ -581,7 +594,7 @@ export default function Header() {
                     <Link href="/track-order" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-gray-100 text-xs font-semibold text-gray-700 hover:bg-gray-200 transition-colors">
                       Track Order
                     </Link>
-                    <Link href="/wishlist" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-gray-100 text-xs font-semibold text-gray-700 hover:bg-gray-200 transition-colors col-span-2">
+                    <Link href="/wishlist" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-gray-100 text-xs font-semibold text-gray-700 hover:bg-gray-200 transition-colors">
                       Wishlist
                     </Link>
                   </>

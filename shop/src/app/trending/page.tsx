@@ -4,6 +4,8 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Trending Now — Jesup Shop",
   description: "Top-rated accessories customers love this week. Best sellers & trending picks.",
@@ -31,9 +33,7 @@ interface Product {
 async function getTrendingProducts(): Promise<Product[]> {
   try {
     const API = process.env.NEXT_PUBLIC_API_URL;
-    const res = await fetch(`${API}/featured?type=trending`, {
-      next: { revalidate: 60 },
-    });
+    const res = await fetch(`${API}/featured?type=trending`, { cache: "no-store" });
     if (!res.ok) return [];
     return res.json();
   } catch {

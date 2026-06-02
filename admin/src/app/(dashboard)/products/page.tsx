@@ -375,6 +375,9 @@ export default function ProductsPage() {
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
   const [deleteLoading,setDeleteLoading]= useState(false);
   const [editTarget,   setEditTarget]   = useState<Product | null>(null);
+  const [selected,     setSelected]     = useState<Set<string>>(new Set());
+  const [showBulkConfirm, setShowBulkConfirm] = useState(false);
+  const [bulkLoading,  setBulkLoading]  = useState(false);
 
   const fetchProducts = useCallback(async (p = page) => {
     setLoading(true);
@@ -398,8 +401,8 @@ export default function ProductsPage() {
     }
   }, [category, statusF, search, page]);
 
-  useEffect(() => { fetchProducts(1); setPage(1); }, [category, statusF]); // eslint-disable-line
-  useEffect(() => { fetchProducts(page); }, [page]); // eslint-disable-line
+  useEffect(() => { fetchProducts(1); setPage(1); setSelected(new Set()); }, [category, statusF]); // eslint-disable-line
+  useEffect(() => { fetchProducts(page); setSelected(new Set()); }, [page]); // eslint-disable-line
 
   // Debounced search
   useEffect(() => {
@@ -424,6 +427,29 @@ export default function ProductsPage() {
     await adminAxios.put(`/products/${id}`, updates);
     setEditTarget(null);
     fetchProducts(page);
+  }
+
+  const allSelected = products.length > 0 && products.every((p) => selected.has(p._id));
+  function toggleAll() {
+    if (allSelected) setSelected(new Set());
+    else setSelected(new Set(products.map((p) => p._id)));
+  }
+  function toggleOne(id: string) {
+    setSelected((prev) => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
+  }
+
+  async function handleBulkDelete() {
+    setBulkLoading(true);
+    try {
+      await adminAxios.delete("/products/bulk", { data: { ids: [...selected] } });
+      setSelected(new Set());
+      setShowBulkConfirm(false);
+      fetchProducts(page);
+    } catch {
+      alert("Failed to delete products.");
+    } finally {
+      setBulkLoading(false);
+    }
   }
 
   return (
@@ -451,6 +477,21 @@ export default function ProductsPage() {
             </Link>
           </div>
         </div>
+
+        {/* Bulk action bar */}
+        {selected.size > 0 && (
+          <div className="flex items-center justify-between px-4 py-2.5 bg-primary/5 border border-primary/20 rounded-xl">
+            <span className="text-sm font-semibold text-primary">{selected.size} selected</span>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setSelected(new Set())} className="text-xs text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-lg hover:bg-white transition-colors">Deselect all</button>
+              <button onClick={() => setShowBulkConfirm(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-semibold hover:bg-red-600 transition-colors">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                Delete {selected.size}
+              </button>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="flex items-center gap-2 px-4 py-3 bg-red-50 text-red-600 rounded-xl text-sm">
@@ -494,6 +535,9 @@ export default function ProductsPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-50">
+                  <th className="px-4 py-2.5 w-8">
+                    <input type="checkbox" checked={allSelected} onChange={toggleAll} className="rounded border-gray-300 text-primary focus:ring-primary/30 cursor-pointer" />
+                  </th>
                   <th className="text-left px-4 py-2.5 text-xs font-semibold text-gray-400">Product</th>
                   <th className="text-left px-4 py-2.5 text-xs font-semibold text-gray-400 hidden sm:table-cell">Category</th>
                   <th className="text-left px-4 py-2.5 text-xs font-semibold text-gray-400">Price</th>
@@ -507,6 +551,7 @@ export default function ProductsPage() {
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="animate-pulse">
+                      <td className="px-4 py-3"><div className="w-4 h-4 bg-gray-200 rounded" /></td>
                       <td className="px-4 py-3"><div className="flex items-center gap-2.5"><div className="w-8 h-8 bg-gray-200 rounded-lg" /><div className="space-y-1.5"><div className="h-2.5 w-32 bg-gray-200 rounded" /><div className="h-2 w-20 bg-gray-200 rounded" /></div></div></td>
                       <td className="px-4 py-3 hidden sm:table-cell"><div className="h-2.5 w-16 bg-gray-200 rounded" /></td>
                       <td className="px-4 py-3"><div className="h-2.5 w-12 bg-gray-200 rounded" /></td>
@@ -526,7 +571,11 @@ export default function ProductsPage() {
                   products.map((p) => {
                     const featuredBadge = FEATURED_BADGE[p.featured ?? "none"];
                     return (
-                      <tr key={p._id} className="hover:bg-gray-50 transition-colors">
+                      <tr key={p._id} className={`transition-colors ${selected.has(p._id) ? "bg-primary/5" : "hover:bg-gray-50"}`}>
+                        <td className="px-4 py-3">
+                          <input type="checkbox" checked={selected.has(p._id)} onChange={() => toggleOne(p._id)}
+                            className="rounded border-gray-300 text-primary focus:ring-primary/30 cursor-pointer" />
+                        </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2.5">
                             {p.image ? (
@@ -612,6 +661,29 @@ export default function ProductsPage() {
           onSave={(updates) => handleEdit(editTarget._id, updates)}
           onCancel={() => setEditTarget(null)}
         />
+      )}
+
+      {/* Bulk delete confirm */}
+      {showBulkConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowBulkConfirm(false)} />
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </div>
+            <h3 className="text-base font-bold text-gray-900 text-center">Delete {selected.size} Product{selected.size > 1 ? "s" : ""}?</h3>
+            <p className="text-sm text-gray-500 text-center mt-1">This action cannot be undone.</p>
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setShowBulkConfirm(false)} className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
+              <button onClick={handleBulkDelete} disabled={bulkLoading}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600 disabled:opacity-60">
+                {bulkLoading ? "Deleting..." : "Yes, Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

@@ -5,6 +5,7 @@ import {
     createProduct,
     updateProduct,
     deleteProduct,
+    bulkDeleteProducts,
 } from "../controllers/product.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { adminMiddleware } from "../middlewares/adminMiddleware.js";
@@ -16,6 +17,7 @@ productRoutes.get(   "/",    getProducts);
 productRoutes.get(   "/:id", getProductById);
 productRoutes.post(  "/",    authMiddleware, adminMiddleware, createProduct);
 productRoutes.put(   "/:id", authMiddleware, adminMiddleware, updateProduct);
+productRoutes.delete("/bulk", authMiddleware, adminMiddleware, bulkDeleteProducts);
 productRoutes.delete("/:id", authMiddleware, adminMiddleware, deleteProduct);
 
 export { productRoutes };

@@ -18,7 +18,6 @@ const REFRESH_COOKIE_OPTIONS = {
 
 
 
-
 // REGISTER CONTROLLER
 const registerController = async (req, res, next) => {
     try {
@@ -79,7 +78,6 @@ const registerController = async (req, res, next) => {
 
 
 
-
 // LOGIN CONTROLLER
 const loginController = async (req, res, next) => {
     try {
@@ -133,7 +131,6 @@ const loginController = async (req, res, next) => {
 
 
 
-
 // LOGOUT CONTROLLER
 const logoutController = (req, res, next) => {
     try {
@@ -147,7 +144,6 @@ const logoutController = (req, res, next) => {
         next(err);
     }
 };
-
 
 
 
@@ -193,7 +189,6 @@ const refreshTokenController = async (req, res, next) => {
         next(err);
     }
 };
-
 
 
 

@@ -6,6 +6,7 @@ import {
     getAllOrdersController,
     updateOrderStatusController,
     deleteOrderController,
+    bulkDeleteOrdersController,
     trackOrderController,
     cancelOrderController,
 } from "../controllers/order.controller.js";
@@ -26,4 +27,5 @@ orderRoutes.patch("/:id/cancel",   authMiddleware, cancelOrderController);
 // Admin routes
 orderRoutes.get("/",             authMiddleware, adminMiddleware, getAllOrdersController);
 orderRoutes.patch("/:id/status", authMiddleware, adminMiddleware, updateOrderStatusController);
+orderRoutes.delete("/bulk",       authMiddleware, adminMiddleware, bulkDeleteOrdersController);
 orderRoutes.delete("/:id",       authMiddleware, adminMiddleware, deleteOrderController);
