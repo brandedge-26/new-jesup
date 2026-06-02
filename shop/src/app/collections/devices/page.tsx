@@ -4,6 +4,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import DevicesView from "./DevicesView";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Shop by Device — iPhone & Samsung Accessories",
   description: "Find the perfect case, screen protector, charger, and more for your iPhone or Samsung Galaxy. Browse accessories by device model at Jesup Shop.",

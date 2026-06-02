@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+
+export const dynamic = "force-dynamic";
 import CollectionView from "./CollectionView";
 import { COLLECTIONS, VALID_COLLECTION_SLUGS } from "@/lib/collectionData";
 
