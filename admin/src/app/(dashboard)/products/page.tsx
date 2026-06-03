@@ -106,14 +106,20 @@ function DeleteModal({ name, onConfirm, onCancel, loading }: {
 interface VariantRow { name: string; optionsStr: string }
 interface SpecRow    { key: string;  value: string }
 
-function readFile(file: File): Promise<string> {
-  return new Promise((res) => { const r = new FileReader(); r.onload = () => res(r.result as string); r.readAsDataURL(file); });
+async function uploadToCloudinary(file: File): Promise<string> {
+  const fd = new FormData();
+  fd.append("image", file);
+  const res = await adminAxios.post("/products/upload-image", fd, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data.url as string;
 }
 
 function ImageSlot({ value, onChange, onClear, tall }: {
   value: string; onChange: (v: string) => void; onClear: () => void; tall?: boolean;
 }) {
   const ref = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
   const h = tall ? "h-28" : "h-16";
   return (
     <div className="relative group">
@@ -127,16 +133,36 @@ function ImageSlot({ value, onChange, onClear, tall }: {
           </div>
         </div>
       ) : (
-        <button type="button" onClick={() => ref.current?.click()}
-          className={`w-full ${h} rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-1 text-gray-300 hover:border-primary/40 hover:text-primary/40 transition-colors`}>
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          {tall && <span className="text-[10px] font-medium">Upload</span>}
+        <button type="button" onClick={() => !uploading && ref.current?.click()}
+          className={`w-full ${h} rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-1 transition-colors ${uploading ? "opacity-60 cursor-wait" : "text-gray-300 hover:border-primary/40 hover:text-primary/40"}`}>
+          {uploading ? (
+            <svg className="w-4 h-4 animate-spin text-primary" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          )}
+          {tall && <span className="text-[10px] font-medium">{uploading ? "Uploading…" : "Upload"}</span>}
         </button>
       )}
       <input ref={ref} type="file" accept="image/*" className="hidden"
-        onChange={async (e) => { const f = e.target.files?.[0]; if (f) onChange(await readFile(f)); e.target.value = ""; }} />
+        onChange={async (e) => {
+          const f = e.target.files?.[0];
+          e.target.value = "";
+          if (!f) return;
+          setUploading(true);
+          try {
+            const url = await uploadToCloudinary(f);
+            onChange(url);
+          } catch {
+            alert("Image upload failed. Please try again.");
+          } finally {
+            setUploading(false);
+          }
+        }} />
     </div>
   );
 }

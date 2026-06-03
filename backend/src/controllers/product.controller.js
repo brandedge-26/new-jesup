@@ -46,6 +46,17 @@ export const getProductById = async (req, res, next) => {
     }
 };
 
+// POST /api/products/upload-image  (admin) — multipart/form-data, field: "image"
+export const uploadProductImage = async (req, res, next) => {
+    try {
+        if (!req.file) return res.status(400).json({ message: "No file provided" });
+        // multer-storage-cloudinary sets req.file.path to the Cloudinary URL
+        res.json({ url: req.file.path });
+    } catch (err) {
+        next(err);
+    }
+};
+
 // POST /api/products  (admin)
 export const createProduct = async (req, res, next) => {
     try {
