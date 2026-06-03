@@ -1,5 +1,6 @@
 import Product from "../models/Product.js";
 import FeaturedProduct from "../models/FeaturedProduct.js";
+import Order from "../models/Order.js";
 
 // GET /api/products  — all products (admin)
 // Query params: category, status, search, page, limit
@@ -84,6 +85,43 @@ export const deleteProduct = async (req, res, next) => {
             });
         }
         res.json({ success: true });
+    } catch (err) {
+        next(err);
+    }
+};
+
+// GET /api/products/bestsellers — top N products by units sold (public)
+export const getBestsellers = async (req, res, next) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 4, 20);
+
+        // Step 1: aggregate sold qty from non-cancelled orders
+        const soldData = await Order.aggregate([
+            { $match: { status: { $ne: "Cancelled" } } },
+            { $unwind: "$items" },
+            { $group: { _id: "$items.productId", totalSold: { $sum: "$items.qty" } } },
+            { $sort: { totalSold: -1 } },
+            { $limit: limit * 3 }, // fetch extra buffer to account for deleted products
+        ]);
+
+        // Step 2: only keep valid ObjectIds that still exist in Product collection
+        const mongoose = (await import("mongoose")).default;
+        const validIds = soldData
+            .filter(d => mongoose.Types.ObjectId.isValid(d._id))
+            .map(d => d._id);
+
+        const products = await Product.find({ _id: { $in: validIds } })
+            .select("_id name brand image price originalPrice rating slug")
+            .lean();
+
+        // Step 3: merge totalSold, sort, limit
+        const soldMap = Object.fromEntries(soldData.map(d => [String(d._id), d.totalSold]));
+        const merged = products
+            .map(p => ({ ...p, totalSold: soldMap[String(p._id)] ?? 0 }))
+            .sort((a, b) => b.totalSold - a.totalSold)
+            .slice(0, limit);
+
+        res.json(merged);
     } catch (err) {
         next(err);
     }

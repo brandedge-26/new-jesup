@@ -44,21 +44,62 @@ async function fetchFeatured(type: "trending" | "new-arrival"): Promise<Product[
     const res = await fetch(`${API}/featured?type=${type}`, { cache: "no-store" });
     if (!res.ok) return [];
     const data = await res.json() as Record<string, unknown>[];
-    return data.slice(0, 3).map(mapProduct);
+    return data.slice(0, 4).map(mapProduct);
+  } catch { return []; }
+}
+
+async function fetchBestsellers(): Promise<Product[]> {
+  try {
+    const res = await fetch(`${API}/products/bestsellers?limit=4`, { cache: "no-store" });
+    if (!res.ok) return [];
+    const list = await res.json() as Record<string, unknown>[];
+    return list.map((p, i) => ({
+      id:            String(p._id ?? i),
+      name:          p.name as string,
+      brand:         (p.brand as string) ?? "",
+      price:         p.price as number,
+      originalPrice: (p.originalPrice as number) ?? undefined,
+      rating:        (p.rating as number) ?? 0,
+      reviews:       (p.totalSold as number) ?? 0,
+      image:         (p.image as string) ?? "",
+      badge:         "Best Seller" as Product["badge"],
+      colors:        [],
+      inStock:       true,
+      slug:          (p.slug as string) ?? String(p._id ?? i),
+    }));
   } catch { return []; }
 }
 
 // ── Static UI data ─────────────────────────────────────────────────────────────
 
-const brands = ["JBL", "OtterBox", "Anker", "ZAGG", "mophie", "Belkin", "UAG", "PopSockets", "Oladance", "Ventev", "Gadget Guard", "Case-Mate"];
-
 const BADGE_STYLES: Record<string, string> = {
   "Best Seller": "bg-amber-500 text-white",
-  "Top Rated": "bg-emerald-500 text-white",
-  "Sale": "bg-red-500 text-white",
-  "New": "bg-primary text-white",
-  "Limited": "bg-orange-500 text-white",
+  "Top Rated":   "bg-emerald-500 text-white",
+  "Sale":        "bg-red-500 text-white",
+  "New":         "bg-primary text-white",
+  "Limited":     "bg-orange-500 text-white",
 };
+
+const stats = [
+  { value: "10K+",  label: "Happy Customers" },
+  { value: "500+",  label: "Products" },
+  { value: "4.8★",  label: "Avg. Rating" },
+  { value: "90-Day", label: "Warranty" },
+];
+
+const phoneDevices = [
+  { brand: "iPhone",   sub: "Cases, chargers & more",       href: "/collections/devices", image: "/home/phones/iphone.png",       accent: "#8223D2" },
+  { brand: "Samsung",  sub: "Galaxy covers & cables",        href: "/collections/devices", image: "/home/phones/samsung2.png",     accent: "#1d4ed8" },
+  { brand: "Google",   sub: "Pixel accessories & glass",     href: "/collections/devices", image: "/home/phones/google-pixel.png", accent: "#16a34a" },
+  { brand: "Motorola", sub: "Moto gear & screen guards",     href: "/collections/devices", image: "/home/phones/motrols.png",      accent: "#dc2626" },
+  { brand: "LG",       sub: "LG covers & power accessories", href: "/collections/devices", image: "/home/phones/lg.png",           accent: "#ea580c" },
+];
+
+const valueProps = [
+  { title: "Fast, Tracked Shipping", body: "Most orders ship within one business day so you can gear up quickly.", icon: <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-14 0h14" /> },
+  { title: "Easy 30-Day Returns",    body: "Changed your mind? Hassle-free returns on eligible items within 30 days.", icon: <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /> },
+  { title: "Expert-Approved Picks",  body: "Curated accessories tested by repair pros for fit, finish, and durability.", icon: <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /> },
+] as const;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -140,25 +181,48 @@ function ProductCard({ item, showBadge = true }: { item: Product; showBadge?: bo
   );
 }
 
-const valueProps = [
-  { title: "Fast, Tracked Shipping", body: "Most orders ship within one business day so you can gear up quickly.", icon: <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-14 0h14" /> },
-  { title: "Easy 30-Day Returns", body: "Changed your mind? Hassle-free returns on eligible items within 30 days.", icon: <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /> },
-  { title: "Expert-Approved Picks", body: "Curated accessories tested by repair pros for fit, finish, and durability.", icon: <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /> },
-] as const;
+// Bestseller card — horizontal layout
+function BestsellerCard({ item }: { item: Product }) {
+  return (
+    <Link href={`/products/${item.slug}`} className="group flex items-center gap-4 rounded-2xl border border-gray-100 bg-white p-3 hover:border-primary/30 hover:shadow-md transition-all duration-200">
+      {/* Image */}
+      <div className="relative w-16 h-16 shrink-0 rounded-xl overflow-hidden bg-gray-50">
+        <Image src={item.image} alt={item.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="64px" />
+      </div>
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-primary truncate">{item.brand}</p>
+        <p className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2 group-hover:text-primary transition-colors">{item.name}</p>
+        <div className="mt-1 flex items-center gap-2">
+          <Stars rating={item.rating} />
+          <span className="text-[11px] text-gray-400">{item.reviews.toLocaleString()} units sold</span>
+        </div>
+      </div>
+      {/* Price */}
+      <div className="shrink-0 text-right">
+        <p className="text-sm font-extrabold text-gray-900">${item.price.toFixed(2)}</p>
+        {item.originalPrice && (
+          <p className="text-xs text-gray-400 line-through">${item.originalPrice.toFixed(2)}</p>
+        )}
+      </div>
+    </Link>
+  );
+}
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function Home() {
-  const [trending, newArrivals] = await Promise.all([
+  const [trending, newArrivals, bestsellers] = await Promise.all([
     fetchFeatured("trending"),
     fetchFeatured("new-arrival"),
+    fetchBestsellers(),
   ]);
 
   const categories = [
-    { title: "Cases", subtitle: "Slim, rugged & MagSafe-ready", href: "/collections/cases", image: "/home/phone-cases.jpg" },
-    { title: "Audio", subtitle: "Earbuds & over-ear picks", href: "/collections/audio", image: "/home/audio.jpg" },
-    { title: "Power & Cables", subtitle: "Fast charge, travel-ready", href: "/collections/power", image: "/home/power_cables.jpg" },
-    { title: "Screen Protection", subtitle: "Tempered glass for every screen", href: "/collections/screen-protection", image: "/home/screen-protection.jpg" },
+    { title: "Cases",            subtitle: "Slim, rugged & MagSafe-ready",    href: "/collections/cases",            image: "/home/phone-cases.jpg" },
+    { title: "Audio",            subtitle: "Earbuds & over-ear picks",         href: "/collections/audio",            image: "/home/audio.jpg" },
+    { title: "Power & Cables",   subtitle: "Fast charge, travel-ready",        href: "/collections/power",            image: "/home/power_cables.jpg" },
+    { title: "Screen Protection",subtitle: "Tempered glass for every screen",  href: "/collections/screen-protection",image: "/home/screen-protection.jpg" },
   ];
 
   return (
@@ -170,14 +234,17 @@ export default async function Home() {
         {/* ── Hero Banner ── */}
         <HeroBanner />
 
-        {/* ── Brand trust bar ── */}
-        {/* <div className="border-y border-gray-100 bg-gray-50 overflow-hidden py-4 mt-6">
-          <div className="flex gap-10 animate-marquee whitespace-nowrap">
-            {[...brands, ...brands].map((b, i) => (
-              <span key={i} className="text-sm font-bold text-gray-400 tracking-wide shrink-0">{b}</span>
+        {/* ── Stats strip ── */}
+        <div className="mx-3 sm:mx-4 lg:mx-6 mt-4 rounded-2xl bg-white border border-gray-100 shadow-sm px-6 py-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
+            {stats.map((s) => (
+              <div key={s.label} className="flex flex-col items-center py-2 sm:py-0">
+                <span className="text-xl font-extrabold text-gray-900">{s.value}</span>
+                <span className="text-xs text-gray-400 mt-0.5">{s.label}</span>
+              </div>
             ))}
           </div>
-        </div> */}
+        </div>
 
         <div className="mx-auto max-w-screen-xl px-3 sm:px-4 lg:px-6 mt-14 space-y-20 pb-24">
 
@@ -199,7 +266,7 @@ export default async function Home() {
                 <Link key={cat.title} href={cat.href} className="group relative overflow-hidden rounded-2xl bg-gray-100 shadow-sm hover:shadow-lg transition-shadow">
                   <div className="aspect-[4/5] relative overflow-hidden">
                     <Image src={cat.image} alt={cat.title} fill
-                      className="object-cover transition-transform duration-600 group-hover:scale-105"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
                       sizes="(max-width: 640px) 50vw, 25vw" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
                   </div>
@@ -222,13 +289,70 @@ export default async function Home() {
             </Link>
           </section>
 
+          {/* ── Shop by Phone ── */}
+          <section>
+            <div className="flex items-end justify-between mb-7">
+              <div>
+                <SectionLabel>By Device</SectionLabel>
+                <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">Shop by Phone</h2>
+                <p className="mt-1.5 text-gray-500 text-sm lg:text-base">Accessories made for your exact device.</p>
+              </div>
+              <Link href="/collections/devices" className="hidden sm:inline-flex text-sm font-semibold text-primary hover:text-primary-hover transition-colors gap-1 items-center">
+                All devices <span aria-hidden>→</span>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-4">
+              {phoneDevices.map((d) => (
+                <Link
+                  key={d.brand}
+                  href={d.href}
+                  className="group relative overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:border-gray-200 transition-all duration-300 flex flex-col"
+                >
+                  {/* Phone image */}
+                  <div className="relative h-40 lg:h-48 bg-gray-50 overflow-hidden flex items-center justify-center">
+                    <Image
+                      src={d.image}
+                      alt={`${d.brand} accessories`}
+                      fill
+                      className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+                      sizes="(max-width: 640px) 50vw, 20vw"
+                    />
+                    {/* Subtle accent glow */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      style={{ background: `radial-gradient(circle at 50% 80%, ${d.accent}18 0%, transparent 70%)` }} />
+                  </div>
+
+                  {/* Text */}
+                  <div className="p-4 flex flex-col gap-1 flex-1">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Accessories</p>
+                    <h3 className="text-base font-extrabold text-gray-900 leading-tight">{d.brand}</h3>
+                    <p className="text-xs text-gray-500 leading-snug hidden sm:block">{d.sub}</p>
+                    <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary group-hover:gap-2 transition-all">
+                      Shop now
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </span>
+                  </div>
+
+                  {/* Bottom accent line */}
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ background: `linear-gradient(to right, ${d.accent}, transparent)` }} />
+                </Link>
+              ))}
+            </div>
+
+            <Link href="/collections/devices" className="sm:hidden mt-4 flex items-center justify-center text-sm font-semibold text-primary hover:text-primary-hover transition-colors gap-1">
+              Browse all devices →
+            </Link>
+          </section>
+
           {/* ── Promo strip ── */}
           <section className="relative overflow-hidden rounded-2xl bg-[#0a0a0f]">
-            {/* Glow blobs */}
             <div className="absolute -left-20 -top-20 w-72 h-72 bg-[#8223D2]/40 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute -right-20 -bottom-20 w-72 h-72 bg-indigo-600/30 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-32 bg-[#8223D2]/15 rounded-full blur-2xl pointer-events-none" />
-            {/* Subtle grid */}
             <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)", backgroundSize: "40px 40px" }} />
 
             <div className="relative px-6 py-10 lg:px-14 lg:py-14 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-8">
@@ -274,9 +398,38 @@ export default async function Home() {
                   See all →
                 </Link>
               </div>
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5">
                 {trending.map((item) => <ProductCard key={item.id} item={item} showBadge />)}
               </div>
+              <Link href="/trending" className="sm:hidden mt-4 flex items-center justify-center text-sm font-semibold text-primary transition-colors gap-1">
+                See all trending →
+              </Link>
+            </section>
+          )}
+
+          {/* ── Bestsellers ── */}
+          {bestsellers.length > 0 && (
+            <section>
+              <div className="flex items-end justify-between mb-7">
+                <div>
+                  <SectionLabel>Most loved</SectionLabel>
+                  <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">Bestsellers</h2>
+                  <p className="mt-1.5 text-gray-500 text-sm lg:text-base">We can&apos;t keep these off the shelves.</p>
+                </div>
+                <Link href="/collections" className="hidden sm:inline-flex text-sm font-semibold text-primary hover:text-primary-hover transition-colors gap-1 items-center">
+                  Shop all →
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
+                {bestsellers.map((item) => (
+                  <BestsellerCard key={item.id} item={item} />
+                ))}
+              </div>
+
+              <Link href="/collections" className="sm:hidden mt-4 flex items-center justify-center text-sm font-semibold text-primary transition-colors gap-1">
+                Shop all →
+              </Link>
             </section>
           )}
 
@@ -293,9 +446,12 @@ export default async function Home() {
                   See all new →
                 </Link>
               </div>
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5">
                 {newArrivals.map((item) => <ProductCard key={item.id} item={item} showBadge={false} />)}
               </div>
+              <Link href="/new-arrivals" className="sm:hidden mt-4 flex items-center justify-center text-sm font-semibold text-primary transition-colors gap-1">
+                See all new arrivals →
+              </Link>
             </section>
           )}
 
@@ -310,7 +466,7 @@ export default async function Home() {
                 <span className="text-xs font-bold uppercase tracking-widest text-white/60">Just dropped</span>
                 <h3 className="mt-1.5 text-xl lg:text-2xl font-bold leading-snug">New Arrivals Weekly</h3>
                 <p className="mt-2 text-sm text-white/75 max-w-sm">Fresh colors, limited drops, and seasonal bundles — check back often.</p>
-                <Link href="/collections/deals" className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/30 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/25 transition-all">
+                <Link href="/new-arrivals" className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/30 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/25 transition-all">
                   Explore new arrivals
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
