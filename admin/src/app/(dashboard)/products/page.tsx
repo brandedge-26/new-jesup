@@ -54,8 +54,8 @@ const CAT_COLOR: Record<string, string> = {
 
 const FEATURED_BADGE: Record<FeaturedType, { label: string; cls: string } | null> = {
   none:         null,
-  trending:     { label: "🔥 Trending",   cls: "bg-amber-100 text-amber-700" },
-  "new-arrival":{ label: "✨ New Arrival", cls: "bg-primary/10 text-primary"  },
+  trending:     { label: "Trending",   cls: "bg-amber-100 text-amber-700" },
+  "new-arrival":{ label: "New Arrival", cls: "bg-primary/10 text-primary"  },
 };
 
 const FIELD = "w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary";
@@ -310,8 +310,8 @@ function EditModal({ product, onSave, onCancel }: {
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">Featured Section</label>
                 <select value={featured} onChange={(e) => setFeatured(e.target.value as FeaturedType)} className={`${FIELD} bg-white cursor-pointer`}>
                   <option value="none">None</option>
-                  <option value="trending">🔥 Trending Now</option>
-                  <option value="new-arrival">✨ New Arrivals</option>
+                  <option value="trending">Trending Now</option>
+                  <option value="new-arrival">New Arrivals</option>
                 </select>
               </div>
             </div>

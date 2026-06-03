@@ -6,40 +6,40 @@ import Link from "next/link";
 
 const slides = [
   {
-    desktop: "/home/banner/accessori-desktop-banner.jpeg",
-    mobile:  "/home/banner/accessori-mobile-banner.jpeg",
-    badge:   "New Collection",
-    title:   "Gear Up.\nStay Protected.",
-    body:    "Premium cases, screen protectors & chargers — expert-picked for every device.",
-    cta1:    { label: "Shop Collections", href: "/collections" },
-    cta2:    { label: "View Deals",       href: "/collections/deals" },
+    desktop: "/home/banner/accessori-desktop-banner.png",
+    mobile: "/home/banner/accessori-mobile-banner.jpeg",
+    badge: "New Collection",
+    title: "Gear Up.\nStay Protected.",
+    body: "Premium cases, screen protectors & chargers — expert-picked for every device.",
+    cta1: { label: "Shop Collections", href: "/collections" },
+    cta2: { label: "View Deals", href: "/collections/deals" },
   },
   {
     desktop: "/home/banner/game-desktop-banner.jpeg",
-    mobile:  "/home/banner/game-mobile-banner.jpeg",
-    badge:   "For Gamers",
-    title:   "Level Up\nYour Setup.",
-    body:    "Controllers, grips & accessories built to give you the edge you need.",
-    cta1:    { label: "Shop Now",    href: "/collections" },
-    cta2:    { label: "Browse All",  href: "/collections/deals" },
+    mobile: "/home/banner/game-mobile-banner.jpeg",
+    badge: "For Gamers",
+    title: "Level Up\nYour Setup.",
+    body: "Controllers, grips & accessories built to give you the edge you need.",
+    cta1: { label: "Shop Now", href: "/collections" },
+    cta2: { label: "Browse All", href: "/collections/deals" },
   },
   {
     desktop: "/home/banner/heapphone-desktop-banner.jpeg",
-    mobile:  "/home/banner/headphone-mobile-banner.jpeg",
-    badge:   "Top Audio Picks",
-    title:   "Sound Like\nNever Before.",
-    body:    "Earbuds & over-ear headphones handpicked for clarity, comfort & deep bass.",
-    cta1:    { label: "Shop Audio",  href: "/collections/audio" },
-    cta2:    { label: "View Deals",  href: "/collections/deals" },
+    mobile: "/home/banner/headphone-mobile-banner.jpeg",
+    badge: "Top Audio Picks",
+    title: "Sound Like\nNever Before.",
+    body: "Earbuds & over-ear headphones handpicked for clarity, comfort & deep bass.",
+    cta1: { label: "Shop Audio", href: "/collections/audio" },
+    cta2: { label: "View Deals", href: "/collections/deals" },
   },
 ];
 
 const INTERVAL_MS = 5000;
 
 export default function HeroBanner() {
-  const [active, setActive]   = useState(0);
-  const [paused, setPaused]   = useState(false);
-  const timerRef              = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const goTo = useCallback((idx: number) => {
     setActive(idx);
@@ -111,7 +111,7 @@ export default function HeroBanner() {
             md:justify-center md:pb-0 md:px-10 lg:px-14
             transition-all duration-700 z-10"
           style={{
-            opacity:   i === active ? 1 : 0,
+            opacity: i === active ? 1 : 0,
             transform: i === active ? "translateY(0)" : "translateY(12px)",
             pointerEvents: i === active ? "auto" : "none",
           }}
@@ -174,11 +174,10 @@ export default function HeroBanner() {
             key={i}
             onClick={() => goTo(i)}
             aria-label={`Go to slide ${i + 1}`}
-            className={`rounded-full transition-all duration-300 ${
-              i === active
+            className={`rounded-full transition-all duration-300 ${i === active
                 ? "w-6 h-2.5 bg-white"
                 : "w-2.5 h-2.5 bg-white/50 hover:bg-white/75"
-            }`}
+              }`}
           />
         ))}
       </div>

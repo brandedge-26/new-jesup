@@ -12,8 +12,8 @@ type FeaturedType = "none" | "trending" | "new-arrival";
 
 const FEATURED_OPTIONS: { value: FeaturedType; label: string; desc: string; color: string }[] = [
   { value: "none",        label: "None",         desc: "Regular product",                   color: "border-gray-200 text-gray-500" },
-  { value: "trending",    label: "🔥 Trending",  desc: "Shows in Trending Now section",     color: "border-amber-300 text-amber-700 bg-amber-50" },
-  { value: "new-arrival", label: "✨ New Arrival",desc: "Shows in New Arrivals section",    color: "border-primary text-primary bg-primary/5" },
+  { value: "trending",    label: "Trending",  desc: "Shows in Trending Now section",     color: "border-amber-300 text-amber-700 bg-amber-50" },
+  { value: "new-arrival", label: "New Arrival",desc: "Shows in New Arrivals section",    color: "border-primary text-primary bg-primary/5" },
 ];
 
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
@@ -268,7 +268,7 @@ export default function AddProductPage() {
           type:          featured,
           slug:          createdProduct.slug || createdProduct._id,
         });
-        setSaveMsg(`✅ Product saved and added to ${featured === "trending" ? "Trending Now 🔥" : "New Arrivals ✨"}!`);
+        setSaveMsg(`✅ Product saved and added to ${featured === "trending" ? "Trending Now" : "New Arrivals"}!`);
       } else {
         setSaveMsg("✅ Product saved successfully!");
       }
@@ -454,7 +454,7 @@ export default function AddProductPage() {
               </svg>
               <span>
                 This product will appear in the{" "}
-                <strong>{featured === "trending" ? "Trending Now 🔥" : "New Arrivals ✨"}</strong>{" "}
+                <strong>{featured === "trending" ? "Trending Now" : "New Arrivals"}</strong>{" "}
                 section on the home page. The 3 latest products will be shown.
               </span>
             </div>

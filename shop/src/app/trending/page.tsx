@@ -23,7 +23,6 @@ interface Product {
   reviews: number;
   image: string;
   badge?: string;
-  colors?: string[];
   inStock: boolean;
   slug?: string;
 }
@@ -74,22 +73,27 @@ function ProductCard({ item }: { item: Product }) {
       <div className="relative aspect-square bg-gray-50 overflow-hidden">
         <Link href={href} className="block w-full h-full">
           <Image
-            src={item.image} alt={item.name} fill
+            src={item.image}
+            alt={item.name}
+            fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 640px) 50vw, 25vw"
-            unoptimized={item.image?.startsWith("data:")}
           />
         </Link>
+
+        {/* Badge */}
         {item.badge && (
           <span className={`absolute top-3 left-3 text-[10px] font-bold uppercase tracking-widest rounded-full px-2.5 py-1 shadow ${BADGE_STYLES[item.badge] ?? "bg-gray-700 text-white"}`}>
             {item.badge}
           </span>
         )}
+
         {discountPct && (
           <span className="absolute top-3 right-3 bg-red-500 text-white text-[10px] font-bold rounded-full px-2 py-1">
             -{discountPct}%
           </span>
         )}
+
         {!item.inStock && (
           <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
             <span className="text-xs font-bold text-gray-500 bg-white rounded-full px-3 py-1 shadow">Out of Stock</span>
@@ -138,41 +142,58 @@ export default async function TrendingPage() {
       <Header />
       <main className="flex-1 bg-white">
 
-        {/* Hero */}
-        <div className="bg-gradient-to-br from-[#8223D2] to-[#4a0f8a] px-4 py-14 text-center">
-          <span className="inline-block text-[11px] font-bold uppercase tracking-widest text-white/70 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 mb-3">
-            Top picks
-          </span>
-          <h1 className="text-3xl lg:text-4xl font-extrabold text-white">Trending Now 🔥</h1>
-          <p className="mt-2 text-white/75 text-sm lg:text-base max-w-md mx-auto">
-            Top-rated accessories customers love this week.
-          </p>
+        {/* ── Hero ── */}
+        <div className="relative overflow-hidden bg-[#0a0a0f]">
+          {/* Glow blobs */}
+          <div className="absolute -left-24 -top-24 w-96 h-96 bg-[#8223D2]/40 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -right-24 -bottom-24 w-96 h-96 bg-indigo-600/25 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)", backgroundSize: "40px 40px" }} />
+
+          <div className="relative mx-auto max-w-screen-xl px-4 py-16 lg:py-20 text-center">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-[#c084fc] bg-[#8223D2]/20 border border-[#8223D2]/30 rounded-full px-3 py-1 mb-5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#c084fc] animate-pulse" />
+              Top picks this week
+            </span>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight tracking-tight">
+              Trending Now
+            </h1>
+            <p className="mt-3 text-white/60 text-sm lg:text-base max-w-md mx-auto leading-relaxed">
+              The accessories everyone is buying right now — handpicked and flying off the shelves.
+            </p>
+
+            {products.length > 0 && (
+              <p className="mt-5 text-white/40 text-xs font-semibold uppercase tracking-widest">
+                {products.length} trending {products.length === 1 ? "product" : "products"}
+              </p>
+            )}
+          </div>
         </div>
 
+        {/* ── Grid ── */}
         <div className="mx-auto max-w-screen-xl px-3 sm:px-4 lg:px-6 py-12">
 
           {products.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-24 text-gray-400">
-              <svg className="w-12 h-12 mb-4 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-              </svg>
-              <p className="text-base font-semibold">Abhi koi trending product nahi hai.</p>
-              <p className="text-sm mt-1">Admin se products add karwao.</p>
-              <Link href="/collections" className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-hover transition-colors">
-                Browse Collections →
+            <div className="flex flex-col items-center justify-center py-28 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-5">
+                <svg className="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              </div>
+              <h2 className="text-lg font-bold text-gray-900 mb-2">No trending products yet</h2>
+              <p className="text-sm text-gray-500 max-w-xs">Check back soon — new trending picks are added regularly.</p>
+              <Link href="/collections" className="mt-7 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-hover transition-colors shadow-md">
+                Browse Collections
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
               </Link>
             </div>
           ) : (
-            <>
-              <p className="text-sm text-gray-500 mb-6">
-                <span className="font-bold text-gray-900">{products.length}</span> trending products
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-5">
-                {products.map((item) => (
-                  <ProductCard key={item._id} item={item} />
-                ))}
-              </div>
-            </>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-5">
+              {products.map((item) => (
+                <ProductCard key={item._id} item={item} />
+              ))}
+            </div>
           )}
 
         </div>

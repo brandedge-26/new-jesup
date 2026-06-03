@@ -6,23 +6,14 @@ const footerLinks = [
   {
     title: "Repairs",
     links: [
-      { label: "iPhone repair", href: "/phone-repair/iphone" },
-      { label: "Samsung repair", href: "/phone-repair/samsung" },
-      { label: "Google repair", href: "/phone-repair/google" },
-      { label: "Cell phone repair", href: "/phone-repair" },
-      { label: "Tablet repair", href: "/tech-repair/tablet" },
-      { label: "Computer repair", href: "/tech-repair/computer" },
-      { label: "Game console repair", href: "/tech-repair/gaming-console" },
-      { label: "All repairs", href: "/start-repair" },
-    ],
-  },
-  {
-    title: "About Jesup",
-    links: [
-      { label: "Partnerships", href: "/about/partnerships" },
-      { label: "Franchising", href: "/about/franchising" },
-      { label: "Brands", href: "/about/brands" },
-      { label: "Newsroom", href: "/about/newsroom" },
+      { label: "iPhone repair",       href: "/repairs/smartphone/iphone" },
+      { label: "Samsung repair",      href: "/repairs/smartphone/samsung" },
+      { label: "Google repair",       href: "/repairs/smartphone/google" },
+      { label: "Motorola repair",     href: "/repairs/smartphone/motorola" },
+      { label: "Tablet repair",       href: "/repairs/tablets" },
+      { label: "Computer repair",     href: "/repairs/laptop-computers" },
+      { label: "Game console repair", href: "/repairs/gaming-console" },
+      { label: "All repairs",         href: "/repairs/smartphone" },
     ],
   },
   {
@@ -84,7 +75,7 @@ export default function Footer() {
       <div className="bg-gray-950  rounded-3xl overflow-hidden">
 
         {/* Main content */}
-        <div className="px-8 lg:px-12 pt-12 pb-10 grid grid-cols-1 lg:grid-cols-[220px_1fr_1fr_1fr_1fr_220px] gap-10">
+        <div className="px-8 lg:px-12 pt-12 pb-10 grid grid-cols-1 lg:grid-cols-[220px_1fr_1fr_1fr_220px] gap-10">
 
           {/* Logo + tagline + socials */}
           <div className="flex flex-col gap-5">

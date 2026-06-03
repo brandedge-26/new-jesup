@@ -6,14 +6,14 @@ const footerLinks = [
   {
     title: "Repairs",
     links: [
-      { label: "iPhone repair", href: "/start-repair" },
-      { label: "Samsung repair", href: "/start-repair" },
-      { label: "Google repair", href: "/start-repair" },
-      { label: "Cell phone repair", href: "/start-repair" },
-      { label: "Tablet repair", href: "/start-repair" },
-      { label: "Computer repair", href: "/start-repair" },
-      { label: "Game console repair", href: "/start-repair" },
-      { label: "All repairs", href: "/start-repair" },
+      { label: "iPhone repair",       href: "/repairs/smartphone/iphone" },
+      { label: "Samsung repair",      href: "/repairs/smartphone/samsung" },
+      { label: "Google repair",       href: "/repairs/smartphone/google" },
+      { label: "Motorola repair",     href: "/repairs/smartphone/motorola" },
+      { label: "Tablet repair",       href: "/repairs/tablets" },
+      { label: "Computer repair",     href: "/repairs/laptop-computers" },
+      { label: "Game console repair", href: "/repairs/gaming-console" },
+      { label: "All repairs",         href: "/repairs/smartphone" },
     ],
   },
   {

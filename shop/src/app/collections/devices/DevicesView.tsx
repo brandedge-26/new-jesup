@@ -10,38 +10,38 @@ import { useWishlistStore } from "@/store/wishlistStore";
 // ─── Device data ──────────────────────────────────────────────────────────────
 
 const BRANDS = [
-  { id: "apple",   label: "Apple",   icon: "🍎" },
-  { id: "samsung", label: "Samsung", icon: "📱" },
+  { id: "apple", label: "Apple", icon: "" },
+  { id: "samsung", label: "Samsung", icon: "" },
 ];
 
 const DEVICE_MODELS: Record<string, { label: string; query: string }[]> = {
   apple: [
     { label: "iPhone 17 Pro Max", query: "iPhone 17 Pro Max" },
-    { label: "iPhone 17 Pro",     query: "iPhone 17 Pro" },
-    { label: "iPhone 17",         query: "iPhone 17" },
+    { label: "iPhone 17 Pro", query: "iPhone 17 Pro" },
+    { label: "iPhone 17", query: "iPhone 17" },
     { label: "iPhone 16 Pro Max", query: "iPhone 16 Pro Max" },
-    { label: "iPhone 16 Pro",     query: "iPhone 16 Pro" },
-    { label: "iPhone 16 Plus",    query: "iPhone 16 Plus" },
-    { label: "iPhone 16",         query: "iPhone 16" },
-    { label: "iPhone 16e",        query: "iPhone 16e" },
+    { label: "iPhone 16 Pro", query: "iPhone 16 Pro" },
+    { label: "iPhone 16 Plus", query: "iPhone 16 Plus" },
+    { label: "iPhone 16", query: "iPhone 16" },
+    { label: "iPhone 16e", query: "iPhone 16e" },
     { label: "iPhone 15 Pro Max", query: "iPhone 15 Pro Max" },
-    { label: "iPhone 15 Pro",     query: "iPhone 15 Pro" },
-    { label: "iPhone 15 Plus",    query: "iPhone 15 Plus" },
-    { label: "iPhone 15",         query: "iPhone 15" },
+    { label: "iPhone 15 Pro", query: "iPhone 15 Pro" },
+    { label: "iPhone 15 Plus", query: "iPhone 15 Plus" },
+    { label: "iPhone 15", query: "iPhone 15" },
   ],
   samsung: [
-    { label: "Galaxy S26 Ultra",  query: "Galaxy S26 Ultra" },
-    { label: "Galaxy S26 Plus",   query: "Galaxy S26 Plus" },
-    { label: "Galaxy S26",        query: "Galaxy S26" },
-    { label: "Galaxy S25 Ultra",  query: "Galaxy S25 Ultra" },
-    { label: "Galaxy S25 Plus",   query: "Galaxy S25 Plus" },
-    { label: "Galaxy S25",        query: "Galaxy S25" },
-    { label: "Galaxy S24 Ultra",  query: "Galaxy S24 Ultra" },
-    { label: "Galaxy S24 Plus",   query: "Galaxy S24 Plus" },
-    { label: "Galaxy S24",        query: "Galaxy S24" },
-    { label: "Galaxy Z Fold 6",   query: "Galaxy Z Fold" },
-    { label: "Galaxy Z Flip 6",   query: "Galaxy Z Flip" },
-    { label: "Galaxy A16 5G",     query: "Galaxy A16" },
+    { label: "Galaxy S26 Ultra", query: "Galaxy S26 Ultra" },
+    { label: "Galaxy S26 Plus", query: "Galaxy S26 Plus" },
+    { label: "Galaxy S26", query: "Galaxy S26" },
+    { label: "Galaxy S25 Ultra", query: "Galaxy S25 Ultra" },
+    { label: "Galaxy S25 Plus", query: "Galaxy S25 Plus" },
+    { label: "Galaxy S25", query: "Galaxy S25" },
+    { label: "Galaxy S24 Ultra", query: "Galaxy S24 Ultra" },
+    { label: "Galaxy S24 Plus", query: "Galaxy S24 Plus" },
+    { label: "Galaxy S24", query: "Galaxy S24" },
+    { label: "Galaxy Z Fold 6", query: "Galaxy Z Fold" },
+    { label: "Galaxy Z Flip 6", query: "Galaxy Z Flip" },
+    { label: "Galaxy A16 5G", query: "Galaxy A16" },
   ],
 };
 
@@ -59,18 +59,18 @@ function mapProduct(p: _BP): Product {
   const colorVariant = p.variants?.find((v) => v.name.toLowerCase() === "color");
   const variantColors = colorVariant?.options.map((o) => o.label) ?? [];
   return {
-    id:            p._id,
-    name:          p.name,
-    brand:         p.brand ?? "",
-    price:         p.price,
+    id: p._id,
+    name: p.name,
+    brand: p.brand ?? "",
+    price: p.price,
     originalPrice: p.originalPrice,
-    rating:        p.rating ?? 4.5,
-    reviews:       p.reviews ?? 0,
-    colors:        (p.colors && p.colors.length > 0) ? p.colors : variantColors,
-    image:         p.image ?? "",
-    badge:         p.badge as Product["badge"],
-    inStock:       p.inStock ?? true,
-    slug:          p.slug || p._id,
+    rating: p.rating ?? 4.5,
+    reviews: p.reviews ?? 0,
+    colors: (p.colors && p.colors.length > 0) ? p.colors : variantColors,
+    image: p.image ?? "",
+    badge: p.badge as Product["badge"],
+    inStock: p.inStock ?? true,
+    slug: p.slug || p._id,
   };
 }
 
@@ -80,16 +80,16 @@ const API = process.env.NEXT_PUBLIC_API_URL;
 
 const BADGE_STYLES: Record<string, string> = {
   "Best Seller": "bg-amber-500 text-white",
-  "Top Rated":   "bg-emerald-500 text-white",
-  "Sale":        "bg-red-500 text-white",
-  "New":         "bg-primary text-white",
-  "Limited":     "bg-orange-500 text-white",
+  "Top Rated": "bg-emerald-500 text-white",
+  "Sale": "bg-red-500 text-white",
+  "New": "bg-primary text-white",
+  "Limited": "bg-orange-500 text-white",
 };
 
 function Stars({ rating }: { rating: number }) {
   return (
     <div className="flex items-center gap-0.5">
-      {[1,2,3,4,5].map((s) => (
+      {[1, 2, 3, 4, 5].map((s) => (
         <svg key={s} className={`w-3.5 h-3.5 ${s <= Math.round(rating) ? "fill-amber-400" : "fill-gray-200"}`} viewBox="0 0 20 20">
           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
         </svg>
@@ -209,7 +209,7 @@ export default function DevicesView() {
         setProducts(mapped);
         setTotal(data.total ?? mapped.length);
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
     return () => controller.abort();
   }, [q]);

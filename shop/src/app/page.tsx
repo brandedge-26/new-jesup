@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import HeroBanner from "@/components/HeroBanner";
+import ScrollStory from "@/components/ScrollStory";
 import Image from "next/image";
 import Link from "next/link";
 import { type Product } from "@/lib/collectionData";
@@ -48,24 +49,34 @@ async function fetchFeatured(type: "trending" | "new-arrival"): Promise<Product[
   } catch { return []; }
 }
 
+async function fetchNewArrivals(): Promise<Product[]> {
+  try {
+    const res = await fetch(`${API}/products?limit=4`, { cache: "no-store" });
+    if (!res.ok) return [];
+    const data = await res.json() as { products?: Record<string, unknown>[] } | Record<string, unknown>[];
+    const list = Array.isArray(data) ? data : (data as { products?: Record<string, unknown>[] }).products ?? [];
+    return list.slice(0, 4).map(mapProduct);
+  } catch { return []; }
+}
+
 async function fetchBestsellers(): Promise<Product[]> {
   try {
     const res = await fetch(`${API}/products/bestsellers?limit=4`, { cache: "no-store" });
     if (!res.ok) return [];
     const list = await res.json() as Record<string, unknown>[];
     return list.map((p, i) => ({
-      id:            String(p._id ?? i),
-      name:          p.name as string,
-      brand:         (p.brand as string) ?? "",
-      price:         p.price as number,
+      id: String(p._id ?? i),
+      name: p.name as string,
+      brand: (p.brand as string) ?? "",
+      price: p.price as number,
       originalPrice: (p.originalPrice as number) ?? undefined,
-      rating:        (p.rating as number) ?? 0,
-      reviews:       (p.totalSold as number) ?? 0,
-      image:         (p.image as string) ?? "",
-      badge:         "Best Seller" as Product["badge"],
-      colors:        [],
-      inStock:       true,
-      slug:          (p.slug as string) ?? String(p._id ?? i),
+      rating: (p.rating as number) ?? 0,
+      reviews: (p.totalSold as number) ?? 0,
+      image: (p.image as string) ?? "",
+      badge: "Best Seller" as Product["badge"],
+      colors: [],
+      inStock: true,
+      slug: (p.slug as string) ?? String(p._id ?? i),
     }));
   } catch { return []; }
 }
@@ -74,31 +85,25 @@ async function fetchBestsellers(): Promise<Product[]> {
 
 const BADGE_STYLES: Record<string, string> = {
   "Best Seller": "bg-amber-500 text-white",
-  "Top Rated":   "bg-emerald-500 text-white",
-  "Sale":        "bg-red-500 text-white",
-  "New":         "bg-primary text-white",
-  "Limited":     "bg-orange-500 text-white",
+  "Top Rated": "bg-emerald-500 text-white",
+  "Sale": "bg-red-500 text-white",
+  "New": "bg-primary text-white",
+  "Limited": "bg-orange-500 text-white",
 };
 
-const stats = [
-  { value: "10K+",  label: "Happy Customers" },
-  { value: "500+",  label: "Products" },
-  { value: "4.8★",  label: "Avg. Rating" },
-  { value: "90-Day", label: "Warranty" },
-];
 
 const phoneDevices = [
-  { brand: "iPhone",   sub: "Cases, chargers & more",       href: "/collections/devices", image: "/home/phones/iphone.png",       accent: "#8223D2" },
-  { brand: "Samsung",  sub: "Galaxy covers & cables",        href: "/collections/devices", image: "/home/phones/samsung2.png",     accent: "#1d4ed8" },
-  { brand: "Google",   sub: "Pixel accessories & glass",     href: "/collections/devices", image: "/home/phones/google-pixel.png", accent: "#16a34a" },
-  { brand: "Motorola", sub: "Moto gear & screen guards",     href: "/collections/devices", image: "/home/phones/motrols.png",      accent: "#dc2626" },
-  { brand: "LG",       sub: "LG covers & power accessories", href: "/collections/devices", image: "/home/phones/lg.png",           accent: "#ea580c" },
+  { brand: "iPhone", sub: "Cases, chargers & more", href: "/collections/devices", image: "/home/phones/iphone.png", accent: "#8223D2" },
+  { brand: "Samsung", sub: "Galaxy covers & cables", href: "/collections/devices", image: "/home/phones/samsung2.png", accent: "#1d4ed8" },
+  { brand: "Google", sub: "Pixel accessories & glass", href: "/collections/devices", image: "/home/phones/google-pixel.png", accent: "#16a34a" },
+  { brand: "Motorola", sub: "Moto gear & screen guards", href: "/collections/devices", image: "/home/phones/motrols.png", accent: "#dc2626" },
+  { brand: "LG", sub: "LG covers & power accessories", href: "/collections/devices", image: "/home/phones/lg.png", accent: "#ea580c" },
 ];
 
 const valueProps = [
   { title: "Fast, Tracked Shipping", body: "Most orders ship within one business day so you can gear up quickly.", icon: <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-14 0h14" /> },
-  { title: "Easy 30-Day Returns",    body: "Changed your mind? Hassle-free returns on eligible items within 30 days.", icon: <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /> },
-  { title: "Expert-Approved Picks",  body: "Curated accessories tested by repair pros for fit, finish, and durability.", icon: <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /> },
+  { title: "Easy 30-Day Returns", body: "Changed your mind? Hassle-free returns on eligible items within 30 days.", icon: <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /> },
+  { title: "Expert-Approved Picks", body: "Curated accessories tested by repair pros for fit, finish, and durability.", icon: <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /> },
 ] as const;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -212,18 +217,15 @@ function BestsellerCard({ item }: { item: Product }) {
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function Home() {
-  const [trending, newArrivals, bestsellers] = await Promise.all([
+  const [trending, rawNewArrivals, bestsellers] = await Promise.all([
     fetchFeatured("trending"),
-    fetchFeatured("new-arrival"),
+    fetchNewArrivals(),
     fetchBestsellers(),
   ]);
 
-  const categories = [
-    { title: "Cases",            subtitle: "Slim, rugged & MagSafe-ready",    href: "/collections/cases",            image: "/home/phone-cases.jpg" },
-    { title: "Audio",            subtitle: "Earbuds & over-ear picks",         href: "/collections/audio",            image: "/home/audio.jpg" },
-    { title: "Power & Cables",   subtitle: "Fast charge, travel-ready",        href: "/collections/power",            image: "/home/power_cables.jpg" },
-    { title: "Screen Protection",subtitle: "Tempered glass for every screen",  href: "/collections/screen-protection",image: "/home/screen-protection.jpg" },
-  ];
+  const trendingSlugs = new Set(trending.map((p) => p.slug));
+  const newArrivals = rawNewArrivals.filter((p) => !trendingSlugs.has(p.slug));
+
 
   return (
     <>
@@ -234,60 +236,29 @@ export default async function Home() {
         {/* ── Hero Banner ── */}
         <HeroBanner />
 
-        {/* ── Stats strip ── */}
-        <div className="mx-3 sm:mx-4 lg:mx-6 mt-4 rounded-2xl bg-white border border-gray-100 shadow-sm px-6 py-4">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
-            {stats.map((s) => (
-              <div key={s.label} className="flex flex-col items-center py-2 sm:py-0">
-                <span className="text-xl font-extrabold text-gray-900">{s.value}</span>
-                <span className="text-xs text-gray-400 mt-0.5">{s.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <div className="mx-auto max-w-screen-xl px-3 sm:px-4 lg:px-6 mt-10 space-y-20 pb-24">
 
-        <div className="mx-auto max-w-screen-xl px-3 sm:px-4 lg:px-6 mt-14 space-y-20 pb-24">
-
-          {/* ── Shop by Category ── */}
-          <section>
-            <div className="flex items-end justify-between mb-7">
-              <div>
-                <SectionLabel>Collections</SectionLabel>
-                <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">Shop by Category</h2>
-                <p className="mt-1.5 text-gray-500 text-sm lg:text-base">Find the perfect accessories for your device.</p>
-              </div>
-              <Link href="/collections" className="hidden sm:inline-flex text-sm font-semibold text-primary hover:text-primary-hover transition-colors gap-1 items-center">
-                View all <span aria-hidden>→</span>
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5">
-              {categories.map((cat) => (
-                <Link key={cat.title} href={cat.href} className="group relative overflow-hidden rounded-2xl bg-gray-100 shadow-sm hover:shadow-lg transition-shadow">
-                  <div className="aspect-[4/5] relative overflow-hidden">
-                    <Image src={cat.image} alt={cat.title} fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="(max-width: 640px) 50vw, 25vw" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-5">
-                    <p className="font-bold text-white text-sm lg:text-base leading-tight">{cat.title}</p>
-                    <p className="mt-0.5 text-xs text-white/75 hidden sm:block">{cat.subtitle}</p>
-                    <span className="mt-2.5 inline-flex items-center gap-1 text-xs font-semibold text-white/80 group-hover:text-white transition-colors">
-                      Shop now
-                      <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </span>
-                  </div>
+          {/* ── New Arrivals ── */}
+          {newArrivals.length > 0 && (
+            <section>
+              <div className="flex items-end justify-between mb-7">
+                <div>
+                  <SectionLabel>Just landed</SectionLabel>
+                  <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">New Arrivals</h2>
+                  <p className="mt-1.5 text-gray-500 text-sm lg:text-base">Fresh drops — the latest products just added to the store.</p>
+                </div>
+                <Link href="/new-arrivals" className="hidden sm:inline-flex text-sm font-semibold text-primary hover:text-primary-hover transition-colors gap-1 items-center">
+                  View all <span aria-hidden>→</span>
                 </Link>
-              ))}
-            </div>
-
-            <Link href="/collections" className="sm:hidden mt-4 flex items-center justify-center text-sm font-semibold text-primary hover:text-primary-hover transition-colors gap-1">
-              View all categories →
-            </Link>
-          </section>
+              </div>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5">
+                {newArrivals.map((item) => <ProductCard key={item.id} item={item} showBadge={false} />)}
+              </div>
+              <Link href="/new-arrivals" className="sm:hidden mt-4 flex items-center justify-center text-sm font-semibold text-primary transition-colors gap-1">
+                View all →
+              </Link>
+            </section>
+          )}
 
           {/* ── Shop by Phone ── */}
           <section>
@@ -433,45 +404,40 @@ export default async function Home() {
             </section>
           )}
 
-          {/* ── New Arrivals ── */}
-          {newArrivals.length > 0 && (
-            <section>
-              <div className="flex items-end justify-between mb-7">
-                <div>
-                  <SectionLabel>Just landed</SectionLabel>
-                  <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">New Arrivals</h2>
-                  <p className="mt-1.5 text-gray-500 text-sm lg:text-base">Fresh drops — cases, audio &amp; power just landed.</p>
-                </div>
-                <Link href="/new-arrivals" className="hidden sm:inline-flex text-sm font-semibold text-primary hover:text-primary-hover transition-colors gap-1 items-center">
-                  See all new →
-                </Link>
-              </div>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5">
-                {newArrivals.map((item) => <ProductCard key={item.id} item={item} showBadge={false} />)}
-              </div>
-              <Link href="/new-arrivals" className="sm:hidden mt-4 flex items-center justify-center text-sm font-semibold text-primary transition-colors gap-1">
-                See all new arrivals →
-              </Link>
-            </section>
-          )}
-
           {/* ── Split feature ── */}
           <section className="grid lg:grid-cols-2 gap-4 lg:gap-6">
-            <div className="relative min-h-[260px] lg:min-h-[380px] rounded-2xl overflow-hidden group shadow-md">
-              <Image src="/home/new-arrivels-banner.jpg" alt="New arrivals" fill
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
+            <div className="relative min-h-[280px] lg:min-h-[420px] rounded-3xl overflow-hidden group shadow-lg">
+              <Image src="/home/tech-arrivals-banner.jpg" alt="New Tech Arrivals" fill
+                className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
                 sizes="(max-width: 1024px) 100vw, 50vw" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-9 text-white">
-                <span className="text-xs font-bold uppercase tracking-widest text-white/60">Just dropped</span>
-                <h3 className="mt-1.5 text-xl lg:text-2xl font-bold leading-snug">New Arrivals Weekly</h3>
-                <p className="mt-2 text-sm text-white/75 max-w-sm">Fresh colors, limited drops, and seasonal bundles — check back often.</p>
-                <Link href="/new-arrivals" className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/30 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/25 transition-all">
-                  Explore new arrivals
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
+              {/* Gradient from bottom + slight left tint */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+
+              {/* Content */}
+              <div className="absolute inset-0 flex flex-col justify-end p-7 lg:p-10">
+                <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-white/60 mb-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                  Just Dropped
+                </span>
+                <h3 className="text-2xl lg:text-4xl font-extrabold text-white leading-tight mb-2">
+                  Fresh Tech,<br />Every Week.
+                </h3>
+                <p className="text-sm text-white/70 max-w-xs leading-relaxed mb-6">
+                  The latest gadgets, accessories & drops — curated by our repair pros before anyone else gets them.
+                </p>
+                <div className="flex gap-3">
+                  <Link href="/new-arrivals"
+                    className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-primary-hover transition-all">
+                    Shop new arrivals
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                  <Link href="/trending"
+                    className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/20 transition-all">
+                    Trending
+                  </Link>
+                </div>
               </div>
             </div>
 
@@ -504,6 +470,13 @@ export default async function Home() {
               </div>
             </div>
           </section>
+
+        </div>
+
+        {/* ── Scroll Story ── */}
+        <ScrollStory />
+
+        <div className="mx-auto max-w-screen-xl px-3 sm:px-4 lg:px-6 pb-24">
 
           {/* ── Value props ── */}
           <section className="grid md:grid-cols-3 gap-4 lg:gap-5">

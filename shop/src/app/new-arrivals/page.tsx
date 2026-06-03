@@ -23,7 +23,6 @@ interface Product {
   reviews: number;
   image: string;
   badge?: string;
-  colors?: string[];
   inStock: boolean;
   slug?: string;
 }
@@ -33,9 +32,11 @@ interface Product {
 async function getNewArrivals(): Promise<Product[]> {
   try {
     const API = process.env.NEXT_PUBLIC_API_URL;
-    const res = await fetch(`${API}/featured?type=new-arrival`, { cache: "no-store" });
+    const res = await fetch(`${API}/products?limit=20`, { cache: "no-store" });
     if (!res.ok) return [];
-    return res.json();
+    const data = await res.json();
+    const list = Array.isArray(data) ? data : (data.products ?? []);
+    return list;
   } catch {
     return [];
   }
@@ -67,28 +68,39 @@ function ProductCard({ item }: { item: Product }) {
   const discountPct = item.originalPrice
     ? Math.round((1 - item.price / item.originalPrice) * 100)
     : null;
-  const href = item.slug ? `/products/${item.slug}` : "#";
+  const href = item.slug ? `/products/${item.slug}` : `#`;
 
   return (
     <article className="group flex flex-col rounded-2xl border border-gray-100 bg-white overflow-hidden shadow-sm hover:shadow-xl hover:border-gray-200 transition-all duration-300">
       <div className="relative aspect-square bg-gray-50 overflow-hidden">
         <Link href={href} className="block w-full h-full">
           <Image
-            src={item.image} alt={item.name} fill
+            src={item.image}
+            alt={item.name}
+            fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 640px) 50vw, 25vw"
-            unoptimized={item.image?.startsWith("data:")}
           />
         </Link>
-        {/* Always show "New" badge for new arrivals */}
-        <span className="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold uppercase tracking-widest rounded-full px-2.5 py-1 shadow">
-          {item.badge || "New"}
-        </span>
+
+        {/* Badge */}
+        <div className="absolute top-3 left-3 flex items-center gap-1.5">
+          <span className="bg-primary text-white text-[10px] font-bold uppercase tracking-widest rounded-full px-2.5 py-1 shadow">
+            New
+          </span>
+          {item.badge && item.badge !== "New" && (
+            <span className={`text-[10px] font-bold uppercase tracking-widest rounded-full px-2.5 py-1 shadow ${BADGE_STYLES[item.badge] ?? "bg-gray-700 text-white"}`}>
+              {item.badge}
+            </span>
+          )}
+        </div>
+
         {discountPct && (
           <span className="absolute top-3 right-3 bg-red-500 text-white text-[10px] font-bold rounded-full px-2 py-1">
             -{discountPct}%
           </span>
         )}
+
         {!item.inStock && (
           <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
             <span className="text-xs font-bold text-gray-500 bg-white rounded-full px-3 py-1 shadow">Out of Stock</span>
@@ -102,8 +114,8 @@ function ProductCard({ item }: { item: Product }) {
           {item.name}
         </Link>
         <div className="flex items-center gap-1.5">
-          <Stars rating={item.rating} />
-          <span className="text-[11px] text-gray-400">{item.rating} · {item.reviews.toLocaleString()}</span>
+          <Stars rating={item.rating ?? 0} />
+          <span className="text-[11px] text-gray-400">{item.rating ?? 0} · {(item.reviews ?? 0).toLocaleString()}</span>
         </div>
         <div className="border-t border-gray-100 pt-2 flex items-center justify-between gap-2">
           <div>
@@ -137,41 +149,58 @@ export default async function NewArrivalsPage() {
       <Header />
       <main className="flex-1 bg-white">
 
-        {/* Hero */}
-        <div className="bg-gradient-to-br from-gray-900 to-gray-700 px-4 py-14 text-center">
-          <span className="inline-block text-[11px] font-bold uppercase tracking-widest text-white/70 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 mb-3">
-            Just landed
-          </span>
-          <h1 className="text-3xl lg:text-4xl font-extrabold text-white">New Arrivals ✨</h1>
-          <p className="mt-2 text-white/75 text-sm lg:text-base max-w-md mx-auto">
-            Fresh drops — cases, audio &amp; power accessories just landed.
-          </p>
+        {/* ── Hero ── */}
+        <div className="relative overflow-hidden bg-[#0a0a0f]">
+          {/* Glow blobs */}
+          <div className="absolute -left-24 -top-24 w-96 h-96 bg-[#8223D2]/35 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -right-24 -bottom-24 w-96 h-96 bg-emerald-600/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)", backgroundSize: "40px 40px" }} />
+
+          <div className="relative mx-auto max-w-screen-xl px-4 py-16 lg:py-20 text-center">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-[#c084fc] bg-[#8223D2]/20 border border-[#8223D2]/30 rounded-full px-3 py-1 mb-5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#c084fc] animate-pulse" />
+              Just landed
+            </span>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight tracking-tight">
+              New Arrivals
+            </h1>
+            <p className="mt-3 text-white/60 text-sm lg:text-base max-w-md mx-auto leading-relaxed">
+              The freshest products just added to the store — be the first to grab them.
+            </p>
+
+            {products.length > 0 && (
+              <p className="mt-5 text-white/40 text-xs font-semibold uppercase tracking-widest">
+                {products.length} {products.length === 1 ? "product" : "products"} available
+              </p>
+            )}
+          </div>
         </div>
 
+        {/* ── Grid ── */}
         <div className="mx-auto max-w-screen-xl px-3 sm:px-4 lg:px-6 py-12">
 
           {products.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-24 text-gray-400">
-              <svg className="w-12 h-12 mb-4 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-              </svg>
-              <p className="text-base font-semibold">Abhi koi new arrival nahi hai.</p>
-              <p className="text-sm mt-1">Admin se products add karwao.</p>
-              <Link href="/collections" className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-hover transition-colors">
-                Browse Collections →
+            <div className="flex flex-col items-center justify-center py-28 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-5">
+                <svg className="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              </div>
+              <h2 className="text-lg font-bold text-gray-900 mb-2">No products yet</h2>
+              <p className="text-sm text-gray-500 max-w-xs">New products will appear here as soon as they are added.</p>
+              <Link href="/collections" className="mt-7 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-hover transition-colors shadow-md">
+                Browse Collections
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
               </Link>
             </div>
           ) : (
-            <>
-              <p className="text-sm text-gray-500 mb-6">
-                <span className="font-bold text-gray-900">{products.length}</span> new products
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-5">
-                {products.map((item) => (
-                  <ProductCard key={item._id} item={item} />
-                ))}
-              </div>
-            </>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-5">
+              {products.map((item) => (
+                <ProductCard key={item._id} item={item} />
+              ))}
+            </div>
           )}
 
         </div>
