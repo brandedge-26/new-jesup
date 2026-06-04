@@ -25,7 +25,7 @@ async function fetchFeaturedByCategory(category: string, limit = 4): Promise<Pro
   try {
     const res = await fetch(
       `${API}/products?category=${encodeURIComponent(category)}&status=Active&limit=${limit}`,
-      { next: { revalidate: 300 } }
+      { cache: "no-store" }
     );
     if (!res.ok) return [];
     const data = await res.json() as { products: Record<string, unknown>[] };

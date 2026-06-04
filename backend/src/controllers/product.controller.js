@@ -76,6 +76,38 @@ export const updateProduct = async (req, res, next) => {
             { new: true, runValidators: true }
         );
         if (!product) return res.status(404).json({ message: "Product not found" });
+
+        // ── Sync FeaturedProduct collection ──────────────────────────────────
+        const featured = req.body.featured;
+        if (featured !== undefined) {
+            // Remove any existing featured entry for this product
+            await FeaturedProduct.deleteMany({
+                $or: [
+                    { slug: product.slug },
+                    { slug: String(product._id) },
+                ],
+            });
+
+            // If trending or new-arrival, create a fresh entry
+            if (featured === "trending" || featured === "new-arrival") {
+                await FeaturedProduct.create({
+                    name:          product.name,
+                    brand:         product.brand ?? "",
+                    price:         product.price,
+                    originalPrice: product.originalPrice,
+                    rating:        product.rating ?? 4.5,
+                    reviews:       product.reviews ?? 0,
+                    image:         product.image ?? "",
+                    badge:         product.badge ?? "",
+                    colors:        product.colors ?? [],
+                    inStock:       product.inStock ?? true,
+                    slug:          product.slug || String(product._id),
+                    type:          featured,
+                    order:         0,
+                });
+            }
+        }
+
         res.json(product);
     } catch (err) {
         next(err);

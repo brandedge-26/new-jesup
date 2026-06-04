@@ -139,7 +139,7 @@ function ProductCard({ item, showBadge = true }: { item: Product; showBadge?: bo
         <Link href={`/products/${item.slug}`} className="block w-full h-full">
           <Image
             src={item.image} alt={item.name} fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className="object-contain transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 640px) 50vw, 25vw"
           />
         </Link>

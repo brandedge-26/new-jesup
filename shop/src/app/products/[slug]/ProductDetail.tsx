@@ -29,6 +29,20 @@ const BADGE_STYLES: Record<string, string> = {
 };
 
 function Stars({ rating, count }: { rating: number; count: number }) {
+  if (count === 0) {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-0.5">
+          {[1, 2, 3, 4, 5].map((s) => (
+            <svg key={s} className="w-4 h-4 fill-gray-200" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+          ))}
+        </div>
+        <span className="text-sm text-gray-400">(0 reviews)</span>
+      </div>
+    );
+  }
   return (
     <div className="flex items-center gap-2">
       <div className="flex items-center gap-0.5">
@@ -172,13 +186,13 @@ function ImageZoom({ src, alt }: { src: string; alt: string }) {
       >
         {src.startsWith("data:") ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={src} alt={alt} className="w-full h-full object-cover pointer-events-none" />
+          <img src={src} alt={alt} className="w-full h-full object-contain pointer-events-none" />
         ) : (
           <Image
             src={src}
             alt={alt}
             fill
-            className="object-cover pointer-events-none"
+            className="object-contain pointer-events-none"
             sizes="(max-width: 1024px) 100vw, 50vw"
             priority
           />
@@ -340,10 +354,10 @@ function RelatedCard({ product }: { product: Product }) {
       <div className="relative aspect-square bg-gray-50 overflow-hidden">
         {product.image.startsWith("data:") ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          <img src={product.image} alt={product.name} className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105" />
         ) : (
           <Image src={product.image} alt={product.name} fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className="object-contain transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 640px) 50vw, 25vw" />
         )}
         {product.badge && (
@@ -605,7 +619,7 @@ export default function ProductDetail({ product, collectionId, collectionTitle, 
             </div>
 
             {/* Rating */}
-            <Stars rating={product.rating} count={product.reviews} />
+            <Stars rating={avgRating} count={reviewCount} />
 
             {/* Price */}
             <div className="flex items-end gap-3">

@@ -38,6 +38,8 @@ build/
 
 # ── Scripts (seed / migration) ────────────────────────────
 backend/src/scripts/
+*.mjs
+jesup-products*.json
 
 # ── PDF / Spreadsheet assets ──────────────────────────────
 *.pdf
