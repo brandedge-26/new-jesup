@@ -11,49 +11,58 @@ import { useAuthStore } from "@/store/authStore";
 
 // ─── Nav data ───────────────────────────────────────────────────────────────
 
+const deviceCategories = [
+  {
+    name: "Phones",
+    image: "/devices/iphone.png",
+    href: "/collections/devices?q=phone",
+    brands: [
+      { label: "iPhone",         href: "/collections/devices?q=iPhone" },
+      { label: "Samsung Galaxy", href: "/collections/devices?q=Samsung" },
+      { label: "Google Pixel",   href: "/collections/devices?q=Pixel" },
+      { label: "Motorola",       href: "/collections/devices?q=Motorola" },
+      { label: "Shop all phones →", href: "/collections/devices" },
+    ],
+  },
+  {
+    name: "Laptops",
+    image: "/devices/laptop.png",
+    href: "/collections/devices?q=laptop",
+    brands: [
+      { label: "MacBook",          href: "/collections/devices?q=MacBook" },
+      { label: "Windows Laptops",  href: "/collections/devices?q=Laptop" },
+      { label: "Shop all laptops →", href: "/collections/devices?q=laptop" },
+    ],
+  },
+  {
+    name: "Tablets",
+    image: "/devices/tablet.png",
+    href: "/collections/devices?q=tablet",
+    brands: [
+      { label: "iPad",              href: "/collections/devices?q=iPad" },
+      { label: "Android Tablets",   href: "/collections/devices?q=tablet" },
+      { label: "Shop all tablets →", href: "/collections/devices?q=tablet" },
+    ],
+  },
+  {
+    name: "Gaming Console",
+    image: "/devices/gaming.png",
+    href: "/collections/devices?q=gaming",
+    brands: [
+      { label: "PlayStation",        href: "/collections/devices?q=PlayStation" },
+      { label: "Xbox",               href: "/collections/devices?q=Xbox" },
+      { label: "Nintendo Switch",    href: "/collections/devices?q=Nintendo" },
+      { label: "Shop all gaming →",  href: "/collections/devices?q=gaming" },
+    ],
+  },
+];
+
 const navItems = [
   {
     label: "Devices",
     href: "/collections/devices",
-    featured: true,
-    columns: [
-      {
-        heading: "Apple iPhone",
-        links: [
-          { label: "iPhone 17 Pro Max", href: "/collections/devices?q=iPhone+17+Pro+Max" },
-          { label: "iPhone 17 Pro",     href: "/collections/devices?q=iPhone+17+Pro" },
-          { label: "iPhone 17",         href: "/collections/devices?q=iPhone+17" },
-          { label: "iPhone 16 Pro Max", href: "/collections/devices?q=iPhone+16+Pro+Max" },
-          { label: "iPhone 16 Pro",     href: "/collections/devices?q=iPhone+16+Pro" },
-          { label: "iPhone 16 Plus",    href: "/collections/devices?q=iPhone+16+Plus" },
-          { label: "iPhone 16",         href: "/collections/devices?q=iPhone+16" },
-          { label: "iPhone 16e",        href: "/collections/devices?q=iPhone+16e" },
-          { label: "iPhone 15 Pro Max", href: "/collections/devices?q=iPhone+15+Pro+Max" },
-          { label: "iPhone 15 Pro",     href: "/collections/devices?q=iPhone+15+Pro" },
-          { label: "iPhone 15 Plus",    href: "/collections/devices?q=iPhone+15+Plus" },
-          { label: "iPhone 15",         href: "/collections/devices?q=iPhone+15" },
-          { label: "Shop all Apple →",  href: "/collections/devices?q=iPhone" },
-        ],
-      },
-      {
-        heading: "Samsung Galaxy",
-        links: [
-          { label: "Galaxy S26 Ultra",  href: "/collections/devices?q=Galaxy+S26+Ultra" },
-          { label: "Galaxy S26 Plus",   href: "/collections/devices?q=Galaxy+S26+Plus" },
-          { label: "Galaxy S26",        href: "/collections/devices?q=Galaxy+S26" },
-          { label: "Galaxy S25 Ultra",  href: "/collections/devices?q=Galaxy+S25+Ultra" },
-          { label: "Galaxy S25 Plus",   href: "/collections/devices?q=Galaxy+S25+Plus" },
-          { label: "Galaxy S25",        href: "/collections/devices?q=Galaxy+S25" },
-          { label: "Galaxy S24 Ultra",  href: "/collections/devices?q=Galaxy+S24+Ultra" },
-          { label: "Galaxy S24 Plus",   href: "/collections/devices?q=Galaxy+S24+Plus" },
-          { label: "Galaxy S24",        href: "/collections/devices?q=Galaxy+S24" },
-          { label: "Galaxy Z Fold 6",   href: "/collections/devices?q=Galaxy+Z+Fold" },
-          { label: "Galaxy Z Flip 6",   href: "/collections/devices?q=Galaxy+Z+Flip" },
-          { label: "Galaxy A16 5G",     href: "/collections/devices?q=Galaxy+A16" },
-          { label: "Shop all Samsung →",href: "/collections/devices?q=Samsung" },
-        ],
-      },
-    ],
+    deviceMenu: true,
+    columns: [] as { heading: string; links: { label: string; href: string }[] }[],
   },
   {
     label: "Audio",
@@ -79,74 +88,63 @@ const navItems = [
     featured: true,
     columns: [
       {
-        heading: "Shop by type",
-        links: [
-          { label: "MagSafe", href: "/collections/cases?q=MagSafe" },
-          { label: "Fashion", href: "/collections/cases?q=Fashion" },
-          { label: "Case wallets", href: "/collections/cases?q=Wallet" },
-          { label: "Rugged", href: "/collections/cases?q=Rugged" },
-          { label: "Slim", href: "/collections/cases?q=Slim" },
-          { label: "Waterproof", href: "/collections/cases?q=Waterproof" },
-        ],
-      },
-      {
         heading: "Apple",
         links: [
-          { label: "iPhone 17 Pro Max", href: "/collections/devices?q=iPhone+17+Pro+Max" },
-          { label: "iPhone 17 Pro", href: "/collections/devices?q=iPhone+17+Pro" },
-          { label: "iPhone 17", href: "/collections/devices?q=iPhone+17" },
-          { label: "iPhone 16 Pro Max", href: "/collections/devices?q=iPhone+16+Pro+Max" },
-          { label: "iPhone 16 Pro", href: "/collections/devices?q=iPhone+16+Pro" },
-          { label: "iPhone 16 Plus", href: "/collections/devices?q=iPhone+16+Plus" },
-          { label: "iPhone 16", href: "/collections/devices?q=iPhone+16" },
-          { label: "iPhone 16e", href: "/collections/devices?q=iPhone+16e" },
-          { label: "iPhone 15 Pro Max", href: "/collections/devices?q=iPhone+15+Pro+Max" },
-          { label: "iPhone 15 Pro", href: "/collections/devices?q=iPhone+15+Pro" },
-          { label: "iPhone 15 Plus", href: "/collections/devices?q=iPhone+15+Plus" },
-          { label: "iPhone 15", href: "/collections/devices?q=iPhone+15" },
-          { label: "Shop all Apple →", href: "/collections/devices?q=iPhone" },
+          { label: "iPhone 17 Pro Max", href: "/collections/cases?q=iPhone+17+Pro+Max" },
+          { label: "iPhone 17 Pro",     href: "/collections/cases?q=iPhone+17+Pro" },
+          { label: "iPhone 17",         href: "/collections/cases?q=iPhone+17" },
+          { label: "iPhone 16 Pro Max", href: "/collections/cases?q=iPhone+16+Pro+Max" },
+          { label: "iPhone 16 Pro",     href: "/collections/cases?q=iPhone+16+Pro" },
+          { label: "iPhone 16 Plus",    href: "/collections/cases?q=iPhone+16+Plus" },
+          { label: "iPhone 16",         href: "/collections/cases?q=iPhone+16" },
+          { label: "iPhone 16e",        href: "/collections/cases?q=iPhone+16e" },
+          { label: "iPhone 15 Pro Max", href: "/collections/cases?q=iPhone+15+Pro+Max" },
+          { label: "iPhone 15 Pro",     href: "/collections/cases?q=iPhone+15+Pro" },
+          { label: "iPhone 15 Plus",    href: "/collections/cases?q=iPhone+15+Plus" },
+          { label: "iPhone 15",         href: "/collections/cases?q=iPhone+15" },
+          { label: "Shop all Apple →",  href: "/collections/cases?q=iPhone" },
         ],
       },
       {
         heading: "Samsung",
         links: [
-          { label: "Galaxy S26", href: "/collections/devices?q=Galaxy+S26" },
-          { label: "Galaxy S26 Plus", href: "/collections/devices?q=Galaxy+S26+Plus" },
-          { label: "Galaxy S26 Ultra", href: "/collections/devices?q=Galaxy+S26+Ultra" },
-          { label: "Galaxy S25", href: "/collections/devices?q=Galaxy+S25" },
-          { label: "Galaxy S25 Plus", href: "/collections/devices?q=Galaxy+S25+Plus" },
-          { label: "Galaxy S25 Ultra", href: "/collections/devices?q=Galaxy+S25+Ultra" },
-          { label: "Galaxy S24", href: "/collections/devices?q=Galaxy+S24" },
-          { label: "Galaxy S24 Plus", href: "/collections/devices?q=Galaxy+S24+Plus" },
-          { label: "Galaxy S24 Ultra", href: "/collections/devices?q=Galaxy+S24+Ultra" },
-          { label: "Galaxy Z Fold 6", href: "/collections/devices?q=Galaxy+Z+Fold" },
-          { label: "Galaxy Z Flip 6", href: "/collections/devices?q=Galaxy+Z+Flip" },
-          { label: "Galaxy A16 5G", href: "/collections/devices?q=Galaxy+A16" },
-          { label: "Shop all Samsung →", href: "/collections/devices?q=Samsung" },
+          { label: "Galaxy S26 Ultra",   href: "/collections/cases?q=Galaxy+S26+Ultra" },
+          { label: "Galaxy S26 Plus",    href: "/collections/cases?q=Galaxy+S26+Plus" },
+          { label: "Galaxy S26",         href: "/collections/cases?q=Galaxy+S26" },
+          { label: "Galaxy S25 Ultra",   href: "/collections/cases?q=Galaxy+S25+Ultra" },
+          { label: "Galaxy S25 Plus",    href: "/collections/cases?q=Galaxy+S25+Plus" },
+          { label: "Galaxy S25",         href: "/collections/cases?q=Galaxy+S25" },
+          { label: "Galaxy S24 Ultra",   href: "/collections/cases?q=Galaxy+S24+Ultra" },
+          { label: "Galaxy S24 Plus",    href: "/collections/cases?q=Galaxy+S24+Plus" },
+          { label: "Galaxy S24",         href: "/collections/cases?q=Galaxy+S24" },
+          { label: "Galaxy Z Fold 6",    href: "/collections/cases?q=Galaxy+Z+Fold" },
+          { label: "Galaxy Z Flip 6",    href: "/collections/cases?q=Galaxy+Z+Flip" },
+          { label: "Galaxy A16 5G",      href: "/collections/cases?q=Galaxy+A16" },
+          { label: "Shop all Samsung →", href: "/collections/cases?q=Samsung" },
         ],
       },
       {
         heading: "Google",
         links: [
-          { label: "Pixel 9A", href: "/collections/cases?q=Pixel+9A" },
-          { label: "Pixel 9 Pro XL", href: "/collections/cases?q=Pixel+9+Pro+XL" },
-          { label: "Pixel 9 Pro", href: "/collections/cases?q=Pixel+9+Pro" },
-          { label: "Pixel 9 Pro Fold", href: "/collections/cases?q=Pixel+9+Pro+Fold" },
-          { label: "Pixel 9", href: "/collections/cases?q=Pixel+9" },
-          { label: "Pixel 8 Pro", href: "/collections/cases?q=Pixel+8+Pro" },
-          { label: "Pixel 8", href: "/collections/cases?q=Pixel+8" },
-          { label: "Pixel 8A", href: "/collections/cases?q=Pixel+8A" },
-          { label: "Shop all Google →", href: "/collections/cases?q=Pixel" },
+          { label: "Pixel 9A",           href: "/collections/cases?q=Pixel+9A" },
+          { label: "Pixel 9 Pro XL",     href: "/collections/cases?q=Pixel+9+Pro+XL" },
+          { label: "Pixel 9 Pro",        href: "/collections/cases?q=Pixel+9+Pro" },
+          { label: "Pixel 9 Pro Fold",   href: "/collections/cases?q=Pixel+9+Pro+Fold" },
+          { label: "Pixel 9",            href: "/collections/cases?q=Pixel+9" },
+          { label: "Pixel 8 Pro",        href: "/collections/cases?q=Pixel+8+Pro" },
+          { label: "Pixel 8",            href: "/collections/cases?q=Pixel+8" },
+          { label: "Pixel 8A",           href: "/collections/cases?q=Pixel+8A" },
+          { label: "Shop all Google →",  href: "/collections/cases?q=Pixel" },
         ],
       },
       {
         heading: "Motorola",
         links: [
-          { label: "Moto G Power 5G", href: "/collections/cases?q=Moto+G+Power" },
-          { label: "Moto G Stylus 5G", href: "/collections/cases?q=Moto+G+Stylus" },
-          { label: "Moto G Power", href: "/collections/cases?q=Moto+G+Power" },
-          { label: "Motorola Edge", href: "/collections/cases?q=Motorola+Edge" },
-          { label: "Motorola Razr", href: "/collections/cases?q=Motorola+Razr" },
+          { label: "Moto G Power 5G",     href: "/collections/cases?q=Moto+G+Power" },
+          { label: "Moto G Stylus 5G",    href: "/collections/cases?q=Moto+G+Stylus" },
+          { label: "Moto G Power",        href: "/collections/cases?q=Moto+G+Power" },
+          { label: "Motorola Edge",       href: "/collections/cases?q=Motorola+Edge" },
+          { label: "Motorola Razr",       href: "/collections/cases?q=Motorola+Razr" },
           { label: "Shop all Motorola →", href: "/collections/cases?q=Motorola" },
         ],
       },
@@ -210,6 +208,43 @@ const navItems = [
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
+type CaseLink = { label: string; href: string };
+type CaseCols = { apple: CaseLink[]; samsung: CaseLink[]; google: CaseLink[]; motorola: CaseLink[] };
+
+function extractCaseModels(names: string[]): CaseCols {
+  const iPhoneSet = new Set<string>();
+  const galaxySet = new Set<string>();
+  const pixelSet  = new Set<string>();
+  const motoSet   = new Set<string>();
+
+  const iPhoneRe  = /iPhone\s+\d+(?:e)?(?:\s+(?:Pro\s+Max|Pro|Plus))?/gi;
+  const galaxyRe  = /Galaxy\s+(?:S\d+(?:\s+(?:Ultra|Plus|Edge))?|Z\s+(?:Fold|Flip)\s*\d*|A\d+(?:\s*5G)?)/gi;
+  const pixelRe   = /Pixel\s+\d+(?:\s+(?:Pro\s+XL|Pro\s+Fold|Pro|A))?/gi;
+  const motoRe    = /(?:Moto(?:rola)?\s+(?:G\s+Power(?:\s+5G)?|G\s+Stylus(?:\s+5G)?|Edge(?:\+)?|Razr(?:\+)?))/gi;
+
+  for (const name of names) {
+    for (const m of name.matchAll(iPhoneRe))  iPhoneSet.add(m[0].replace(/\s+/g, " ").trim());
+    for (const m of name.matchAll(galaxyRe))  galaxySet.add(m[0].replace(/\s+/g, " ").trim());
+    for (const m of name.matchAll(pixelRe))   pixelSet.add(m[0].replace(/\s+/g, " ").trim());
+    for (const m of name.matchAll(motoRe))    motoSet.add(m[0].replace(/\s+/g, " ").trim());
+  }
+
+  function toLinks(set: Set<string>, shopLabel: string, shopQ: string): CaseLink[] {
+    const sorted = [...set].sort().slice(0, 8);
+    return [
+      ...sorted.map((m) => ({ label: m, href: `/collections/cases?q=${encodeURIComponent(m)}` })),
+      { label: `Shop all ${shopLabel} →`, href: `/collections/cases?q=${encodeURIComponent(shopQ)}` },
+    ];
+  }
+
+  return {
+    apple:    toLinks(iPhoneSet,  "Apple",    "iPhone"),
+    samsung:  toLinks(galaxySet,  "Samsung",  "Samsung"),
+    google:   toLinks(pixelSet,   "Google",   "Pixel"),
+    motorola: toLinks(motoSet,    "Motorola", "Motorola"),
+  };
+}
+
 export default function Header() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -217,6 +252,7 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [caseCols, setCaseCols] = useState<CaseCols | null>(null);
   const cartCount = useCartStore((s) => s.count);
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
@@ -234,6 +270,17 @@ export default function Header() {
     }
     document.addEventListener("mousedown", handleOutside);
     return () => document.removeEventListener("mousedown", handleOutside);
+  }, []);
+
+  // Fetch available case models from DB
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/products?category=Cases&limit=300`)
+      .then((r) => r.json())
+      .then((data) => {
+        const names: string[] = (data.products ?? []).map((p: { name: string }) => p.name);
+        setCaseCols(extractCaseModels(names));
+      })
+      .catch(() => {});
   }, []);
 
   const initials = user
@@ -303,15 +350,57 @@ export default function Header() {
 
               {/* Dropdown */}
               {openIndex === idx && (
-                "featured" in item && item.featured ? (
-                  /* Cases — wide multi-column */
+                "deviceMenu" in item && item.deviceMenu ? (
+                  /* Devices — category card mega menu */
                   <div
                     className="fixed left-5 right-5 mt-2 bg-white border border-gray-200 shadow-2xl rounded-2xl animate-dropdown-in z-50 overflow-hidden"
                     style={{ top: "calc(4rem + 8px)" }}
                   >
-                    <div className="overflow-x-auto">
+                    <div className="grid grid-cols-4 divide-x divide-gray-100">
+                      {deviceCategories.map((cat) => (
+                        <div key={cat.name} className="flex flex-col p-6 gap-4 hover:bg-gray-50/60 transition-colors">
+                          {/* Category header */}
+                          <Link href={cat.href} onClick={() => setOpenIndex(null)} className="flex flex-col items-center gap-3 group">
+                            <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center overflow-hidden group-hover:bg-primary/10 transition-colors">
+                              <Image src={cat.image} alt={cat.name} width={64} height={64} className="object-contain" />
+                            </div>
+                            <p className="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors">{cat.name}</p>
+                          </Link>
+                          {/* Brand links */}
+                          <ul className="space-y-2">
+                            {cat.brands.map((brand) => (
+                              <li key={brand.label}>
+                                <Link
+                                  href={brand.href}
+                                  onClick={() => setOpenIndex(null)}
+                                  className={`text-sm transition-colors block ${brand.label.startsWith("Shop all") ? "font-semibold text-primary hover:text-primary-hover mt-1" : "text-gray-500 hover:text-primary"}`}
+                                >
+                                  {brand.label}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : "featured" in item && item.featured ? (
+                  /* Cases — wide multi-column with dynamic DB models */
+                  <div
+                    className="fixed left-5 right-5 mt-2 bg-white border border-gray-200 shadow-2xl rounded-2xl animate-dropdown-in z-50 overflow-hidden"
+                    style={{ top: "calc(4rem + 8px)", maxHeight: "calc(100vh - 5rem)" }}
+                  >
+                    <div className="overflow-x-auto overflow-y-auto" style={{ maxHeight: "calc(100vh - 6rem)" }}>
                       <div className="flex gap-8 px-8 py-6 min-w-max">
-                        {item.columns.map((col) => (
+                        {(caseCols
+                          ? [
+                              { heading: "Apple",    links: caseCols.apple },
+                              { heading: "Samsung",  links: caseCols.samsung },
+                              { heading: "Google",   links: caseCols.google },
+                              { heading: "Motorola", links: caseCols.motorola },
+                            ].filter((col) => col.links.length > 1)
+                          : item.columns
+                        ).map((col) => (
                           <div key={col.heading} className="min-w-[140px]">
                             <p className="font-bold text-xs uppercase tracking-widest text-gray-400 mb-3">{col.heading}</p>
                             <ul className="space-y-2">
@@ -637,33 +726,54 @@ export default function Header() {
 
                 {mobileExpandedIndex === idx && (
                   <div className="pb-4 space-y-4">
-                    {item.columns.map((col) => (
-                      <div key={col.heading}>
-                        <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">{col.heading}</p>
-                        <ul className="space-y-1.5 pl-2">
-                          {col.links.map((link) => (
-                            <li key={link.label}>
-                              <Link
-                                href={link.href}
-                                className={`text-sm transition-colors ${link.label.startsWith("Shop all") ? "font-semibold text-primary" : "text-gray-600 hover:text-primary"}`}
-                                onClick={() => setMobileOpen(false)}
-                              >
-                                {link.label}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                        {"shopAll" in col && col.shopAll && (
-                          <Link
-                            href={col.shopAll as string}
-                            onClick={() => setMobileOpen(false)}
-                            className="mt-3 inline-flex items-center gap-1 px-5 py-2 bg-primary text-white text-sm font-semibold rounded-full hover:bg-primary-hover transition-colors"
-                          >
-                            Shop all
-                          </Link>
-                        )}
-                      </div>
-                    ))}
+                    {"deviceMenu" in item && item.deviceMenu ? (
+                      deviceCategories.map((cat) => (
+                        <div key={cat.name}>
+                          <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">{cat.name}</p>
+                          <ul className="space-y-1.5 pl-2">
+                            {cat.brands.map((brand) => (
+                              <li key={brand.label}>
+                                <Link
+                                  href={brand.href}
+                                  className={`text-sm transition-colors ${brand.label.startsWith("Shop all") ? "font-semibold text-primary" : "text-gray-600 hover:text-primary"}`}
+                                  onClick={() => setMobileOpen(false)}
+                                >
+                                  {brand.label}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))
+                    ) : (
+                      item.columns.map((col) => (
+                        <div key={col.heading}>
+                          <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">{col.heading}</p>
+                          <ul className="space-y-1.5 pl-2">
+                            {col.links.map((link) => (
+                              <li key={link.label}>
+                                <Link
+                                  href={link.href}
+                                  className={`text-sm transition-colors ${link.label.startsWith("Shop all") ? "font-semibold text-primary" : "text-gray-600 hover:text-primary"}`}
+                                  onClick={() => setMobileOpen(false)}
+                                >
+                                  {link.label}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                          {"shopAll" in col && col.shopAll && (
+                            <Link
+                              href={col.shopAll as string}
+                              onClick={() => setMobileOpen(false)}
+                              className="mt-3 inline-flex items-center gap-1 px-5 py-2 bg-primary text-white text-sm font-semibold rounded-full hover:bg-primary-hover transition-colors"
+                            >
+                              Shop all
+                            </Link>
+                          )}
+                        </div>
+                      ))
+                    )}
                   </div>
                 )}
               </div>

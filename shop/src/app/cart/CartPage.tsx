@@ -9,6 +9,7 @@ import { privateAxios } from "@/lib/axios";
 import { useAuthStore } from "@/store/authStore";
 import { stripePromise } from "@/lib/stripe";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { Loader2, X } from "lucide-react";
 
 interface PromoData {
@@ -32,7 +33,7 @@ const TRUST = [
 function CartRow({ item }: { item: CartItem }) {
   const { removeItem, updateQty } = useCartStore();
   const lineTotal = item.price * item.qty;
-  const saving    = item.originalPrice ? (item.originalPrice - item.price) * item.qty : 0;
+  const saving = item.originalPrice ? (item.originalPrice - item.price) * item.qty : 0;
 
   return (
     <div className="flex gap-5 py-6 border-b border-gray-100 last:border-0">
@@ -97,10 +98,10 @@ interface StripeCardFormProps {
 }
 
 function StripeCardForm({ items, promoCode, shippingAddress, total, onClearCart, onBack }: StripeCardFormProps) {
-  const stripe   = useStripe();
+  const stripe = useStripe();
   const elements = useElements();
-  const [loading, setLoading]           = useState(false);
-  const [error,   setError]             = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [successOrder, setSuccessOrder] = useState<string | null>(null);
 
   async function handlePay() {
@@ -140,7 +141,7 @@ function StripeCardForm({ items, promoCode, shippingAddress, total, onClearCart,
         items: items.map((i) => ({ productId: i.productId, slug: i.slug, name: i.name, brand: i.brand, image: i.image, price: i.price, originalPrice: i.originalPrice, color: i.color, qty: i.qty })),
         promoCode,
         shippingAddress,
-        paymentMethod:   "stripe",
+        paymentMethod: "stripe",
         paymentIntentId: paymentIntent.id,
       });
 
@@ -249,7 +250,7 @@ interface CheckoutForm {
   name: string; phone: string; street: string; city: string; state: string; zip: string;
 }
 
-type PaymentMethod = "stripe" | "cod" | null;
+type PaymentMethod = "stripe" | "paypal" | "cod" | null;
 type Step = "shipping" | "payment";
 
 function CheckoutModal({
@@ -271,8 +272,10 @@ function CheckoutModal({
     phone: "", street: "", city: "", state: "", zip: "",
   });
 
-  const [codLoading, setCodLoading]       = useState(false);
-  const [codSuccess, setCodSuccess]       = useState<string | null>(null);
+  const [codLoading, setCodLoading] = useState(false);
+  const [codSuccess, setCodSuccess] = useState<string | null>(null);
+  const [paypalSuccess, setPaypalSuccess] = useState<string | null>(null);
+  const [paypalError, setPaypalError] = useState("");
   const [error, setError] = useState("");
 
   const setField = (k: keyof CheckoutForm, v: string) => setForm((p) => ({ ...p, [k]: v }));
@@ -405,8 +408,8 @@ function CheckoutModal({
                     onClick={() => setPaymentMethod("stripe")}
                     className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border-2 border-gray-100 hover:border-primary hover:bg-primary/5 transition-all group"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
-                      <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5z" /></svg>
+                    <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0 overflow-hidden">
+                      <Image src="/payment/credit-card.png" alt="Credit Card" width={32} height={32} className="object-contain" />
                     </div>
                     <div className="text-left">
                       <p className="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors">Credit / Debit Card</p>
@@ -415,18 +418,34 @@ function CheckoutModal({
                     <svg className="w-4 h-4 text-gray-300 group-hover:text-primary ml-auto transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
                   </button>
 
+                  {/* PayPal */}
                   <button
-                    onClick={() => setPaymentMethod("cod")}
-                    className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border-2 border-gray-100 hover:border-primary hover:bg-primary/5 transition-all group"
+                    onClick={() => setPaymentMethod("paypal")}
+                    className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border-2 border-gray-100 hover:border-[#0070ba] hover:bg-[#0070ba]/5 transition-all group"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-                      <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75" /></svg>
+                    <div className="w-10 h-10 rounded-xl bg-[#e8f4fd] flex items-center justify-center shrink-0 overflow-hidden">
+                      <Image src="/payment/paypal-icon.png" alt="PayPal" width={32} height={32} className="object-contain" />
                     </div>
                     <div className="text-left">
-                      <p className="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors">Cash on Delivery</p>
+                      <p className="text-sm font-bold text-gray-900 group-hover:text-[#0070ba] transition-colors">PayPal</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Fast & secure PayPal checkout</p>
+                    </div>
+                    <svg className="w-4 h-4 text-gray-300 group-hover:text-[#0070ba] ml-auto transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                  </button>
+
+                  {/* Cash on Delivery */}
+                  <button
+                    onClick={() => setPaymentMethod("cod")}
+                    className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border-2 border-gray-100 hover:border-[#FFD992] hover:bg-[#ffd99245] transition-all group"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 overflow-hidden">
+                      <Image src="/payment/cash-on-delivery.png" alt="Cash on Delivery" width={32} height={32} className="object-contain" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-bold text-gray-900 transition-colors">Cash on Delivery</p>
                       <p className="text-xs text-gray-400 mt-0.5">Pay when your order arrives</p>
                     </div>
-                    <svg className="w-4 h-4 text-gray-300 group-hover:text-primary ml-auto transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    <svg className="w-4 h-4 text-gray-300 ml-auto transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
                   </button>
                 </>
               )}
@@ -443,6 +462,95 @@ function CheckoutModal({
                     onBack={() => setPaymentMethod(null)}
                   />
                 </Elements>
+              )}
+
+              {/* ── PayPal ── */}
+              {paymentMethod === "paypal" && (
+                <div className="space-y-4">
+                  {paypalSuccess ? (
+                    <div className="flex flex-col items-center text-center py-4 gap-5" style={{ animation: "fadeIn 0.4s ease" }}>
+                      <div className="relative flex items-center justify-center">
+                        <div className="absolute w-20 h-20 rounded-full bg-emerald-400/20" style={{ animation: "ring 1.2s ease-out infinite" }} />
+                        <div className="w-20 h-20 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-200" style={{ animation: "checkPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both" }}>
+                          <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-lg font-extrabold text-gray-900">Payment Successful!</p>
+                        <p className="text-sm text-gray-400 mt-1">Paid via PayPal</p>
+                        <p className="text-xs font-mono font-bold text-primary mt-2 bg-primary/8 px-3 py-1.5 rounded-full inline-block">
+                          #{paypalSuccess}
+                        </p>
+                      </div>
+                      <div className="flex flex-col gap-2.5 w-full pt-1">
+                        <Link
+                          href={`/track-order/${paypalSuccess}`}
+                          className="w-full py-3 bg-primary text-white font-bold rounded-full hover:bg-primary-hover transition-colors text-sm text-center flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
+                          Track Order
+                        </Link>
+                        <Link
+                          href="/my-orders"
+                          className="w-full py-3 bg-gray-50 border border-gray-200 text-gray-700 font-bold rounded-full hover:bg-gray-100 transition-colors text-sm text-center flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                          My Orders
+                        </Link>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="bg-[#e8f4fd] border border-[#0070ba]/20 rounded-xl px-4 py-3 text-sm text-[#003087]">
+                        You will be charged <strong>${total.toFixed(2)}</strong> via PayPal.
+                      </div>
+
+                      {paypalError && (
+                        <div className="px-4 py-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600">{paypalError}</div>
+                      )}
+
+                      <div className="border-t border-gray-100 pt-3 flex items-center justify-between">
+                        <span className="text-sm font-bold text-gray-900">Total</span>
+                        <span className="text-lg font-extrabold text-gray-900">${total.toFixed(2)}</span>
+                      </div>
+
+                      <PayPalButtons
+                        style={{ layout: "vertical", color: "gold", shape: "pill", label: "pay" }}
+                        createOrder={async () => {
+                          setPaypalError("");
+                          const res = await privateAxios.post("/payments/paypal/create-order", {
+                            items: items.map((i) => ({ productId: i.productId, slug: i.slug, name: i.name, brand: i.brand, image: i.image, price: i.price, originalPrice: i.originalPrice, color: i.color, qty: i.qty })),
+                            promoCode,
+                          });
+                          return res.data.orderID;
+                        }}
+                        onApprove={async (data) => {
+                          setPaypalError("");
+                          try {
+                            const res = await privateAxios.post("/payments/paypal/capture-order", {
+                              orderID: data.orderID,
+                              items: items.map((i) => ({ productId: i.productId, slug: i.slug, name: i.name, brand: i.brand, image: i.image, price: i.price, originalPrice: i.originalPrice, color: i.color, qty: i.qty })),
+                              promoCode,
+                              shippingAddress: { ...form },
+                            });
+                            onSuccess("__stripe__"); // clear cart, no redirect
+                            setPaypalSuccess(res.data.order.orderNumber);
+                          } catch (err: unknown) {
+                            const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+                            setPaypalError(msg || "Failed to complete PayPal payment. Please try again.");
+                          }
+                        }}
+                        onError={() => setPaypalError("PayPal payment failed. Please try again.")}
+                      />
+
+                      <button type="button" onClick={() => { setPaymentMethod(null); setPaypalError(""); }} className="w-full text-sm text-gray-400 hover:text-gray-600 transition-colors font-medium">
+                        ← Back
+                      </button>
+                    </>
+                  )}
+                </div>
               )}
 
               {/* ── Cash on Delivery ── */}
@@ -537,16 +645,16 @@ export default function CartPage() {
   const [showCheckout, setShowCheckout] = useState(false);
 
   // Promo state
-  const [promoInput,   setPromoInput]   = useState("");
-  const [promoData,    setPromoData]    = useState<PromoData | null>(null);
-  const [promoError,   setPromoError]   = useState("");
+  const [promoInput, setPromoInput] = useState("");
+  const [promoData, setPromoData] = useState<PromoData | null>(null);
+  const [promoError, setPromoError] = useState("");
   const [promoLoading, setPromoLoading] = useState(false);
 
-  const subtotal  = items.reduce((s, i) => s + i.price * i.qty, 0);
-  const savings   = items.reduce((s, i) => s + ((i.originalPrice ?? i.price) - i.price) * i.qty, 0);
-  const shipping  = subtotal >= 50 || subtotal === 0 ? 0 : 4.99;
-  const discount  = promoData?.discountAmount ?? 0;
-  const total     = Math.max(0, subtotal + shipping - discount);
+  const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
+  const savings = items.reduce((s, i) => s + ((i.originalPrice ?? i.price) - i.price) * i.qty, 0);
+  const shipping = subtotal >= 50 || subtotal === 0 ? 0 : 4.99;
+  const discount = promoData?.discountAmount ?? 0;
+  const total = Math.max(0, subtotal + shipping - discount);
   const itemCount = items.reduce((s, i) => s + i.qty, 0);
 
   async function applyPromo() {
@@ -729,12 +837,14 @@ export default function CartPage() {
       )}
 
       {showCheckout && (
-        <CheckoutModal
-          subtotal={subtotal} shipping={shipping} discount={discount} total={total} items={items}
-          promoCode={promoData?.code ?? ""}
-          onClose={() => setShowCheckout(false)}
-          onSuccess={handleOrderSuccess}
-        />
+        <PayPalScriptProvider options={{ clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!, currency: "USD", intent: "capture" }}>
+          <CheckoutModal
+            subtotal={subtotal} shipping={shipping} discount={discount} total={total} items={items}
+            promoCode={promoData?.code ?? ""}
+            onClose={() => setShowCheckout(false)}
+            onSuccess={handleOrderSuccess}
+          />
+        </PayPalScriptProvider>
       )}
     </div>
   );

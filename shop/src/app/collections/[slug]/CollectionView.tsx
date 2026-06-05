@@ -203,12 +203,14 @@ function ProductCard({ product }: { product: Product }) {
           {product.name}
         </Link>
 
-        <div className="flex items-center gap-1.5">
-          <Stars rating={product.rating} />
-          <span className="text-[11px] text-gray-400">{product.rating}</span>
-          <span className="text-[11px] text-gray-300">·</span>
-          <span className="text-[11px] text-gray-400">{product.reviews.toLocaleString()} reviews</span>
-        </div>
+        {product.reviews > 0 && (
+          <div className="flex items-center gap-1.5">
+            <Stars rating={product.rating} />
+            <span className="text-[11px] text-gray-400">{product.rating}</span>
+            <span className="text-[11px] text-gray-300">·</span>
+            <span className="text-[11px] text-gray-400">{product.reviews.toLocaleString()} reviews</span>
+          </div>
+        )}
 
         {product.colors.length > 0 && (
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -562,7 +564,7 @@ export default function CollectionView({ slug }: { slug: string }) {
     return () => clearTimeout(t);
   }, []);
 
-  // Read URL params once for initial state
+  // URL params
   const urlQ      = searchParams.get("q") ?? "";
   const urlBrand  = searchParams.get("brand") ?? "";
   const urlMaxP   = searchParams.get("maxPrice");
@@ -579,6 +581,18 @@ export default function CollectionView({ slug }: { slug: string }) {
   const [minRating,      setMinRating]      = useState(0);
   const [inStockOnly,    setInStockOnly]    = useState(false);
   const [sortBy,         setSortBy]         = useState("newest");
+
+  // Sync filter state when URL params change (header dropdown navigation)
+  useEffect(() => {
+    setSearchQuery(urlQ);
+    setSelectedBrands(urlBrand ? [urlBrand] : []);
+    setSelectedBadges(urlBadge ? [urlBadge] : []);
+    setMinPrice(urlMinP ? Number(urlMinP) : 0);
+    setSelectedColors([]);
+    setMinRating(0);
+    setInStockOnly(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlQ, urlBrand, urlBadge, urlMinP]);
   const [gridCols,       setGridCols]       = useState<2 | 3 | 4>(3);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [page, setPage] = useState(1);

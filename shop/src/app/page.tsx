@@ -163,10 +163,12 @@ function ProductCard({ item, showBadge = true }: { item: Product; showBadge?: bo
         <Link href={`/products/${item.slug}`} className="text-sm font-semibold text-gray-900 hover:text-primary transition-colors leading-snug line-clamp-2 flex-1">
           {item.name}
         </Link>
-        <div className="flex items-center gap-1.5">
-          <Stars rating={item.rating} />
-          <span className="text-[11px] text-gray-400">{item.rating} · {item.reviews.toLocaleString()}</span>
-        </div>
+        {item.reviews > 0 && (
+          <div className="flex items-center gap-1.5">
+            <Stars rating={item.rating} />
+            <span className="text-[11px] text-gray-400">{item.rating} · {item.reviews.toLocaleString()}</span>
+          </div>
+        )}
         <div className="border-t border-gray-100 pt-2 flex items-center justify-between gap-2">
           <div>
             <p className="text-base font-extrabold text-gray-900 leading-tight">${item.price.toFixed(2)}</p>
@@ -198,10 +200,12 @@ function BestsellerCard({ item }: { item: Product }) {
       <div className="flex-1 min-w-0">
         <p className="text-[10px] font-bold uppercase tracking-widest text-primary truncate">{item.brand}</p>
         <p className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2 group-hover:text-primary transition-colors">{item.name}</p>
-        <div className="mt-1 flex items-center gap-2">
-          <Stars rating={item.rating} />
-          <span className="text-[11px] text-gray-400">{item.reviews.toLocaleString()} units sold</span>
-        </div>
+        {item.reviews > 0 && (
+          <div className="mt-1 flex items-center gap-2">
+            <Stars rating={item.rating} />
+            <span className="text-[11px] text-gray-400">{item.reviews.toLocaleString()} units sold</span>
+          </div>
+        )}
       </div>
       {/* Price */}
       <div className="shrink-0 text-right">

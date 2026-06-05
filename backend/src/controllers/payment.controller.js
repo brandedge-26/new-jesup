@@ -1,9 +1,18 @@
 import Stripe from "stripe";
+import paypalSDK from "@paypal/checkout-server-sdk";
 import Product from "../models/Product.js";
 import Order from "../models/Order.js";
 import Promo from "../models/Promo.js";
 import { ENV } from "../config/env.js";
 import { findValidPromo, calcDiscount } from "./promo.controller.js";
+
+// ── PayPal client setup ───────────────────────────────────────────────────────
+function getPayPalClient() {
+    const env = ENV.PAYPAL_MODE === "live"
+        ? new paypalSDK.core.LiveEnvironment(ENV.PAYPAL_CLIENT_ID, ENV.PAYPAL_SECRET)
+        : new paypalSDK.core.SandboxEnvironment(ENV.PAYPAL_CLIENT_ID, ENV.PAYPAL_SECRET);
+    return new paypalSDK.core.PayPalHttpClient(env);
+}
 
 const stripe = new Stripe(ENV.STRIPE_SECRET_KEY, { apiVersion: "2024-06-20" });
 
@@ -130,4 +139,93 @@ export const handleWebhookController = async (req, res) => {
     }
 
     res.json({ received: true });
+};
+
+// ── PAYPAL CREATE ORDER ───────────────────────────────────────────────────────
+export const createPayPalOrder = async (req, res, next) => {
+    try {
+        if (!ENV.PAYPAL_CLIENT_ID || !ENV.PAYPAL_SECRET) {
+            return res.status(503).json({ message: "PayPal is not configured." });
+        }
+
+        const { items, promoCode } = req.body;
+        const { total } = await verifyCartAndCalcTotal(items, promoCode);
+
+        const client = getPayPalClient();
+        const request = new paypalSDK.orders.OrdersCreateRequest();
+        request.prefer("return=minimal");
+        request.requestBody({
+            intent: "CAPTURE",
+            purchase_units: [{
+                amount: {
+                    currency_code: "USD",
+                    value: total.toFixed(2),
+                },
+                description: `Jesup Shop Order — ${items.length} item(s)`,
+            }],
+        });
+
+        const response = await client.execute(request);
+        res.json({ orderID: response.result.id });
+    } catch (err) {
+        next(err);
+    }
+};
+
+// ── PAYPAL CAPTURE ORDER ──────────────────────────────────────────────────────
+export const capturePayPalOrder = async (req, res, next) => {
+    try {
+        const { orderID, items, promoCode, shippingAddress } = req.body;
+
+        if (!orderID) return res.status(400).json({ message: "Missing PayPal orderID." });
+
+        // Capture payment with PayPal
+        const client = getPayPalClient();
+        const request = new paypalSDK.orders.OrdersCaptureRequest(orderID);
+        request.requestBody({});
+
+        const capture = await client.execute(request);
+        const captureStatus = capture.result.status;
+
+        if (captureStatus !== "COMPLETED") {
+            return res.status(400).json({ message: `PayPal capture failed: ${captureStatus}` });
+        }
+
+        // Server-side verify cart & calculate total
+        const { verifiedItems, subtotal, shipping, discount, appliedPromoCode, promoId, total } =
+            await verifyCartAndCalcTotal(items, promoCode);
+
+        // Create order in DB
+        const order = await Order.create({
+            userId:          req.user._id,
+            items:           verifiedItems,
+            subtotal,
+            shipping,
+            discount,
+            promoCode:       appliedPromoCode,
+            total,
+            shippingAddress,
+            paymentMethod:   "paypal",
+            paymentStatus:   "paid",
+            paymentIntentId: orderID,
+            status:          "Processing",
+        });
+
+        // Deduct stock
+        for (const item of verifiedItems) {
+            await Product.findOneAndUpdate(
+                { slug: item.slug },
+                { $inc: { stock: -item.qty, revenue: item.price * item.qty } }
+            );
+        }
+
+        // Use promo
+        if (promoId) {
+            await Promo.findByIdAndUpdate(promoId, { $inc: { usedCount: 1 } });
+        }
+
+        res.json({ order: { orderNumber: order.orderNumber } });
+    } catch (err) {
+        next(err);
+    }
 };

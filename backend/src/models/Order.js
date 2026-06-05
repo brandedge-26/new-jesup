@@ -45,7 +45,7 @@ const orderSchema = new mongoose.Schema(
             zip:    { type: String, required: true },
         },
 
-        paymentMethod:   { type: String, enum: ["stripe", "cod"], default: "cod" },
+        paymentMethod:   { type: String, enum: ["stripe", "cod", "paypal"], default: "cod" },
         paymentStatus:   { type: String, enum: ["pending", "paid", "failed"], default: "pending" },
         paymentIntentId: { type: String, default: "" },
 

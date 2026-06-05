@@ -106,10 +106,12 @@ function ProductCard({ item }: { item: Product }) {
         <Link href={href} className="text-sm font-semibold text-gray-900 hover:text-primary transition-colors leading-snug line-clamp-2 flex-1">
           {item.name}
         </Link>
-        <div className="flex items-center gap-1.5">
-          <Stars rating={item.rating} />
-          <span className="text-[11px] text-gray-400">{item.rating} · {item.reviews.toLocaleString()}</span>
-        </div>
+        {item.reviews > 0 && (
+          <div className="flex items-center gap-1.5">
+            <Stars rating={item.rating} />
+            <span className="text-[11px] text-gray-400">{item.rating} · {item.reviews.toLocaleString()}</span>
+          </div>
+        )}
         <div className="border-t border-gray-100 pt-2 flex items-center justify-between gap-2">
           <div>
             <p className="text-base font-extrabold text-gray-900 leading-tight">${item.price.toFixed(2)}</p>
