@@ -55,15 +55,15 @@ function ConfirmModal({ count, onConfirm, onCancel, loading }: {
 }
 
 export default function ReviewsPage() {
-  const [reviews,      setReviews]      = useState<Review[]>([]);
-  const [total,        setTotal]        = useState(0);
-  const [totalPages,   setTotalPages]   = useState(1);
-  const [loading,      setLoading]      = useState(true);
-  const [error,        setError]        = useState("");
-  const [page,         setPage]         = useState(1);
-  const [selected,     setSelected]     = useState<Set<string>>(new Set());
-  const [showConfirm,  setShowConfirm]  = useState(false);
-  const [bulkLoading,  setBulkLoading]  = useState(false);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [bulkLoading, setBulkLoading] = useState(false);
 
   const fetchReviews = useCallback(async (p = page) => {
     setLoading(true);

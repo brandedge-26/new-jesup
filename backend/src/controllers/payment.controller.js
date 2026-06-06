@@ -229,3 +229,101 @@ export const capturePayPalOrder = async (req, res, next) => {
         next(err);
     }
 };
+
+// ── PAYPAL WEBHOOK ────────────────────────────────────────────────────────────
+const PAYPAL_BASE = () =>
+    ENV.PAYPAL_MODE === "live"
+        ? "https://api-m.paypal.com"
+        : "https://api-m.sandbox.paypal.com";
+
+async function getPayPalAccessToken() {
+    const creds = Buffer.from(`${ENV.PAYPAL_CLIENT_ID}:${ENV.PAYPAL_SECRET}`).toString("base64");
+    const res = await fetch(`${PAYPAL_BASE()}/v1/oauth2/token`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded", "Authorization": `Basic ${creds}` },
+        body:    "grant_type=client_credentials",
+    });
+    const data = await res.json();
+    return data.access_token;
+}
+
+async function verifyPayPalWebhookSignature(headers, body) {
+    // If PAYPAL_WEBHOOK_ID not set — skip verification (dev mode)
+    if (!ENV.PAYPAL_WEBHOOK_ID) {
+        console.warn("⚠️  PAYPAL_WEBHOOK_ID not set — skipping signature verification.");
+        return true;
+    }
+    try {
+        const token = await getPayPalAccessToken();
+        const res = await fetch(`${PAYPAL_BASE()}/v1/notifications/verify-webhook-signature`, {
+            method:  "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body: JSON.stringify({
+                auth_algo:         headers["paypal-auth-algo"],
+                cert_url:          headers["paypal-cert-url"],
+                transmission_id:   headers["paypal-transmission-id"],
+                transmission_sig:  headers["paypal-transmission-sig"],
+                transmission_time: headers["paypal-transmission-time"],
+                webhook_id:        ENV.PAYPAL_WEBHOOK_ID,
+                webhook_event:     body,
+            }),
+        });
+        const data = await res.json();
+        return data.verification_status === "SUCCESS";
+    } catch (err) {
+        console.error("PayPal webhook verification error:", err.message);
+        return false;
+    }
+}
+
+export const handlePayPalWebhook = async (req, res) => {
+    try {
+        const event    = req.body;
+        const resource = event.resource ?? {};
+
+        // Verify signature
+        const valid = await verifyPayPalWebhookSignature(req.headers, event);
+        if (!valid) {
+            console.error("PayPal webhook: invalid signature");
+            return res.status(400).json({ error: "Invalid PayPal webhook signature." });
+        }
+
+        switch (event.event_type) {
+
+            // Payment successfully captured — mark order paid (backup safety net)
+            case "PAYMENT.CAPTURE.COMPLETED": {
+                const paypalOrderId = resource.supplementary_data?.related_ids?.order_id;
+                if (paypalOrderId) {
+                    await Order.findOneAndUpdate(
+                        { paymentIntentId: paypalOrderId, paymentStatus: { $ne: "paid" } },
+                        { paymentStatus: "paid" }
+                    );
+                }
+                break;
+            }
+
+            // Payment denied or reversed — mark order failed
+            case "PAYMENT.CAPTURE.DENIED":
+            case "PAYMENT.CAPTURE.REVERSED":
+            case "PAYMENT.CAPTURE.REFUNDED": {
+                const paypalOrderId = resource.supplementary_data?.related_ids?.order_id;
+                if (paypalOrderId) {
+                    await Order.findOneAndUpdate(
+                        { paymentIntentId: paypalOrderId },
+                        { paymentStatus: "failed" }
+                    );
+                }
+                break;
+            }
+
+            default:
+                // Ignore all other events
+                break;
+        }
+
+        res.json({ received: true });
+    } catch (err) {
+        console.error("PayPal webhook error:", err.message);
+        res.status(500).json({ error: "Webhook processing failed." });
+    }
+};

@@ -21,7 +21,7 @@ interface Order {
     promoCode?: string;
     total: number;
     status: OrderStatus;
-    paymentMethod: "stripe" | "cod";
+    paymentMethod: "stripe" | "paypal" | "cod";
     paymentStatus: "pending" | "paid" | "failed";
     paymentIntentId?: string;
     shippingAddress: { name: string; phone?: string; street: string; city: string; state: string; zip: string };
@@ -49,20 +49,31 @@ function StatusBadge({ status }: { status: OrderStatus }) {
     );
 }
 
-function PaymentBadge({ method, status }: { method: "stripe" | "cod"; status: "pending" | "paid" | "failed" }) {
-    const isCard = method === "stripe";
-    const isPaid = status === "paid";
-    const isFailed = status === "failed";
+function PaymentBadge({ method, status }: { method: "stripe" | "paypal" | "cod"; status: "pending" | "paid" | "failed" }) {
+    const isCard    = method === "stripe";
+    const isPayPal  = method === "paypal";
+    const isPaid    = status === "paid";
+    const isFailed  = status === "failed";
+
+    const badgeCls = isCard
+        ? "bg-indigo-50 text-indigo-700 border-indigo-200"
+        : isPayPal
+            ? "bg-blue-50 text-blue-700 border-blue-200"
+            : "bg-gray-50 text-gray-600 border-gray-200";
+
+    const label = isCard ? "Card" : isPayPal ? "PayPal" : "COD";
 
     return (
         <div className="flex flex-col gap-1">
-            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border w-fit ${isCard ? "bg-indigo-50 text-indigo-700 border-indigo-200" : "bg-gray-50 text-gray-600 border-gray-200"}`}>
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border w-fit ${badgeCls}`}>
                 {isCard ? (
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5z" /></svg>
+                ) : isPayPal ? (
+                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.59 3.025-2.566 6.082-8.558 6.082H9.824l-1.175 7.45h3.546l.943-5.985h2.19c4.717 0 7.353-2.375 8.234-7.065a5.76 5.76 0 0 0-.34-.195z"/></svg>
                 ) : (
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75" /></svg>
                 )}
-                {isCard ? "Card" : "COD"}
+                {label}
             </span>
             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border w-fit ${isPaid ? "bg-emerald-50 text-emerald-700 border-emerald-200" : isFailed ? "bg-red-50 text-red-600 border-red-200" : "bg-amber-50 text-amber-700 border-amber-200"}`}>
                 {isPaid ? "Paid" : isFailed ? "Failed" : "Pending"}
@@ -267,7 +278,7 @@ export default function OrdersPage() {
                                         </td>
                                         <td className="px-5 py-4 text-gray-500 whitespace-nowrap text-xs">{formatDate(o.createdAt)}</td>
                                         <td className="px-5 py-4"><StatusBadge status={o.status} /></td>
-                                        <td className="px-5 py-4"><PaymentBadge method={o.paymentMethod ?? "cod"} status={o.paymentStatus ?? "pending"} /></td>
+                                        <td className="px-5 py-4"><PaymentBadge method={o.paymentMethod ?? "stripe"} status={o.paymentStatus ?? "pending"} /></td>
                                         <td className="px-5 py-4 font-extrabold text-gray-900 whitespace-nowrap">${o.total.toFixed(2)}</td>
                                         <td className="px-5 py-4">
                                             <button onClick={() => setSelected(o)} className="opacity-0 group-hover:opacity-100 transition-opacity text-xs font-semibold text-primary hover:text-primary-hover">
@@ -366,7 +377,7 @@ export default function OrdersPage() {
                             <div className="rounded-xl border border-gray-100 px-4 py-3 text-sm space-y-2">
                                 <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Payment</p>
                                 <div className="flex items-center justify-between">
-                                    <PaymentBadge method={selected.paymentMethod ?? "cod"} status={selected.paymentStatus ?? "pending"} />
+                                    <PaymentBadge method={selected.paymentMethod ?? "stripe"} status={selected.paymentStatus ?? "pending"} />
                                     {selected.paymentIntentId && (
                                         <span className="text-[10px] font-mono text-gray-400 truncate max-w-[160px]">{selected.paymentIntentId}</span>
                                     )}

@@ -4,6 +4,7 @@ import {
     handleWebhookController,
     createPayPalOrder,
     capturePayPalOrder,
+    handlePayPalWebhook,
 } from "../controllers/payment.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 
@@ -20,3 +21,6 @@ paymentRoutes.post("/paypal/create-order", authMiddleware, createPayPalOrder);
 
 // PayPal — Capture order (payment confirmed)
 paymentRoutes.post("/paypal/capture-order", authMiddleware, capturePayPalOrder);
+
+// PayPal — Webhook (no auth, PayPal calls this directly)
+paymentRoutes.post("/paypal/webhook", handlePayPalWebhook);

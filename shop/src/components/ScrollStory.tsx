@@ -104,6 +104,18 @@ export default function ScrollStory() {
                   }}
                   aria-hidden={!isActive}
                 >
+                  {/* Watermark image — mobile only (hidden on lg+) */}
+                  <div className="lg:hidden absolute right-0 top-1/2 -translate-y-1/2 w-48 h-48 pointer-events-none select-none opacity-[0.12]">
+                    <Image
+                      src={step.image}
+                      alt=""
+                      fill
+                      className="object-contain"
+                      sizes="192px"
+                      aria-hidden
+                    />
+                  </div>
+
                   {/* Tag */}
                   <span
                     className="inline-block text-[10px] font-bold uppercase tracking-widest rounded-full px-3 py-1 w-fit mb-4"
