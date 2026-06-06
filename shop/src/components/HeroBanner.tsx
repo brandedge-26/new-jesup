@@ -4,42 +4,80 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-const slides = [
+interface Slide {
+  desktop: string;
+  mobile: string;
+  badge: string;
+  title: string;
+  body: string;
+  cta1: { label: string; href: string };
+  cta2: { label: string; href: string };
+}
+
+const FALLBACK_SLIDES: Slide[] = [
   {
     desktop: "/home/banner/accessori-desktop-banner.png",
-    mobile: "/home/banner/accessori-mobile-banner.jpeg",
-    badge: "New Collection",
-    title: "Gear Up.\nStay Protected.",
-    body: "Premium cases, screen protectors & chargers — expert-picked for every device.",
-    cta1: { label: "Shop Collections", href: "/collections" },
-    cta2: { label: "View Deals", href: "/collections/deals" },
+    mobile:  "/home/banner/accessori-mobile-banner.jpeg",
+    badge:   "New Collection",
+    title:   "Gear Up.\nStay Protected.",
+    body:    "Premium cases, screen protectors & chargers — expert-picked for every device.",
+    cta1:    { label: "Shop Collections", href: "/collections" },
+    cta2:    { label: "View Deals",       href: "/collections/deals" },
   },
   {
     desktop: "/home/banner/game-desktop-banner.jpeg",
-    mobile: "/home/banner/game-mobile-banner.jpeg",
-    badge: "For Gamers",
-    title: "Level Up\nYour Setup.",
-    body: "Controllers, grips & accessories built to give you the edge you need.",
-    cta1: { label: "Shop Now", href: "/collections" },
-    cta2: { label: "Browse All", href: "/collections/deals" },
+    mobile:  "/home/banner/game-mobile-banner.jpeg",
+    badge:   "For Gamers",
+    title:   "Level Up\nYour Setup.",
+    body:    "Controllers, grips & accessories built to give you the edge you need.",
+    cta1:    { label: "Shop Now",   href: "/collections" },
+    cta2:    { label: "Browse All", href: "/collections/deals" },
   },
   {
     desktop: "/home/banner/heapphone-desktop-banner.jpeg",
-    mobile: "/home/banner/headphone-mobile-banner.jpeg",
-    badge: "Top Audio Picks",
-    title: "Sound Like\nNever Before.",
-    body: "Earbuds & over-ear headphones handpicked for clarity, comfort & deep bass.",
-    cta1: { label: "Shop Audio", href: "/collections/audio" },
-    cta2: { label: "View Deals", href: "/collections/deals" },
+    mobile:  "/home/banner/headphone-mobile-banner.jpeg",
+    badge:   "Top Audio Picks",
+    title:   "Sound Like\nNever Before.",
+    body:    "Earbuds & over-ear headphones handpicked for clarity, comfort & deep bass.",
+    cta1:    { label: "Shop Audio", href: "/collections/audio" },
+    cta2:    { label: "View Deals", href: "/collections/deals" },
   },
 ];
 
 const INTERVAL_MS = 5000;
 
 export default function HeroBanner() {
+  const [slides, setSlides] = useState<Slide[]>(FALLBACK_SLIDES);
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Fetch banners from API — fallback to hardcoded if empty or error
+  useEffect(() => {
+    const API = process.env.NEXT_PUBLIC_API_URL;
+    if (!API) return;
+    fetch(`${API}/banners`)
+      .then((r) => r.json())
+      .then((data: Array<{
+        desktopImage: string; mobileImage: string; badge: string;
+        title: string; body: string;
+        cta1Label: string; cta1Href: string;
+        cta2Label: string; cta2Href: string;
+      }>) => {
+        if (!Array.isArray(data) || data.length === 0) return;
+        setSlides(data.map((b) => ({
+          desktop: b.desktopImage,
+          mobile:  b.mobileImage || b.desktopImage,
+          badge:   b.badge,
+          title:   b.title,
+          body:    b.body,
+          cta1:    { label: b.cta1Label, href: b.cta1Href },
+          cta2:    { label: b.cta2Label, href: b.cta2Href },
+        })));
+        setActive(0);
+      })
+      .catch(() => { /* keep fallback */ });
+  }, []);
 
   const goTo = useCallback((idx: number) => {
     setActive(idx);

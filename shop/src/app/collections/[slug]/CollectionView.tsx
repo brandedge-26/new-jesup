@@ -18,6 +18,7 @@ interface _BackendProduct {
   image?: string; badge?: string; inStock?: boolean;
   slug?: string; colors?: string[];
   variants?: _BPVariant[];
+  variantImages?: string[];
 }
 
 const SLUG_TO_CATEGORY: Record<string, string> = {
@@ -45,6 +46,7 @@ function mapBackendProduct(p: _BackendProduct): Product {
     badge:         p.badge as Product["badge"],
     inStock:       p.inStock ?? true,
     slug:          p.slug || p._id,
+    variantImages: p.variantImages ?? [],
   };
 }
 
@@ -139,15 +141,27 @@ function ProductCard({ product }: { product: Product }) {
       {/* ── Image ── */}
       <div className="relative aspect-square bg-gray-50 overflow-hidden">
         <Link href={`/products/${product.slug}`} className="block w-full h-full">
+          {/* Main image */}
           {product.image.startsWith("data:") ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+            <img src={product.image} alt={product.name} className="w-full h-full object-contain" />
           ) : (
             <Image
               src={product.image}
               alt={product.name}
               fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              className={`object-contain transition-opacity duration-300 ${product.variantImages?.[0] ? "group-hover:opacity-0" : ""}`}
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            />
+          )}
+
+          {/* Variant image — fades in on hover */}
+          {product.variantImages?.[0] && (
+            <Image
+              src={product.variantImages[0]}
+              alt={`${product.name} variant`}
+              fill
+              className="object-contain opacity-0 group-hover:opacity-100 transition-opacity duration-300"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             />
           )}

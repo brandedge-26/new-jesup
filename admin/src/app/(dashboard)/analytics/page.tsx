@@ -97,7 +97,7 @@ function WeeklyBarChart({ data, loading }: { data: WeeklyDay[]; loading: boolean
             return (
               <div key={d.date} className="flex-1 flex flex-col items-center gap-1.5">
                 <span className="text-[11px] font-semibold text-gray-700 hidden sm:block">
-                  {d.amount >= 1000 ? `$${(d.amount / 1000).toFixed(1)}k` : d.amount > 0 ? `$${d.amount}` : ""}
+                  {d.amount >= 1000 ? `$${(d.amount / 1000).toFixed(1)}k` : d.amount > 0 ? `$${d.amount.toFixed(2)}` : ""}
                 </span>
                 <div className="w-full flex items-end" style={{ height: "100px" }}>
                   <div

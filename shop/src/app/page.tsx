@@ -480,6 +480,111 @@ export default async function Home() {
         {/* ── Scroll Story ── */}
         <ScrollStory />
 
+        {/* ── Why Jesup Shop ── */}
+        <div className="mx-auto max-w-screen-xl px-3 sm:px-4 lg:px-6 py-16">
+          <div className="text-center mb-10">
+            <span className="inline-block text-[11px] font-bold uppercase tracking-widest text-primary bg-primary/10 rounded-full px-3 py-1 mb-3">
+              Why Jesup
+            </span>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 leading-tight">
+              We do things better at Jesup Wireless
+            </h2>
+            <p className="mt-3 text-gray-500 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
+              Our accessories are hand-tested and recommended by the same repair technicians who fix your devices every day — so you always get the right gear.
+            </p>
+          </div>
+
+          {/* Bento grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5" style={{ gridTemplateRows: "auto auto" }}>
+
+            {/* ── Left large card — Expert techs (row-span-2) ── */}
+            <div className="relative rounded-3xl overflow-hidden bg-[#0f0a1a] sm:row-span-2 min-h-[320px] lg:min-h-[480px] flex flex-col justify-between p-7">
+              {/* Glow */}
+              <div className="absolute -top-16 -left-16 w-64 h-64 bg-primary/40 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-16 -right-16 w-64 h-64 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none" />
+              {/* Grid pattern */}
+              <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)", backgroundSize: "32px 32px" }} />
+
+              <div className="relative z-10">
+                <div className="inline-flex items-center gap-1.5 bg-primary/20 border border-primary/30 rounded-full px-3 py-1 mb-5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#c084fc] animate-pulse" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#c084fc]">Expert Approved</span>
+                </div>
+                <h3 className="text-2xl lg:text-3xl font-extrabold text-white leading-tight max-w-xs">
+                  Recommended by our repair techs
+                </h3>
+                <p className="mt-3 text-sm text-white/60 leading-relaxed max-w-xs">
+                  Every product is tested and approved by our in-store technicians — the same experts who repair your devices daily.
+                </p>
+              </div>
+
+              {/* Team image — replace with your Pinterest image */}
+              <div className="relative z-10 mt-6 rounded-2xl overflow-hidden h-44 lg:h-56 bg-white/5">
+                <Image
+                  src="/home/repair-team.jpg"
+                  alt="Jesup Wireless repair team"
+                  fill
+                  className="object-cover object-top opacity-90"
+                  sizes="(max-width: 640px) 100vw, 33vw"
+                />
+                {/* Fallback gradient if image missing */}
+                {/* <div className="absolute inset-0 flex items-center justify-center">
+                  <svg className="w-16 h-16 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div> */}
+              </div>
+            </div>
+
+            {/* ── Top right — Free Returns (photo card) ── */}
+            <div className="relative rounded-3xl overflow-hidden min-h-[220px] lg:col-span-2">
+              <Image
+                src="/home/phone-cases.jpg"
+                alt="Free returns"
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 100vw, 66vw"
+              />
+              {/* Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+              <div className="relative z-10 p-7 flex flex-col justify-center h-full">
+                <h3 className="text-xl lg:text-2xl font-extrabold text-white leading-tight max-w-xs">
+                  Free returns, no questions asked
+                </h3>
+                <p className="mt-2 text-sm text-white/70 max-w-xs leading-relaxed">
+                  Not satisfied? Return any item within 30 days — hassle-free, no stress.
+                </p>
+              </div>
+            </div>
+
+            {/* ── Bottom right — two small icon cards ── */}
+            <div className="rounded-3xl bg-primary/5 border border-primary/10 p-6 flex flex-col gap-4 hover:bg-primary/10 transition-colors">
+              <div className="w-12 h-12 rounded-2xl bg-primary/15 flex items-center justify-center">
+                <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 text-base">Fast & free delivery</h3>
+                <p className="mt-1 text-sm text-gray-500 leading-relaxed">Free shipping on all orders over $50. Get your gear delivered fast.</p>
+              </div>
+            </div>
+
+            <div className="rounded-3xl bg-gray-50 border border-gray-100 p-6 flex flex-col gap-4 hover:bg-gray-100 transition-colors">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center">
+                <svg className="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 text-base">100% authentic products</h3>
+                <p className="mt-1 text-sm text-gray-500 leading-relaxed">Every item is sourced directly from verified brands — no knock-offs, ever.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
         <div className="mx-auto max-w-screen-xl px-3 sm:px-4 lg:px-6 pb-24">
 
           {/* ── Value props ── */}

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore, type CartItem } from "@/store/cartStore";
 import { privateAxios } from "@/lib/axios";
@@ -278,6 +278,35 @@ function CheckoutModal({
   const [paypalError, setPaypalError] = useState("");
   const [error, setError] = useState("");
 
+  // ── Animation & swipe state ────────────────────────────────────────────────
+  const [isClosing, setIsClosing] = useState(false);
+  const [dragY, setDragY] = useState(0);
+  const touchStartY = useRef<number>(0);
+  const sheetRef = useRef<HTMLDivElement>(null);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => onClose(), 320);
+  };
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+    setDragY(0);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    const delta = e.touches[0].clientY - touchStartY.current;
+    if (delta > 0) setDragY(delta); // only drag down
+  };
+
+  const onTouchEnd = () => {
+    if (dragY > 100) {
+      handleClose();
+    } else {
+      setDragY(0); // snap back
+    }
+  };
+
   const setField = (k: keyof CheckoutForm, v: string) => setForm((p) => ({ ...p, [k]: v }));
 
   const inputCls = "w-full rounded-xl border-2 border-gray-100 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-primary focus:bg-white transition-all";
@@ -309,8 +338,37 @@ function CheckoutModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+    <>
+      <style>{`
+        @keyframes sheet-up   { from { transform: translateY(100%) } to { transform: translateY(0) } }
+        @keyframes sheet-down { from { transform: translateY(0) }    to { transform: translateY(100%) } }
+        @keyframes fade-in    { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes fade-out   { from { opacity: 1 } to { opacity: 0 } }
+        .sheet-backdrop { animation: fade-in 0.3s ease forwards; }
+        .sheet-backdrop.closing { animation: fade-out 0.32s ease forwards; }
+        .sheet-panel { animation: sheet-up 0.35s cubic-bezier(0.32,0.72,0,1) forwards; }
+        .sheet-panel.closing { animation: sheet-down 0.32s cubic-bezier(0.32,0.72,0,1) forwards; }
+      `}</style>
+
+      <div
+        className={`fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center sm:p-4 sheet-backdrop${isClosing ? " closing" : ""}`}
+        onClick={handleClose}
+      >
+      <div
+        ref={sheetRef}
+        className={`bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md overflow-hidden max-h-[92vh] sm:max-h-[90vh] overflow-y-auto scrollbar-hide sm:!transform-none sheet-panel${isClosing ? " closing" : ""}`}
+        style={{ transform: dragY > 0 ? `translateY(${dragY}px)` : undefined, transition: dragY > 0 ? "none" : undefined }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Mobile drag handle — touch area */}
+        <div
+          className="flex justify-center pt-3 pb-2 sm:hidden cursor-grab active:cursor-grabbing touch-none"
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+        >
+          <div className="w-10 h-1 rounded-full bg-gray-300" />
+        </div>
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
@@ -324,7 +382,7 @@ function CheckoutModal({
               {step === "shipping" ? "Shipping Details" : "Payment"}
             </h2>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
+          <button onClick={handleClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
@@ -503,10 +561,6 @@ function CheckoutModal({
                     </div>
                   ) : (
                     <>
-                      <div className="bg-[#e8f4fd] border border-[#0070ba]/20 rounded-xl px-4 py-3 text-sm text-[#003087]">
-                        You will be charged <strong>${total.toFixed(2)}</strong> via PayPal.
-                      </div>
-
                       {paypalError && (
                         <div className="px-4 py-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600">{paypalError}</div>
                       )}
@@ -632,7 +686,8 @@ function CheckoutModal({
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 

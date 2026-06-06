@@ -6,53 +6,53 @@ import Link from "next/link";
 
 const steps = [
   {
-    tag:   "Drop Protection",
+    tag: "Drop Protection",
     title: "Built to survive the drop.",
-    body:  "From everyday commutes to rugged adventures — our cases guard your device without the bulk. MagSafe-ready, drop-tested, and styled to match your life.",
-    cta:   { label: "Shop Cases", href: "/collections/cases" },
-    image: "/home/scroll-story/purple-phone-case.png",
-    accent:"#8223D2",
+    body: "From everyday commutes to rugged adventures — our cases guard your device without the bulk. MagSafe-ready, drop-tested, and styled to match your life.",
+    cta: { label: "Shop Cases", href: "/collections/cases" },
+    image: "/home/scroll-story/new-purple-phone-case.png",
+    accent: "#8223D2",
   },
   {
-    tag:   "Wireless Audio",
+    tag: "Wireless Audio",
     title: "Sound that moves with you.",
-    body:  "True wireless earbuds and over-ear headphones engineered for real-life listening. Crystal-clear calls, deep bass, and all-day comfort — no wires, no compromise.",
-    cta:   { label: "Shop Audio", href: "/collections/audio" },
-    image: "/home/scroll-story/blue-headphone.png",
-    accent:"#1d4ed8",
+    body: "True wireless earbuds and over-ear headphones engineered for real-life listening. Crystal-clear calls, deep bass, and all-day comfort — no wires, no compromise.",
+    cta: { label: "Shop Audio", href: "/collections/audio" },
+    image: "/home/scroll-story/new-blue-headphone.png",
+    accent: "#1d4ed8",
   },
   {
-    tag:   "Fast Charging",
+    tag: "Fast Charging",
     title: "Stay charged, stay ready.",
-    body:  "GaN chargers, Qi2 pads, and braided cables that outlast your device. Go from 0 to full in minutes — at home, in the car, or on the road.",
-    cta:   { label: "Shop Power", href: "/collections/power" },
-    image: "/home/scroll-story/green-chargerr.png",
-    accent:"#16a34a",
+    body: "GaN chargers, Qi2 pads, and braided cables that outlast your device. Go from 0 to full in minutes — at home, in the car, or on the road.",
+    cta: { label: "Shop Power", href: "/collections/power" },
+    image: "/home/scroll-story/new-green-chargerr.png",
+    accent: "#16a34a",
   },
   {
-    tag:   "Screen Guards",
+    tag: "Screen Guards",
     title: "See clearly. Stay protected.",
-    body:  "Tempered glass protectors for every device. Oleophobic coating keeps fingerprints away while military-grade hardness stops scratches dead.",
-    cta:   { label: "Shop Screen Protection", href: "/collections/screen-protection" },
-    image: "/home/scroll-story/yellow-screen-protectors.png",
-    accent:"#d97706",
+    body: "Tempered glass protectors for every device. Oleophobic coating keeps fingerprints away while military-grade hardness stops scratches dead.",
+    cta: { label: "Shop Screen Protection", href: "/collections/screen-protection" },
+    image: "/home/scroll-story/new-yellow-screen-protectors.png",
+    accent: "#d97706",
   },
 ];
 
 export default function ScrollStory() {
-  const [active, setActive]     = useState(0);
-  const [prevActive, setPrev]   = useState<number | null>(null);
-  const containerRef            = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(0);
+  const [prevActive, setPrev] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => {
       const el = containerRef.current;
       if (!el) return;
-      const rect       = el.getBoundingClientRect();
-      const scrolled   = -rect.top;                          // px scrolled into container
-      const total      = rect.height - window.innerHeight;  // total scrollable range
-      const fraction   = Math.min(1, Math.max(0, scrolled / total));
-      const idx        = Math.min(steps.length - 1, Math.floor(fraction * steps.length));
+      const rect = el.getBoundingClientRect();
+      const scrolled = -rect.top;                          // px scrolled into container
+      const total = rect.height - window.innerHeight;  // total scrollable range
+      const fraction = Math.min(1, Math.max(0, scrolled / total));
+      const idx = Math.min(steps.length - 1, Math.floor(fraction * steps.length));
       if (idx !== active) {
         setPrev(active);
         setActive(idx);
@@ -93,14 +93,14 @@ export default function ScrollStory() {
                   key={i}
                   className="absolute inset-0 flex flex-col justify-center px-6 sm:px-10 lg:px-14"
                   style={{
-                    opacity:        isActive ? 1 : 0,
-                    transform:      isActive
+                    opacity: isActive ? 1 : 0,
+                    transform: isActive
                       ? "translateY(0px)"
                       : wasActive
                         ? `translateY(${goingDown ? -60 : 60}px)`
                         : `translateY(${goingDown ? 60 : -60}px)`,
-                    transition:     "opacity 0.6s ease, transform 0.6s ease",
-                    pointerEvents:  isActive ? "auto" : "none",
+                    transition: "opacity 0.6s ease, transform 0.6s ease",
+                    pointerEvents: isActive ? "auto" : "none",
                   }}
                   aria-hidden={!isActive}
                 >
@@ -160,8 +160,8 @@ export default function ScrollStory() {
                     key={i}
                     className="rounded-full transition-all duration-400"
                     style={{
-                      width:      i === active ? 20 : 6,
-                      height:     6,
+                      width: i === active ? 20 : 6,
+                      height: 6,
                       background: i === active ? s.accent : "#e5e7eb",
                     }}
                   />
@@ -181,7 +181,7 @@ export default function ScrollStory() {
           {/* ── Right: sticky image (desktop) / hidden on mobile ── */}
           <div className="hidden lg:flex items-center justify-center relative overflow-hidden bg-gray-50">
             {steps.map((step, i) => {
-              const isActive  = i === active;
+              const isActive = i === active;
               const wasActive = i === prevActive;
               const goingDown = prevActive !== null && active > prevActive;
 
@@ -190,14 +190,14 @@ export default function ScrollStory() {
                   key={i}
                   className="absolute inset-0 flex items-center justify-center p-10"
                   style={{
-                    opacity:    isActive ? 1 : 0,
-                    transform:  isActive
+                    opacity: isActive ? 1 : 0,
+                    transform: isActive
                       ? "translateY(0px) scale(1)"
                       : wasActive
                         ? `translateY(${goingDown ? -40 : 40}px) scale(0.97)`
                         : `translateY(${goingDown ? 40 : -40}px) scale(0.97)`,
                     transition: "opacity 0.65s ease, transform 0.65s ease",
-                    zIndex:     isActive ? 2 : 1,
+                    zIndex: isActive ? 2 : 1,
                   }}
                   aria-hidden={!isActive}
                 >

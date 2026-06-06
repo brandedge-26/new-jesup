@@ -16,6 +16,7 @@ import { promoRoutes }     from "./routes/promo.routes.js";
 import { analyticsRoutes } from "./routes/analytics.routes.js";
 import { paymentRoutes, webhookRoute } from "./routes/payment.routes.js";
 import { newsletterRoutes } from "./routes/newsletter.routes.js";
+import { bannerRoutes }    from "./routes/banner.routes.js";
 import { authMiddleware } from "./middlewares/auth.middleware.js";
 import passport from "./passport/auth.passport.js";
 import { authLimiter, generalLimiter } from "./middlewares/rateLimiter.js";
@@ -88,6 +89,7 @@ app.use("/api/promos",       generalLimiter, promoRoutes);
 app.use("/api/analytics",   generalLimiter, analyticsRoutes);
 app.use("/api/payments",    generalLimiter, paymentRoutes);
 app.use("/api/newsletter",  generalLimiter, newsletterRoutes);
+app.use("/api/banners",     generalLimiter, bannerRoutes);
 
 
 
