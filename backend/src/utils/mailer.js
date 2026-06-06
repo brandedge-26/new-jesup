@@ -276,6 +276,67 @@ export async function sendOrderStatusEmail({ to, fname, orderNumber, status, tra
     await sendMail({ to, subject: config.subject, html });
 }
 
+// ── New Product Newsletter ────────────────────────────────────────────────────
+export async function sendNewProductNewsletter({ subscribers, product }) {
+    if (!subscribers.length) return;
+
+    const href       = `${ENV.CLIENT_URL}/products/${product.slug || product._id}`;
+    const shopHref   = `${ENV.CLIENT_URL}/collections`;
+    const unsubBase  = `${ENV.CLIENT_URL}/api/newsletter/unsubscribe`; // resolved per-subscriber below
+
+    const baseHtml = (unsubLink) => baseTemplate(`
+        <h2 style="margin:0 0 4px;font-size:22px;font-weight:700;color:#111827;">New Drop — Just Arrived! ✨</h2>
+        <p style="margin:0 0 28px;font-size:15px;color:#6b7280;line-height:1.6;">
+            A brand-new product just landed in the Jesup store. Be the first to grab it!
+        </p>
+
+        <!-- Product Card -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0ff;border-radius:16px;overflow:hidden;margin-bottom:28px;">
+          <tr>
+            ${product.image ? `
+            <td width="140" style="padding:20px 0 20px 20px;vertical-align:top;">
+              <img src="${product.image}" alt="${product.name}"
+                   width="120" height="120"
+                   style="border-radius:12px;object-fit:cover;display:block;" />
+            </td>` : ""}
+            <td style="padding:20px;vertical-align:top;">
+              ${product.brand ? `<p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#8223D2;text-transform:uppercase;letter-spacing:0.5px;">${product.brand}</p>` : ""}
+              <p style="margin:0 0 8px;font-size:16px;font-weight:700;color:#111827;line-height:1.4;">${product.name}</p>
+              <p style="margin:0;font-size:20px;font-weight:800;color:#8223D2;">$${Number(product.price).toFixed(2)}</p>
+              ${product.originalPrice ? `<p style="margin:2px 0 0;font-size:13px;color:#9ca3af;text-decoration:line-through;">$${Number(product.originalPrice).toFixed(2)}</p>` : ""}
+            </td>
+          </tr>
+        </table>
+
+        <a href="${href}"
+           style="display:inline-block;background:#8223D2;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:14px 32px;border-radius:100px;margin-bottom:16px;">
+          Shop Now →
+        </a>
+
+        <p style="margin:0 0 4px;">
+          <a href="${shopHref}"
+             style="font-size:13px;color:#8223D2;text-decoration:underline;">
+            Browse all new arrivals
+          </a>
+        </p>
+
+        <p style="margin:28px 0 0;font-size:12px;color:#9ca3af;">
+          You're receiving this because you subscribed to new product alerts from Jesup Wireless.<br/>
+          <a href="${unsubLink}" style="color:#9ca3af;">Unsubscribe</a>
+        </p>
+    `);
+
+    // Send one-by-one so each email has its own unsubscribe link
+    for (const sub of subscribers) {
+        const unsubLink = `${ENV.CLIENT_URL?.replace(":3001", ":5510") ?? ""}/api/newsletter/unsubscribe/${sub.unsubscribeToken}`;
+        await sendMail({
+            to:      sub.email,
+            subject: `New Arrival: ${product.name} | Jesup Wireless`,
+            html:    baseHtml(unsubLink),
+        });
+    }
+}
+
 // ── Admin Cancellation Notification ──────────────────────────────────────────
 export async function sendAdminCancellationEmail({ orderNumber, customerName, customerEmail, total }) {
     const html = baseTemplate(`

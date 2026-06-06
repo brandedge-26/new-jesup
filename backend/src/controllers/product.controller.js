@@ -1,6 +1,8 @@
 import Product from "../models/Product.js";
 import FeaturedProduct from "../models/FeaturedProduct.js";
 import Order from "../models/Order.js";
+import Newsletter from "../models/Newsletter.js";
+import { sendNewProductNewsletter } from "../utils/mailer.js";
 
 // GET /api/products  — all products (admin)
 // Query params: category, status, search, page, limit
@@ -62,6 +64,13 @@ export const createProduct = async (req, res, next) => {
     try {
         const product = await Product.create(req.body);
         res.status(201).json(product);
+
+        // Fire-and-forget: notify newsletter subscribers about the new product
+        Newsletter.find({ active: true }).select("email unsubscribeToken").lean().then((subscribers) => {
+            if (subscribers.length > 0) {
+                sendNewProductNewsletter({ subscribers, product }).catch(() => {});
+            }
+        }).catch(() => {});
     } catch (err) {
         next(err);
     }
