@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 const cards = [
   {
     image: "/home/shop-cards/mobile-repair.jpg",
-    tag: "Mail-In Service",
+    tag: "Repair",
     title: "Send it in, get it back fixed",
     description:
       "Pack it up, print your free shipping label, and drop it off. We repair it and ship it straight back — usually within 2–3 business days.",

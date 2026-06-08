@@ -11,7 +11,7 @@ export default function TechInGoodHands() {
           {/* Large top image — spans full width */}
           <div className="col-span-2 relative h-64 rounded-2xl overflow-hidden">
             <Image
-              src="/home/your-tech-is-good-hand.jpeg"
+              src="/home/your-tech-is-good-hand.png"
               alt="Technician repairing a device"
               fill
               className="object-cover"

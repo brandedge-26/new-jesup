@@ -17,7 +17,7 @@ export default function Home() {
       <TechInGoodHands />
       <OfficeBanner />
       <PeopleReviews />
-      <LogoMarquee />
+      {/* <LogoMarquee /> */}
     </main>
   );
 }
