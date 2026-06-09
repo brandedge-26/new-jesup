@@ -539,7 +539,7 @@ export default async function Home() {
             {/* ── Top right — Free Returns (photo card) ── */}
             <div className="relative rounded-3xl overflow-hidden min-h-[220px] lg:col-span-2">
               <Image
-                src="/home/phone-cases.jpg"
+                src="/home/free-banner.webp"
                 alt="Free returns"
                 fill
                 className="object-cover"

@@ -157,7 +157,7 @@ export default function DevicesView() {
     fetch(`${API}/products?${params}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((data) => {
-        let mapped = (data.products ?? []).map(mapProduct);
+        let mapped: Product[] = (data.products ?? []).map(mapProduct);
         if (inStockOnly) mapped = mapped.filter((p) => p.inStock);
         if (sort === "price-asc")  mapped.sort((a, b) => a.price - b.price);
         if (sort === "price-desc") mapped.sort((a, b) => b.price - a.price);
