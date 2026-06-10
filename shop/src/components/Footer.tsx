@@ -62,8 +62,8 @@ const socials = [
 ];
 
 const bottomLinks = [
-  { label: "Privacy Policy", href: "/privacy" },
-  { label: "Terms of Service", href: "/terms" },
+  { label: "Privacy Policy", href: "https://jesupwireless.com/privacy" },
+  { label: "Terms of Service", href: "https://jesupwireless.com/terms" },
 ];
 
 export default function Footer() {
@@ -134,7 +134,7 @@ export default function Footer() {
               1-800-JESUP-FIX
             </Link>
             <Link
-              href="/contact"
+              href="https://jesupwireless.com/contact"
               className="inline-flex items-center gap-2 border border-white/20 rounded-full px-4 py-2 text-sm text-gray-300 hover:border-primary hover:text-white transition-colors duration-150 w-fit"
             >
               <Mail size={14} />
