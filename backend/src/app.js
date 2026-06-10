@@ -32,6 +32,9 @@ await connectDB();
 // EXPRESS APP
 export const app = express();
 
+// Trust reverse proxy (Nginx on VPS)
+app.set("trust proxy", 1);
+
 
 
 
