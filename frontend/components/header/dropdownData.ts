@@ -101,51 +101,51 @@ export const navItems: NavItem[] = [
       title: "Shop at Jesup",
       description:
         "Browse our selection of handpicked accessories, tech gear, and more—now available at Jesup.",
-      shopLink: { label: "Shop now", href: "/shop" },
+      shopLink: { label: "Shop now", href: "https://shop.jesupwireless.com/collections" },
       items: [
         {
           label: "Cases",
           image: "/header-images/shop-accossories/case.png",
-          href: "/shop/cases",
+          href: "https://shop.jesupwireless.com/collections/cases",
         },
         {
           label: "Screen protectors",
           image: "/header-images/shop-accossories/screen-protector.png",
-          href: "/shop/screen-protectors",
+          href: "https://shop.jesupwireless.com/collections/screen-protection",
         },
         {
           label: "Power",
           image: "/header-images/shop-accossories/power-accessories.png",
-          href: "/shop/power",
+          href: "https://shop.jesupwireless.com/collections/power",
         },
         {
           label: "All iPhone",
           image: "/header-images/shop-accossories/iphone.png",
-          href: "/shop/iphone",
+          href: "https://shop.jesupwireless.com/collections/devices?q=phone",
         },
         {
           label: "All Samsung",
           image: "/header-images/shop-accossories/samsung.png",
-          href: "/shop/samsung",
+          href: "https://shop.jesupwireless.com/collections/devices?q=samsung",
         },
         {
           label: "All Google",
           image: "/header-images/shop-accossories/pixel.png",
-          href: "/shop/google",
+          href: "https://shop.jesupwireless.com/collections/devices?q=google",
         },
         {
           label: "Audio",
           image: "/header-images/shop-accossories/audio.png",
-          href: "/shop/audio",
+          href: "https://shop.jesupwireless.com/collections/audio",
         },
         {
           label: "Tablet and laptop",
           image: "/header-images/shop-accossories/tablet-and-laptop.png",
-          href: "/shop/tablet-laptop",
+          href: "https://shop.jesupwireless.com/collections/devices?q=tablet+laptop",
         },
         {
           label: "Shop all accessories",
-          href: "/shop",
+          href: "https://shop.jesupwireless.com/collections",
           isArrow: true,
         },
       ],
