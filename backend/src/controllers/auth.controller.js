@@ -11,7 +11,7 @@ import { sendWelcomeEmail } from "../utils/mailer.js";
 const REFRESH_COOKIE_OPTIONS = {
     httpOnly: true,
     secure: ENV.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: ENV.NODE_ENV === "production" ? "none" : "strict",
     maxAge: 7 * 24 * 60 * 60 * 1000   // 7 DAYS
 };
 
