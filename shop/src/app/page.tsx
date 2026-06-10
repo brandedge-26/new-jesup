@@ -544,7 +544,7 @@ export default async function Home() {
                 fill
                 className="object-cover"
                 sizes="(max-width: 640px) 100vw, 66vw"
-              />
+              />  
               {/* Overlay */}
               <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
               <div className="relative z-10 p-7 flex flex-col justify-center h-full">
