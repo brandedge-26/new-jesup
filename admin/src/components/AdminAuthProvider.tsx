@@ -10,8 +10,10 @@ export default function AdminAuthProvider({ children }: { children: React.ReactN
     const router = useRouter();
 
     useEffect(() => {
-        initAuth();
-    }, [initAuth]);
+        if (!isInitialized) {
+            initAuth();
+        }
+    }, []);
 
     useEffect(() => {
         if (isInitialized && !isAuthenticated) {

@@ -43,7 +43,7 @@ export const useAdminAuthStore = create<AdminAuthState>((set) => ({
         const res = await adminAxios.post("/auth/admin-login", { email, password });
         const { accessToken, user } = res.data;
         setAdminToken(accessToken);
-        set({ user, isAuthenticated: true });
+        set({ user, isAuthenticated: true, isInitialized: true });
     },
 
     updateUser: (data) => set((s) => ({ user: s.user ? { ...s.user, ...data } : s.user })),
